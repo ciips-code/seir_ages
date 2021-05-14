@@ -5,6 +5,7 @@ library(ggplot2)
 library(plotly)
 library(bslib)
 library(DT)
+library(EpiEstim)
 
 load("DatosIniciales_ARG.RData")
 source("functions/seirAges.R", encoding = "UTF-8")
