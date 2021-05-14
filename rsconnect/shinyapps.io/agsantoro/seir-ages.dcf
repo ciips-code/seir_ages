@@ -1,0 +1,12 @@
+name: seir-ages
+title: seir-ages
+username:
+account: agsantoro
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4077965
+bundleId: 4591517
+url: https://agsantoro.shinyapps.io/seir-ages/
+when: 1620850068.02316
+asMultiple: FALSE
+asStatic: FALSE
