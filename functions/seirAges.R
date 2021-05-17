@@ -77,6 +77,7 @@ seir_ages <- function(dias = 300,
 }
 
 
+
 # seir_ages <- function(dias,
 #                       duracionE, 
 #                       duracionIi, porc_gr, duracionIg, porc_cr, duracionIc,

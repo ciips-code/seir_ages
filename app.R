@@ -27,11 +27,11 @@ source("functions/seirAges.R", encoding = "UTF-8")
 ifr = c(.003,.005,0.01)
 
 # crea matrices de contacto y efectividad
-contact_matrix <<- matrix(c(3,1,1,
-                          2,2,2,
-                          .3,1,3),3,byrow = T)
+contact_matrix <<- matrix(c(5,1,1,
+                          4,4,4,
+                          .3,1,5),3,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = c("0-19","20-65","65+")
-transmission_probability = matrix(.05,3,3)
+transmission_probability = matrix(.01,3,3)
 colnames(transmission_probability) = rownames(transmission_probability) = c("0-19","20-65","65+")
 
 # datos de poblacion ejemplo Argentina
