@@ -55,9 +55,22 @@ seir_ages <- function(dias = 300,
                           .90,.90,.90,
                           .60,.60,.60),4,3,byrow=T,dimnames = names)
     
-    beta_matrix = sweep(modif_beta, MARGIN = 2, colSums(beta), "*")
     
-    e[[t-1]]    = S[[t-1]] * (beta_matrix * I[[t-1]]/N)
+    
+    # beta_matrix = sweep(modif_beta, MARGIN = 2, colSums(beta), "*")
+    
+    I_edad = colSums(I[[t-1]])
+    N_edad = colSums(N)
+    e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, 4, 3,byrow = T) * modif_beta 
+    # equivalente a esto:
+      # e[[t-1]][1,] = S[[t-1]][1,] * (beta %*% I_edad/N_edad) * modif_beta[1,] 
+      # e[[t-1]][2,] = S[[t-1]][2,] * (beta %*% I_edad/N_edad) * modif_beta[2,] 
+      # e[[t-1]][3,] = S[[t-1]][3,] * (beta %*% I_edad/N_edad) * modif_beta[3,]
+      # e[[t-1]][4,] = S[[t-1]][4,] * (beta %*% I_edad/N_edad) * modif_beta[4,] 
+    
+    
+    
+    # e[[t-1]]    = S[[t-1]] * (beta_matrix * I[[t-1]]/N)
     #e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     
     # resto seir
@@ -85,14 +98,17 @@ seir_ages <- function(dias = 300,
     Ss[[t]]     = Ss[[t-1]] - E[[t]] # ver
   }
   #browser()
-  results = list(g1 = data.frame(fecha = 1:dias, S=S[,1], E=E[,1], I=I[,1], D=D[,1],R=R[,1],i=i[,1]),
-                 g2 = data.frame(fecha = 1:dias, S=S[,2], E=E[,2], I=I[,2], D=D[,2],R=R[,2],i=i[,2]),
-                 g3 = data.frame(fecha = 1:dias, S=S[,3], E=E[,3], I=I[,3], D=D[,3],R=R[,3],i=i[,3]))
-  return(bind_rows(
-    tibble(group = "g1", results[["g1"]]),
-    tibble(group = "g2", results[["g2"]]),
-    tibble(group = "g3", results[["g3"]]))
-  )
+  
+  result = do.call(rbind, lapply(S,colSums))
+  result
+  # results = list(g1 = data.frame(fecha = 1:dias, S=S[,1], E=E[,1], I=I[,1], D=D[,1],R=R[,1],i=i[,1]),
+  #                g2 = data.frame(fecha = 1:dias, S=S[,2], E=E[,2], I=I[,2], D=D[,2],R=R[,2],i=i[,2]),
+  #                g3 = data.frame(fecha = 1:dias, S=S[,3], E=E[,3], I=I[,3], D=D[,3],R=R[,3],i=i[,3]))
+  # return(bind_rows(
+  #   tibble(group = "g1", results[["g1"]]),
+  #   tibble(group = "g2", results[["g2"]]),
+  #   tibble(group = "g3", results[["g3"]]))
+  # )
 }
 contact_matrix
 
