@@ -10,6 +10,10 @@ seir_ages <- function(dias = 300,
                       contact_matrix,
                       transmission_probability,
                       N = c(1/3,1/3,1/3), 
+                      modif_beta = matrix(c(1,1,1,
+                                            .70,.70,.70,
+                                            .90,.90,.90,
+                                            .60,.60,.60),4,3,byrow=T),
                       zero_sus,
                       zero_exp,
                       zero_cases = c(0,1/45e6*N,0),
@@ -47,31 +51,11 @@ seir_ages <- function(dias = 300,
   for(t in 2:dias){
     
     # contagiados según matriz de contacto
-    
-    #beta       = contact_matrix * transmission_probability #r0/duracionI
     beta       = contact_matrix * transmission_probability
-    modif_beta = matrix(c(1,1,1,
-                          .70,.70,.70,
-                          .90,.90,.90,
-                          .60,.60,.60),4,3,byrow=T,dimnames = names)
-    
-    
-    
-    # beta_matrix = sweep(modif_beta, MARGIN = 2, colSums(beta), "*")
-    
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
     e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, 4, 3,byrow = T) * modif_beta 
-    # equivalente a esto:
-      # e[[t-1]][1,] = S[[t-1]][1,] * (beta %*% I_edad/N_edad) * modif_beta[1,] 
-      # e[[t-1]][2,] = S[[t-1]][2,] * (beta %*% I_edad/N_edad) * modif_beta[2,] 
-      # e[[t-1]][3,] = S[[t-1]][3,] * (beta %*% I_edad/N_edad) * modif_beta[3,]
-      # e[[t-1]][4,] = S[[t-1]][4,] * (beta %*% I_edad/N_edad) * modif_beta[4,] 
-    
-    
-    
-    # e[[t-1]]    = S[[t-1]] * (beta_matrix * I[[t-1]]/N)
-    #e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
+    e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     
     # resto seir
     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
@@ -97,20 +81,19 @@ seir_ages <- function(dias = 300,
     
     Ss[[t]]     = Ss[[t-1]] - E[[t]] # ver
   }
-  #browser()
   
-  result = do.call(rbind, lapply(S,colSums))
-  result
-  # results = list(g1 = data.frame(fecha = 1:dias, S=S[,1], E=E[,1], I=I[,1], D=D[,1],R=R[,1],i=i[,1]),
-  #                g2 = data.frame(fecha = 1:dias, S=S[,2], E=E[,2], I=I[,2], D=D[,2],R=R[,2],i=i[,2]),
-  #                g3 = data.frame(fecha = 1:dias, S=S[,3], E=E[,3], I=I[,3], D=D[,3],R=R[,3],i=i[,3]))
-  # return(bind_rows(
-  #   tibble(group = "g1", results[["g1"]]),
-  #   tibble(group = "g2", results[["g2"]]),
-  #   tibble(group = "g3", results[["g3"]]))
-  # )
+  # org rr
+  out <- bind_rows(
+    tibble(Compart = "S", do.call(rbind, lapply(S,colSums)) %>% as_tibble()),
+    tibble(Compart = "E", do.call(rbind, lapply(E,colSums)) %>% as_tibble()),
+    tibble(Compart = "e", do.call(rbind, lapply(e,colSums)) %>% as_tibble()),
+    tibble(Compart = "I", do.call(rbind, lapply(I,colSums)) %>% as_tibble()),
+    tibble(Compart = "R", do.call(rbind, lapply(R,colSums)) %>% as_tibble())) %>%
+    dplyr::mutate(fecha = rep(1:dias,5)) %>% 
+    dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
+  out  
 }
-contact_matrix
+
 
 # graficar
 # do.call(rbind, lapply(S,colSums))[,2]

@@ -94,7 +94,7 @@ zero_d=colMeans(def_p[(nrow(def_p)):((nrow(def_p)-14)),])
 zero_D=colSums(def_p)
 zero_N = zero_S
  
-
+source("functions/seirAges_matrices.R", encoding = "UTF-8")
 proy <- seir_ages(dias=300,
                   duracionE = periodoPreinfPromedio,
                   duracionIi = duracionMediaInf,
@@ -114,6 +114,22 @@ proy <- seir_ages(dias=300,
                   zero_D = zero_D,
                   zero_d = zero_d
 )
+
+# grafs - chekeo
+# comparts
+proy %>% 
+  pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 
+  ggplot(aes(x=fecha, y=Casos, color=Compartimento)) + 
+  geom_line() + theme_bw() + facet_grid(~Compart)
+# edades
+proy %>% 
+  pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 
+  filter(Compart=="e") %>% 
+  ggplot(aes(x=fecha, y=Casos, color=Compartimento)) + 
+  geom_line() + theme_bw() + facet_grid(~Compartimento)
+
+
+
 
 proy <- data.frame(proy[proy$group=="g1",8],
                    proy[proy$group=="g2",8],
