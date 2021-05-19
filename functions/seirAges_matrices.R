@@ -14,6 +14,18 @@ seir_ages <- function(dias = 300,
                                             .70,.70,.70,
                                             .90,.90,.90,
                                             .60,.60,.60),4,3,byrow=T),
+                      modif_porc_gr = matrix(c(1,1,1,
+                                               .70,.70,.70,
+                                               .90,.90,.90,
+                                               .60,.60,.60),4,3,byrow=T),
+                      modif_porc_cr = matrix(c(1,1,1,
+                                               .70,.70,.70,
+                                               .90,.90,.90,
+                                               .60,.60,.60),4,3,byrow=T),
+                      modif_ifr = matrix(c(1,1,1,
+                                               .70,.70,.70,
+                                               .90,.90,.90,
+                                               .60,.60,.60),4,3,byrow=T),
                       zero_sus,
                       zero_exp,
                       zero_cases = c(0,1/45e6*N,0),
@@ -62,13 +74,13 @@ seir_ages <- function(dias = 300,
     i[[t]]      = E[[t-1]]/duracionE
     Ii[[t]]     = Ii[[t-1]] + i[[t]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr
     
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
-    d[[t]]      = Ic[[t-1]]/duracionIc * ifr/porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+    d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     D[[t]]      = D[[t-1]] + d[[t]]
-    U[[t]]      = U[[t-1]] + Ii[[t-1]]/duracionIi*(1-porc_gr-porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr)
+    U[[t]]      = U[[t-1]] + Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
     R[[t]]      = U[[t]] + D[[t]]
     
     if (t>duracion_inmunidad+1) {
