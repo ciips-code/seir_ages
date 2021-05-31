@@ -12,42 +12,37 @@ seir_ages <- function(dias = 300,
                       N = c(1/3,1/3,1/3), 
                       modif_beta = matrix(c(1,1,1,
                                             .70,.70,.70,
-                                            .90,.90,.90,
-                                            .60,.60,.60),4,3,byrow=T),
+                                            .60,.60,.60),3,3,byrow=T),
                       modif_porc_gr = matrix(c(1,1,1,
                                                .70,.70,.70,
-                                               .90,.90,.90,
-                                               .60,.60,.60),4,3,byrow=T),
+                                               .60,.60,.60),3,3,byrow=T),
                       modif_porc_cr = matrix(c(1,1,1,
                                                .70,.70,.70,
-                                               .90,.90,.90,
-                                               .60,.60,.60),4,3,byrow=T),
+                                               .60,.60,.60),3,3,byrow=T),
                       modif_ifr = matrix(c(1,1,1,
                                                .70,.70,.70,
-                                               .90,.90,.90,
-                                               .60,.60,.60),4,3,byrow=T),
+                                               .60,.60,.60),3,3,byrow=T),
                       zero_sus,
                       zero_exp,
                       zero_cases = c(0,1/45e6*N,0),
                       zero_rec,
                       zero_D,
                       zero_d,
-                      duracion_inmunidad=180,
+                      duracion_inmunidad=190, # cuanto se quedan en U
                       Rt=c(1.1,1.1,1.1)
 ){
-  names = list(c("no inmunes", "recuperados", "1 dosis", "2 dosis"),
+  names = list(c("no inmunes", "recuperados", "Vacunado"),
                c("0 a 19", "20 a 64", "65 y mas"))
   
   # cada columna es un grupo
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = Av = V = beta = lapply(1:dias, matrix, data= 0, nrow=4, ncol=3, dimnames = names)
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = Av = V = v = beta = lapply(1:dias, matrix, data= 0, nrow=3, ncol=3, dimnames = names)
   
-  namesVac = list(c("no inmunes", "recuperados", "1 dosis", "2 dosis"),
+  namesVac = list(c("no inmunes", "recuperados", "Vacunado"),
                   c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
 
   paramVac <- matrix(data=c(0,0,0,0,0,
                             0,0,0,0,0,
-                            20,.2,180,.3,180,
-                            20,.7,180,.2,180), nrow=4, ncol=5, byrow=T, dimnames = namesVac)
+                            20,.2,180,.3,180), nrow=3, ncol=5, byrow=T, dimnames = namesVac)
 
   # zero cases
   #S[1,] = zero_sus
@@ -55,19 +50,18 @@ seir_ages <- function(dias = 300,
   #E[1,] = zero_exp
   
   
-  S[[1]] = matrix(c(10000,10000,10000,0,0,0,0,0,0,0,0,0),4,3, byrow = T,
+  S[[1]] = matrix(c(10000,10000,10000,0,0,0,0,0,0,0,0,0),3,3, byrow = T,
                    dimnames = names)
   
-  N = matrix(c(9997,9997,9997,1,1,1,1,1,1,1,1,1),4,3, byrow = T,
+  N = matrix(c(9997,9997,9997,1,1,1,1,1,1,1,1,1),3,3, byrow = T,
                dimnames = names)
   
-  I[[1]] = matrix(c(0,1,0,0,0,0,0,0,0,0,0,0),4,3, byrow = T,
+  I[[1]] = matrix(c(0,1,0,0,0,0,0,0,0,0,0,0),3,3, byrow = T,
                     dimnames = names)
   
-  Av = lapply(1:dias, matrix, data=c(0,0,0,
-                                     0,0,0,
-                                     0,50,100,
-                                     0,50,100), nrow=4, ncol=3, dimnames = names)
+  Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
+                                     0,0,0, # en cero por compatibilidad con la estructura de la matriz
+                                     0,50,100), nrow=3, ncol=3, dimnames = names)
 
   #R[1,] = zero_rec
   #d[1,] = zero_d
@@ -84,7 +78,7 @@ seir_ages <- function(dias = 300,
     beta       = contact_matrix * transmission_probability
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
-    e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, 4, 3,byrow = T) * modif_beta 
+    e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, 3, 3,byrow = T) * modif_beta 
     e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     
     # resto seir
@@ -99,78 +93,71 @@ seir_ages <- function(dias = 300,
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     D[[t]]      = D[[t-1]] + d[[t]]
-    U[[t]]      = U[[t-1]] + Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
+    u[[t]]      = Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
+    U[[t]]      = U[[t-1]] + u[[t]]
     R[[t]]      = U[[t]] + D[[t]]
-    
-    Vout <- matrix(data=0,4,3, byrow = T,
+    # Ajustes de pasajes S-V-S y U-S
+    Vin = VquedaEnS =  matrix(data=0,3,3, byrow = T,
                    dimnames = names)
     
-    vacunasDias <- matrix(data=0,4,3, byrow = T,
+    Vout <- matrix(data=0,3,3, byrow = T,
+                   dimnames = names)
+    
+    vacunasDelDia <- matrix(data=0,3,3, byrow = T,
                           dimnames = names)
     
+    # Check si hay suficientes S para vacunar hoy
     for (vacuna in c(3:nrow(paramVac))) {
-      
       latencia = paramVac[vacuna,1]
       if (t>latencia) {
-        vacunasDias[vacuna,]=Av[[t-latencia]][vacuna,]
+        vacunasDelDia[vacuna,]=Av[[t-latencia]][vacuna,]
       }
     }
+    haySparaVacunar = S[[t-1]][1,] > colSums(vacunasDelDia)
       
-      
-    comparacion = S[[t-1]][1,] > colSums(vacunasDias)
-    print(paste0("c",comparacion))
-    
-    #if (all(comparacion)) { 
-      
-      #print(paste0("a",t))
-      
-      for (vacuna in c(3:nrow(paramVac))) {
-        latencia = paramVac[vacuna,1]
-        #vacunadosTotales = colSums(Av[[t-latencia]])
-        porcV = paramVac[vacuna,2]
-        tiempoV = paramVac[vacuna,3]
-        vacunadosVacunaDia = 0
+    for (vacuna in c(3:nrow(paramVac))) {
+      latencia = paramVac[vacuna,1]
+      #vacunadosTotales = colSums(Av[[t-latencia]])
+      porcV = paramVac[vacuna,2]
+      tiempoV = paramVac[vacuna,3]
+      porcProt = paramVac[vacuna,4]
+      vacunadosVacunaDia = 0
+      if (t > latencia & all(haySparaVacunar)) {
+        # Los que pasan a V
+        vacunadosVacunaDia = Av[[t-latencia]][vacuna,]
+        Vin[vacuna,] =  vacunadosVacunaDia * porcV
         
-        if (t > latencia & all(comparacion)) {
-          
-          vacunadosDia = Av[[t-latencia]]
-          
-          vacunadosVacunaDia = vacunadosDia[vacuna,]
-          #browser()
-          
-        }
+        # Los que se quedan en S pero protegidos (deben cambiar de renglon)
+        vacunadosVacunaDia = Av[[t-latencia]][vacuna,]
+        VquedaEnS[vacuna,] =  vacunadosVacunaDia * porcProt
         
-        if (t>tiempoV+1) {
-          
-          Vout[vacuna,] <- V[[t-tiempoV]][vacuna,]-V[[t-tiempoV-1]][vacuna,]
-          
-        }
+        # Los que no les hace ningun efecto y quedan en S como no inmunes, no hay que hacer nada
         
-        V[[t]][vacuna,] = V[[t-1]][vacuna,] + vacunadosVacunaDia * porcV - Vout[vacuna,]
-        #print(paste(c(t,sum(V[[t-1]][vacuna,]),sum(vacunadosVacunaDia) * porcV, sum(Vout[vacuna,])), sep = "\t\t\t"))
-        print(t)
-        print("Vout")
-        print(Vout)
-        print("S")
-        print(S[[t-1]])
       }
-     
+      if (t>tiempoV+1) {
+        Vout[vacuna,] <- v[[t-tiempoV]][vacuna,]
+      }
+      V[[t]][vacuna,] = V[[t-1]][vacuna,] + Vin[vacuna,] - Vout[vacuna,]
+    }
+    
+    v[[t]] = Vin
       
-    Vsum <- matrix(data=0, nrow = 4, ncol = 3, byrow = T)
+    Vsum <- matrix(data=0, nrow = 3, ncol = 3, byrow = T)
     Vsum[1,] <- colSums(V[[t]])
-    
+    S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] - Vsum
+    # Transicion U -> S
     if (t>duracion_inmunidad+1) {
-      S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] - Vsum
-      S[[t]][2,]  = S[[t]][2,] + (colSums(U[[t-180]])-colSums(U[[t-181]]))
-    } else {
-      S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] - Vsum
+      S[[t]][2,]  = S[[t]][2,] + colSums(u[[t-duracion_inmunidad]])
+      U[[t]] = U[[t]] - u[[t-duracion_inmunidad]]
+      R[[t]] = U[[t]] + D[[t]]
     }
-                      
-    S[[t]][1,] = S[[t]][1,] - colSums(Vout)
+    # S[[t]][1,] = S[[t]][1,] - colSums(Vout)
     S[[t]]=S[[t]]+Vout
-    
-    
-    Ss[[t]]     = Ss[[t-1]] - E[[t]] # ver
+    # Reasigno de renglon los que quedaron en S luego de vacunarse
+    S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
+    S[[t]] =  S[[t]] + VquedaEnS
+    # Pendiente: Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, 5)
+    # 
   }
   
   
@@ -181,8 +168,9 @@ seir_ages <- function(dias = 300,
     tibble(Compart = "E", do.call(rbind, lapply(E,colSums)) %>% as_tibble()),
     tibble(Compart = "e", do.call(rbind, lapply(e,colSums)) %>% as_tibble()),
     tibble(Compart = "I", do.call(rbind, lapply(I,colSums)) %>% as_tibble()),
+    tibble(Compart = "D", do.call(rbind, lapply(D,colSums)) %>% as_tibble()),
     tibble(Compart = "R", do.call(rbind, lapply(R,colSums)) %>% as_tibble())) %>%
-    dplyr::mutate(fecha = rep(1:dias,6)) %>% 
+    dplyr::mutate(fecha = rep(1:dias,7)) %>% 
     dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
   out  
 }

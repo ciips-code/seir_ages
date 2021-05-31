@@ -97,7 +97,7 @@ zero_N = zero_S
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 
 
-proy <- seir_ages(dias=300,
+proy <- seir_ages(dias=500,
                   duracionE = periodoPreinfPromedio,
                   duracionIi = duracionMediaInf,
                   porc_gr = porcentajeCasosGraves,
@@ -122,7 +122,7 @@ proy <- seir_ages(dias=300,
 proy %>% 
   pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 
   ggplot(aes(x=fecha, y=Casos, color=Compartimento)) + 
-  geom_line() + theme_bw() + facet_grid(~Compart)
+  geom_line() + theme_bw() + facet_grid(~Compart, scales= "free")
 # edades
 proy %>% 
   pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 
