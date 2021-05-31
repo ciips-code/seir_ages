@@ -39,18 +39,36 @@ seir_ages <- function(dias = 300,
                c("0 a 19", "20 a 64", "65 y mas"))
   
   # cada columna es un grupo
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = beta = lapply(1:dias, matrix, data= 0, nrow=4, ncol=3, dimnames = names)
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = Av = V = beta = lapply(1:dias, matrix, data= 0, nrow=4, ncol=3, dimnames = names)
   
+  namesVac = list(c("no inmunes", "recuperados", "1 dosis", "2 dosis"),
+                  c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
+
+  paramVac <- matrix(data=c(0,0,0,0,0,
+                            0,0,0,0,0,
+                            20,.2,180,.3,180,
+                            20,.7,180,.2,180), nrow=4, ncol=5, byrow=T, dimnames = namesVac)
+
   # zero cases
   #S[1,] = zero_sus
   #Ss[1,] = zero_sus
   #E[1,] = zero_exp
+  
+  
   S[[1]] = matrix(c(10000,10000,10000,0,0,0,0,0,0,0,0,0),4,3, byrow = T,
                    dimnames = names)
+  
   N = matrix(c(9997,9997,9997,1,1,1,1,1,1,1,1,1),4,3, byrow = T,
                dimnames = names)
+  
   I[[1]] = matrix(c(0,1,0,0,0,0,0,0,0,0,0,0),4,3, byrow = T,
                     dimnames = names)
+  
+  Av = lapply(1:dias, matrix, data=c(0,0,0,
+                                     0,0,0,
+                                     0,50,100,
+                                     0,50,100), nrow=4, ncol=3, dimnames = names)
+
   #R[1,] = zero_rec
   #d[1,] = zero_d
   #D[1,] = zero_D
@@ -61,7 +79,7 @@ seir_ages <- function(dias = 300,
   
   # seir
   for(t in 2:dias){
-    
+    print(t)
     # contagiados según matriz de contacto
     beta       = contact_matrix * transmission_probability
     I_edad = colSums(I[[t-1]])
@@ -71,6 +89,7 @@ seir_ages <- function(dias = 300,
     
     # resto seir
     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
+    
     i[[t]]      = E[[t-1]]/duracionE
     Ii[[t]]     = Ii[[t-1]] + i[[t]] - Ii[[t-1]]/duracionIi
     
@@ -83,25 +102,87 @@ seir_ages <- function(dias = 300,
     U[[t]]      = U[[t-1]] + Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
     R[[t]]      = U[[t]] + D[[t]]
     
+    Vout <- matrix(data=0,4,3, byrow = T,
+                   dimnames = names)
+    
+    vacunasDias <- matrix(data=0,4,3, byrow = T,
+                          dimnames = names)
+    
+    for (vacuna in c(3:nrow(paramVac))) {
+      
+      latencia = paramVac[vacuna,1]
+      if (t>latencia) {
+        vacunasDias[vacuna,]=Av[[t-latencia]][vacuna,]
+      }
+    }
+      
+      
+    comparacion = S[[t-1]][1,] > colSums(vacunasDias)
+    print(paste0("c",comparacion))
+    
+    #if (all(comparacion)) { 
+      
+      #print(paste0("a",t))
+      
+      for (vacuna in c(3:nrow(paramVac))) {
+        latencia = paramVac[vacuna,1]
+        #vacunadosTotales = colSums(Av[[t-latencia]])
+        porcV = paramVac[vacuna,2]
+        tiempoV = paramVac[vacuna,3]
+        vacunadosVacunaDia = 0
+        
+        if (t > latencia & all(comparacion)) {
+          
+          vacunadosDia = Av[[t-latencia]]
+          
+          vacunadosVacunaDia = vacunadosDia[vacuna,]
+          #browser()
+          
+        }
+        
+        if (t>tiempoV+1) {
+          
+          Vout[vacuna,] <- V[[t-tiempoV]][vacuna,]-V[[t-tiempoV-1]][vacuna,]
+          
+        }
+        
+        V[[t]][vacuna,] = V[[t-1]][vacuna,] + vacunadosVacunaDia * porcV - Vout[vacuna,]
+        #print(paste(c(t,sum(V[[t-1]][vacuna,]),sum(vacunadosVacunaDia) * porcV, sum(Vout[vacuna,])), sep = "\t\t\t"))
+        print(t)
+        print("Vout")
+        print(Vout)
+        print("S")
+        print(S[[t-1]])
+      }
+     
+      
+    Vsum <- matrix(data=0, nrow = 4, ncol = 3, byrow = T)
+    Vsum[1,] <- colSums(V[[t]])
+    
     if (t>duracion_inmunidad+1) {
-      S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] 
+      S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] - Vsum
       S[[t]][2,]  = S[[t]][2,] + (colSums(U[[t-180]])-colSums(U[[t-181]]))
     } else {
-      S[[t]]      = N - E[[t]] - I[[t]] - R[[t]]
+      S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] - Vsum
     }
                       
+    S[[t]][1,] = S[[t]][1,] - colSums(Vout)
+    S[[t]]=S[[t]]+Vout
+    
     
     Ss[[t]]     = Ss[[t-1]] - E[[t]] # ver
   }
   
+  
   # org rr
   out <- bind_rows(
     tibble(Compart = "S", do.call(rbind, lapply(S,colSums)) %>% as_tibble()),
+    tibble(Compart = "V", do.call(rbind, lapply(V,colSums)) %>% as_tibble()),
     tibble(Compart = "E", do.call(rbind, lapply(E,colSums)) %>% as_tibble()),
     tibble(Compart = "e", do.call(rbind, lapply(e,colSums)) %>% as_tibble()),
     tibble(Compart = "I", do.call(rbind, lapply(I,colSums)) %>% as_tibble()),
     tibble(Compart = "R", do.call(rbind, lapply(R,colSums)) %>% as_tibble())) %>%
-    dplyr::mutate(fecha = rep(1:dias,5)) %>% 
+    dplyr::mutate(fecha = rep(1:dias,6)) %>% 
     dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
   out  
 }

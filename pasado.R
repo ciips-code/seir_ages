@@ -95,6 +95,8 @@ zero_D=colSums(def_p)
 zero_N = zero_S
  
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
+
+
 proy <- seir_ages(dias=300,
                   duracionE = periodoPreinfPromedio,
                   duracionIi = duracionMediaInf,
