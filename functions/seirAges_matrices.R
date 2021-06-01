@@ -31,18 +31,20 @@ seir_ages <- function(dias = 300,
                       duracion_inmunidad=190, # cuanto se quedan en U
                       Rt=c(1.1,1.1,1.1)
 ){
-  names = list(c("no inmunes", "recuperados", "Vacunado"),
-               c("0 a 19", "20 a 64", "65 y mas"))
+  immunityStates = c("no inmunes", "recuperados", "Vacunado")
+  ageGroups = c("0 a 19", "20 a 64", "65 y mas")
+  names = list(immunityStates,
+               ageGroups)
   
   # cada columna es un grupo
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = Av = V = v = beta = lapply(1:dias, matrix, data= 0, nrow=3, ncol=3, dimnames = names)
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = Av = V = v = beta = lapply(1:dias, matrix, data= 0, nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
   
-  namesVac = list(c("no inmunes", "recuperados", "Vacunado"),
+  namesVac = list(immunityStates,
                   c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
 
   paramVac <- matrix(data=c(0,0,0,0,0,
                             0,0,0,0,0,
-                            20,.2,180,.3,180), nrow=3, ncol=5, byrow=T, dimnames = namesVac)
+                            20,.2,180,.3,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
 
   # zero cases
   #S[1,] = zero_sus
@@ -50,18 +52,19 @@ seir_ages <- function(dias = 300,
   #E[1,] = zero_exp
   
   
-  S[[1]] = matrix(c(10000,10000,10000,0,0,0,0,0,0,0,0,0),3,3, byrow = T,
+  S[[1]] = matrix(c(10000,10000,10000,0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
   
-  N = matrix(c(9997,9997,9997,1,1,1,1,1,1,1,1,1),3,3, byrow = T,
+  N = matrix(c(9997,9997,9997,1,1,1,1,1,1,1,1,1),length(immunityStates),length(ageGroups), byrow = T,
                dimnames = names)
   
-  I[[1]] = matrix(c(0,1,0,0,0,0,0,0,0,0,0,0),3,3, byrow = T,
+  I[[1]] = matrix(0,length(immunityStates),length(ageGroups), byrow = T,
                     dimnames = names)
+  I[[1]][1,2] = 1 # La semilla del primer infectado
   
   Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
                                      0,0,0, # en cero por compatibilidad con la estructura de la matriz
-                                     0,50,100), nrow=3, ncol=3, dimnames = names)
+                                     0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
 
   #R[1,] = zero_rec
   #d[1,] = zero_d
@@ -78,7 +81,7 @@ seir_ages <- function(dias = 300,
     beta       = contact_matrix * transmission_probability
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
-    e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, 3, 3,byrow = T) * modif_beta 
+    e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta 
     e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     
     # resto seir
@@ -97,13 +100,13 @@ seir_ages <- function(dias = 300,
     U[[t]]      = U[[t-1]] + u[[t]]
     R[[t]]      = U[[t]] + D[[t]]
     # Ajustes de pasajes S-V-S y U-S
-    Vin = VquedaEnS =  matrix(data=0,3,3, byrow = T,
+    Vin = VquedaEnS =  matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
     
-    Vout <- matrix(data=0,3,3, byrow = T,
+    Vout <- matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
     
-    vacunasDelDia <- matrix(data=0,3,3, byrow = T,
+    vacunasDelDia <- matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                           dimnames = names)
     
     # Check si hay suficientes S para vacunar hoy
@@ -142,7 +145,7 @@ seir_ages <- function(dias = 300,
     
     v[[t]] = Vin
       
-    Vsum <- matrix(data=0, nrow = 3, ncol = 3, byrow = T)
+    Vsum <- matrix(data=0, nrow = length(immunityStates), ncol = length(ageGroups), byrow = T)
     Vsum[1,] <- colSums(V[[t]])
     S[[t]]      = N - E[[t]] - I[[t]] - R[[t]] - Vsum
     # Transicion U -> S
@@ -156,7 +159,7 @@ seir_ages <- function(dias = 300,
     # Reasigno de renglon los que quedaron en S luego de vacunarse
     S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
     S[[t]] =  S[[t]] + VquedaEnS
-    # Pendiente: Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, 5)
+    # Pendiente: Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
     # 
   }
   
