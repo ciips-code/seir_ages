@@ -1,4 +1,4 @@
-seir_ages <- function(dias = 300,
+seir_ages <- function(dias = 500,
                       duracionE, 
                       duracionIi, 
                       porc_gr, 
@@ -62,6 +62,7 @@ seir_ages <- function(dias = 300,
                     dimnames = names)
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
+  # Av = Historia de vacunación + Plan de vacunación futuro
   Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
                                      0,0,0, # en cero por compatibilidad con la estructura de la matriz
                                      0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
