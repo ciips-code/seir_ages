@@ -76,14 +76,21 @@ seir_ages <- function(dias = 500,
   # porc_cr = porc_cr * (1-vacunados)
   
   # seir
+  tHoy = 50
   for(t in 2:dias){
     print(t)
     # contagiados según matriz de contacto
     beta       = contact_matrix * transmission_probability
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
-    e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta 
-    e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
+    if (t<tHoy){
+      # e calculado con datos de los casos inferidos de muertes
+      e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta 
+      e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
+    } else {
+      e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta 
+      e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
+    }
     
     # resto seir
     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
@@ -95,7 +102,12 @@ seir_ages <- function(dias = 500,
     
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
-    d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+    if (t<tHoy){
+      # Muertes reales
+      d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+    } else {
+      d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+    }
     D[[t]]      = D[[t-1]] + d[[t]]
     u[[t]]      = Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
     U[[t]]      = U[[t-1]] + u[[t]]
