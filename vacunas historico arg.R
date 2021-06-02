@@ -4,8 +4,8 @@ library(reshape)
 download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
 unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
 VacunasArg = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
-file.remove('datos_nomivac_covid19.csv')
-file.remove('datos_nomivac_covid19.zip')
+# file.remove('datos_nomivac_covid19.csv')
+#file.remove('datos_nomivac_covid19.zip')
 
 
 VacunasArg = VacunasArg %>% dplyr::filter(orden_dosis==1 &
@@ -35,12 +35,12 @@ vacArg = lapply(1:nrow(VacunasArg), matrix, data=c(0,0,0,
                                                    0,0,0), 
                                             nrow=3, 
                                             ncol=ncol(VacunasArg)-2)
-for (t in 1:max(VacunasArg$t)) {
-  vacArg[[t]]  = matrix(data=c(0,0,0,
-                        0,0,0,
-                        VacunasArg[t,2:4]), 
-                 ncol=3,
-                 byrow = T)
+for (t in 1:length(vacArg)) {
+  vacArg[[t]][3,]  = as.numeric(VacunasArg[t,2:4])
 }
 
-  
+promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
+vacPlan = lapply(1:(500-length(vacArg)), matrix, data=t(promedio), 
+                                                     nrow=3, 
+                                                     ncol=ncol(VacunasArg)-2)
+
