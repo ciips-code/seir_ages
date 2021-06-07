@@ -51,7 +51,10 @@ def_p <- cbind(def0019,def2064,def6599)
 inf_p <- sweep(def_p, MARGIN = 2, ifr, "/")
 
 inf_p=inf_p[-c(1:17),]
+e_p=inf_p[-c(1:round(periodoPreinfPromedio,0)),]
+
 colnames(inf_p) <- c("inf0019","inf2064","inf6599")
+
 # expuestos
 E_p = inf_p[-round(periodoPreinfPromedio,digits=0),]
 
@@ -60,9 +63,16 @@ I_p = matrix(nrow=nrow(inf_p),ncol=3)
 
 dmI_redondeada = round(duracionMediaInf,digits=0)
 
-for (t in dmI_redondeada:nrow(inf_p)) {
-  I_p[t,]=colMeans(inf_p[(t-dmI_redondeada+1):t,])*dmI_redondeada
-}
+# I_p_matrix = lapply(1:nrow(I_p), matrix, data=c(0,0,0,
+#                                                 0,0,0,
+#                                                 0,0,0), 
+#                     nrow=3, 
+#                     ncol=ncol(I_p))
+# 
+# for (t in 1:nrow(I_p)) {
+#   I_p_matrix[[t]][3,]  = as.numeric(I_p[t,])
+# }
+
 
 # susceptibles
 
@@ -114,7 +124,10 @@ proy <- seir_ages(dias=500,
                   zero_cases = zero_I,
                   zero_rec = zero_R,
                   zero_D = zero_D,
-                  zero_d = zero_d
+                  zero_d = zero_d,
+                  expuestos_reales=e_p,
+                  defunciones_reales=def_p
+                  
 )
 
 # grafs - chekeo
