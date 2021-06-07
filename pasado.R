@@ -26,7 +26,7 @@ contact_matrix = matrix(c(5,1,1,
                           2,4,4,
                           .5,1,5),3,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = c("0-19","20-65","65+")
-transmission_probability = matrix(.05,3,3)
+transmission_probability = matrix(.035,3,3)
 colnames(transmission_probability) = rownames(transmission_probability) = c("0-19","20-65","65+")
 
 # datos de poblacion ejemplo Argentina
@@ -118,7 +118,7 @@ proy <- seir_ages(dias=500,
                   vacunados = c(0,0,0),
                   contact_matrix = contact_matrix,
                   transmission_probability = transmission_probability,
-                  N = zero_N,
+                  N = N,
                   zero_sus = zero_S,
                   zero_exp = zero_E,
                   zero_cases = zero_I,
@@ -131,6 +131,14 @@ proy <- seir_ages(dias=500,
 )
 
 # grafs - chekeo
+
+fig <- plot_ly(proy %>% filter(Compart == 'I') %>% mutate(tot_dia = `0-19` + `20-64` + `65+`),
+               x = ~fecha, y = ~tot_dia, 
+               name = 'trace 0', type = 'scatter', mode = 'lines') 
+fig <- fig %>% add_segments(x = nrow(e_p)-20, xend = nrow(e_p)-20, y = 0, yend = 200000) 
+# fig <- fig %>% add_trace(y = ~`20-64`, name = 'trace 1', mode = 'lines') 
+# fig <- fig %>% add_trace(y = ~`65+`, name = 'trace 2', mode = 'lines')
+fig
 # comparts
 proy %>% 
   pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 

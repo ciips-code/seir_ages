@@ -9,7 +9,7 @@ seir_ages <- function(dias = 500,
                       vacunados = c(0,0,0),
                       contact_matrix,
                       transmission_probability,
-                      N = c(1/3,1/3,1/3), 
+                      N, 
                       modif_beta = matrix(c(1,1,1,
                                             .70,.70,.70,
                                             .60,.60,.60),3,3,byrow=T),
@@ -54,10 +54,10 @@ seir_ages <- function(dias = 500,
   #E[1,] = zero_exp
   
   
-  S[[1]] = matrix(c(10000,10000,10000,0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
+  S[[1]] = matrix(c(N[1],N[2],N[3],0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
   
-  N = matrix(c(9997,9997,9997,1,1,1,1,1,1,1,1,1),length(immunityStates),length(ageGroups), byrow = T,
+  N = matrix(c(N[1],N[2],N[3],0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
                dimnames = names)
   
   I[[1]] = matrix(0,length(immunityStates),length(ageGroups), byrow = T,
@@ -79,29 +79,18 @@ seir_ages <- function(dias = 500,
   
   # seir
   tHoy = nrow(expuestos_reales)-20
-  # print(tHoy)
-  # print(length(defunciones_reales))
-  # print(length(expuestos_reales))
   for(t in 2:dias){
     print(t)
-    browser(expr = {t==375})
     # contagiados según matriz de contacto
     beta       = contact_matrix * transmission_probability
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
     if (t<tHoy){
-      # e calculado con datos de los casos inferidos de muertes
-      # if (t > 2) {
-      #   e[[t-1]] = e[[t-2]]
-      # }
-      # 
       e[[t-1]][1,] = expuestos_reales[t,]
-      
     } else {
-      e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta 
+      e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     }
-    
     # resto seir
     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
     
@@ -113,13 +102,7 @@ seir_ages <- function(dias = 500,
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     if (t<tHoy){
-      # if (t > 2) {
-      #   d[[t-1]] = d[[t-2]]
-      # }
-    
       d[[t-1]][1,] = defunciones_reales[t,]
-  
-      
     } else {
       d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
@@ -144,9 +127,8 @@ seir_ages <- function(dias = 500,
         vacunasDelDia[vacuna,]=Av[[t-latencia]][vacuna,]
       }
     }
+    print(as.numeric(S[[t-1]][1,]))
     haySparaVacunar = S[[t-1]][1,] > colSums(vacunasDelDia)
-    print(S[[t-1]][1,])
-    print(colSums(vacunasDelDia))
     
     for (vacuna in c(3:nrow(paramVac))) {
       latencia = paramVac[vacuna,1]
