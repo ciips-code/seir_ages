@@ -37,7 +37,7 @@ seir_ages <- function(dias = 500,
   ageGroups = c("0 a 19", "20 a 64", "65 y mas")
   names = list(immunityStates,
                ageGroups)
-  
+  #browser()
   # cada columna es un grupo
   e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = Av = V = v = beta = lapply(1:dias, matrix, data= 0, nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
   
@@ -65,10 +65,12 @@ seir_ages <- function(dias = 500,
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   # Av = Historia de vacunación + Plan de vacunación futuro
-  Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
-                                     0,0,0, # en cero por compatibilidad con la estructura de la matriz
-                                     0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
-
+  # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
+  #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
+  #                                    0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
+  # 
+  Av = creaAv(min(modeloSimulado$fecha)) 
+  
   #R[1,] = zero_rec
   #d[1,] = zero_d
   #D[1,] = zero_D

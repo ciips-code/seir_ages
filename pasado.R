@@ -7,19 +7,29 @@ library(bslib)
 library(zoo)
 library(stats)
 
-# carga RData
 rm(list = ls())
+
+# historico vacunas
+source("vacunas historico arg.R", encoding = 'UTF-8')
+
+# carga RData
+
 load("DatosIniciales_ARG.RData")
-rm(list=setdiff(ls(), c("duracionMediaInf", 
+rm(list=setdiff(ls(), c("modeloSimulado",
+                        "duracionMediaInf", 
                         "diasHospCasosCriticos",
                         "diasHospCasosGraves", 
                         "periodoPreinfPromedio",
                         "dataEcdc",
                         "porcentajeCasosGraves",
-                        "porcentajeCasosCriticos")))
+                        "porcentajeCasosCriticos",
+                        "creaAv")))
+
+
 # lee funciones
 source("functions/seirAges.R", encoding = "UTF-8")
 ifr = c(.003,.005,0.01)
+
 
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,
@@ -132,7 +142,7 @@ proy <- seir_ages(dias=500,
 
 # grafs - chekeo
 
-fig <- plot_ly(proy %>% filter(Compart == 'I') %>% mutate(tot_dia = `0-19` + `20-64` + `65+`),
+fig <- plot_ly(proy %>% filter(Compart == 'e') %>% mutate(tot_dia = `0-19` + `20-64` + `65+`),
                x = ~fecha, y = ~tot_dia, 
                name = 'trace 0', type = 'scatter', mode = 'lines') 
 fig <- fig %>% add_segments(x = nrow(e_p)-20, xend = nrow(e_p)-20, y = 0, yend = 200000) 
@@ -150,6 +160,37 @@ proy %>%
   filter(Compart=="e") %>% 
   ggplot(aes(x=fecha, y=Casos, color=Compartimento)) + 
   geom_line() + theme_bw() + facet_grid(~Compartimento)
+
+
+# graficos compartimentos
+
+proy$total=proy$`0-19`+proy$`20-64`+proy$`65+`
+
+for (c in unique(proy$Compart)) {
+  
+  plot <- ggplot(data=proy[proy$Compart==c,], aes(x=fecha, y=total, group=1)) +
+    geom_line()+
+    geom_point()
+  
+  eval(parse(text=paste0("plot_",c," <<- plot")))
+}
+
+library(ggpubr)
+ggarrange(plot_S,
+          plot_E,
+          plot_I,
+          plot_R,
+          plot_V,
+          plot_D,
+          plot_e,
+          labels = c("S",
+                     "E",
+                     "I",
+                     "R",
+                     "V",
+                     "D",
+                     "e"))
+
 
 
 
