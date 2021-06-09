@@ -44,7 +44,7 @@ creaAv <-  function(diaCeroModelo) {
   }
   
   promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
-  vacPlan = lapply(1:(500-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
+  vacPlan = lapply(1:(700-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
                    nrow=3, 
                    ncol=3)
   

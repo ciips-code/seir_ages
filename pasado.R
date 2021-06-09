@@ -6,6 +6,7 @@ library(plotly)
 library(bslib)
 library(zoo)
 library(stats)
+library(ggpubr)
 
 rm(list = ls())
 
@@ -117,7 +118,7 @@ zero_N = zero_S
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 
 
-proy <- seir_ages(dias=500,
+proy <- seir_ages(dias=700,
                   duracionE = periodoPreinfPromedio,
                   duracionIi = duracionMediaInf,
                   porc_gr = porcentajeCasosGraves,
@@ -162,6 +163,9 @@ proy %>%
   geom_line() + theme_bw() + facet_grid(~Compartimento)
 
 
+View(proy[proy$Compart=="D",])
+
+
 # graficos compartimentos
 
 proy$total=proy$`0-19`+proy$`20-64`+proy$`65+`
@@ -175,13 +179,13 @@ for (c in unique(proy$Compart)) {
   eval(parse(text=paste0("plot_",c," <<- plot")))
 }
 
-library(ggpubr)
 ggarrange(plot_S,
           plot_E,
           plot_I,
           plot_R,
           plot_V,
           plot_D,
+          plot_d,
           plot_e,
           labels = c("S",
                      "E",
@@ -189,6 +193,7 @@ ggarrange(plot_S,
                      "R",
                      "V",
                      "D",
+                     "d",
                      "e"))
 
 
