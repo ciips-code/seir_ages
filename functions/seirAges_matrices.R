@@ -81,6 +81,7 @@ seir_ages <- function(dias = 500,
   
   # seir
   tHoy = nrow(defunciones_reales)-18-round(periodoPreinfPromedio,0)-20
+  factorModificadorBeta = NULL
   for(t in 2:dias){
     print(t)
     # contagiados según matriz de contacto
@@ -94,6 +95,9 @@ seir_ages <- function(dias = 500,
       e[[t-1]][1,] = defunciones_reales[t+17+round(periodoPreinfPromedio,0),] / ifr
       
     } else {
+      if (is.null(factorModificadorBeta)) {
+        factorModificadorBeta = calcularFactorModificadorBeta()
+      }
       e[[t-1]] = S[[t-1]] * matrix((1.12 * beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     }
@@ -205,6 +209,37 @@ seir_ages <- function(dias = 500,
   out  
 }
 
+calcularFactorModificadorBeta = function() {
+  # Calcular Rcori
+  Rt = 1.12
+  # Calcular Modificador con NGM
+  mod = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
+  factorModificadorBeta = 1.12
+}
+
+get_R0_given_cm = function(contact_matrix, transmission_probability,duracionI){
+  # matrices de duración y transmisión (no depende de la edad del infectado, solo del susceptible)
+  transmission_probability <- diag(transmission_probability, 3)
+  duracionI <- diag(duracionI, 3)
+  # next generation matrix
+  NGM <- transmission_probability %*% contact_matrix %*% duracionI
+  # autovalor dominante es R0
+  R0  <- abs(eigen(NGM)$values[1])
+  return(R0)
+}
+
+get_factor_given_rt = function(contact_matrix, transmission_probability, duracionI, porc_S, Rt){
+  # R0 teórico inicial
+  R0 <- get_R0_given_cm(contact_matrix, transmission_probability,duracionI)
+  # R0 implícito en lo observado (era asi????)
+  R0_equivalent <- Rt/porc_S
+  # aca esto lo simple
+  factor <- R0_equivalent/R0
+  # nueva mc
+  contact_matrix_equivalent <- contact_matrix * factor
+  return(list(contact_matrix_equivalent = contact_matrix_equivalent,
+              factor = factor))
+}
 
 # graficar
 # do.call(rbind, lapply(S,colSums))[,2]
