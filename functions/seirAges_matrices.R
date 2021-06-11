@@ -64,12 +64,12 @@ seir_ages <- function(dias = 500,
                     dimnames = names)
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
-  # Av = Historia de vacunación + Plan de vacunación futuro
-  # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
-  #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
-  #                                    0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
-  # 
-  Av = creaAv(min(modeloSimulado$fecha)) 
+  #Av = Historia de vacunación + Plan de vacunación futuro
+  Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
+                                     0,0,0, # en cero por compatibilidad con la estructura de la matriz
+                                     0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
+
+  # Av = creaAv(min(modeloSimulado$fecha)) 
   print(length(Av))
   #R[1,] = zero_rec
   #d[1,] = zero_d
@@ -80,7 +80,7 @@ seir_ages <- function(dias = 500,
   # porc_cr = porc_cr * (1-vacunados)
   
   # seir
-  tHoy = nrow(defunciones_reales)-18-round(periodoPreinfPromedio,0)
+  tHoy = nrow(defunciones_reales)-18-round(periodoPreinfPromedio,0)-20
   for(t in 2:dias){
     print(t)
     # contagiados según matriz de contacto
@@ -94,7 +94,7 @@ seir_ages <- function(dias = 500,
       e[[t-1]][1,] = defunciones_reales[t+17+round(periodoPreinfPromedio,0),] / ifr
       
     } else {
-      e[[t-1]] = S[[t-1]] * matrix(beta %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      e[[t-1]] = S[[t-1]] * matrix((1.12 * beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
     }
     
@@ -114,7 +114,7 @@ seir_ages <- function(dias = 500,
     } else {
       
       
-      d[[t]]      = Ic[[t-1]]/duracionIc * ifr*modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifr *1.2) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       
     }
     D[[t]]      = D[[t-1]] + d[[t]]
@@ -195,10 +195,12 @@ seir_ages <- function(dias = 500,
     tibble(Compart = "E", do.call(rbind, lapply(E,colSums)) %>% as_tibble()),
     tibble(Compart = "e", do.call(rbind, lapply(e,colSums)) %>% as_tibble()),
     tibble(Compart = "I", do.call(rbind, lapply(I,colSums)) %>% as_tibble()),
+    tibble(Compart = "Ic", do.call(rbind, lapply(Ic,colSums)) %>% as_tibble()),
+    tibble(Compart = "i", do.call(rbind, lapply(i,colSums)) %>% as_tibble()),
     tibble(Compart = "D", do.call(rbind, lapply(D,colSums)) %>% as_tibble()),
     tibble(Compart = "d", do.call(rbind, lapply(d,colSums)) %>% as_tibble()),
     tibble(Compart = "R", do.call(rbind, lapply(R,colSums)) %>% as_tibble())) %>%
-    dplyr::mutate(fecha = rep(1:dias,8)) %>% 
+    dplyr::mutate(fecha = rep(1:dias,10)) %>% 
     dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
   out  
 }

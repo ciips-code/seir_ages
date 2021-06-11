@@ -55,8 +55,12 @@ def0019 <- dataEcdc$nd0004+dataEcdc$nd0509+dataEcdc$nd1014+dataEcdc$nd1519
 def2064 <- dataEcdc$nd2024+dataEcdc$nd2529+dataEcdc$nd3034+dataEcdc$nd3539+dataEcdc$nd4044+dataEcdc$nd4549+dataEcdc$nd5054+dataEcdc$nd5559+dataEcdc$nd6064
 def6599 <- dataEcdc$nd6569+dataEcdc$nd7074+dataEcdc$nd7579+dataEcdc$nd8084+dataEcdc$nd8589+dataEcdc$nd9099
 
+def0019_loess <- predict(loess(def0019~seq(1,length(def0019), by=1),span=.2))
+def2064_loess <- predict(loess(def2064~seq(1,length(def2064), by=1),span=.2))
+def6599_loess <- predict(loess(def6599~seq(1,length(def6599), by=1),span=.2))
+
 # muertes
-def_p <- cbind(def0019,def2064,def6599)
+def_p <- cbind(def0019_loess,def2064_loess,def6599_loess)
 
 # casos nuevos diarios
 inf_p <- sweep(def_p, MARGIN = 2, ifr, "/")
@@ -182,6 +186,8 @@ for (c in unique(proy$Compart)) {
 ggarrange(plot_S,
           plot_E,
           plot_I,
+          plot_Ic,
+          plot_i,
           plot_R,
           plot_V,
           plot_D,
@@ -190,6 +196,8 @@ ggarrange(plot_S,
           labels = c("S",
                      "E",
                      "I",
+                     "Ic",
+                     "i",
                      "R",
                      "V",
                      "D",

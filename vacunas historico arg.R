@@ -8,20 +8,22 @@ creaAv <-  function(diaCeroModelo) {
   #file.remove('datos_nomivac_covid19.csv')
   #file.remove('datos_nomivac_covid19.zip')
   #VacunasArg = read.csv2('nomivac_corto.csv', sep=',', encoding = 'UTF-8')
-  VacunasArg = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
-  VacunasArg = VacunasArg %>% dplyr::filter(orden_dosis==1 &
-                                              fecha_aplicacion!="S.I.") %>% 
-    dplyr::mutate(edad = case_when(grupo_etario %in% c("18-29") ~ "00 a 29",
-                                   grupo_etario %in% c("30-39","40-49","50-59") ~ "30 a 59",
-                                   grupo_etario %in% c("60-69","70-79","80-89","90-99",">=100") ~ "60 y mas",
-                                   TRUE ~ "Sin esp.")) %>%
-    dplyr::filter(edad!="Sin esp.") %>%
-    dplyr::group_by(fecha_aplicacion, edad) %>%
-    dplyr::summarise(n=n()) %>%
-    reshape::cast(fecha_aplicacion~edad, mean) %>%
-    dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
-  
-  VacunasArg[is.na(VacunasArg)] <- 0
+  # VacunasArg = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
+  # VacunasArg = VacunasArg %>% dplyr::filter(orden_dosis==1 &
+  #                                             fecha_aplicacion!="S.I.") %>% 
+  #   dplyr::mutate(edad = case_when(grupo_etario %in% c("18-29") ~ "00 a 29",
+  #                                  grupo_etario %in% c("30-39","40-49","50-59") ~ "30 a 59",
+  #                                  grupo_etario %in% c("60-69","70-79","80-89","90-99",">=100") ~ "60 y mas",
+  #                                  TRUE ~ "Sin esp.")) %>%
+  #   dplyr::filter(edad!="Sin esp.") %>%
+  #   dplyr::group_by(fecha_aplicacion, edad) %>%
+  #   dplyr::summarise(n=n()) %>%
+  #   reshape::cast(fecha_aplicacion~edad, mean) %>%
+  #   dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+  # 
+  # VacunasArg[is.na(VacunasArg)] <- 0
+  # 
+  load("vacunasArg.RData")
   
   diaCeroVac <- min(VacunasArg$fecha_aplicacion)
   
