@@ -9,6 +9,7 @@ library(stats)
 library(ggpubr)
 library(reshape2)
 library(ggplot2)
+library(DT)
 
 rm(list = ls())
 
@@ -18,15 +19,15 @@ source("vacunas historico arg.R", encoding = 'UTF-8')
 # carga RData
 
 load("DatosIniciales_ARG.RData")
-rm(list=setdiff(ls(), c("modeloSimulado",
-                        "duracionMediaInf", 
-                        "diasHospCasosCriticos",
-                        "diasHospCasosGraves", 
-                        "periodoPreinfPromedio",
-                        "dataEcdc",
-                        "porcentajeCasosGraves",
-                        "porcentajeCasosCriticos",
-                        "creaAv")))
+# rm(list=setdiff(ls(), c("modeloSimulado",
+#                         "duracionMediaInf", 
+#                         "diasHospCasosCriticos",
+#                         "diasHospCasosGraves", 
+#                         "periodoPreinfPromedio",
+#                         "dataEcdc",
+#                         "porcentajeCasosGraves",
+#                         "porcentajeCasosCriticos",
+#                         "creaAv")))
 
 
 # lee funciones
@@ -80,17 +81,6 @@ I_p = matrix(nrow=nrow(inf_p),ncol=3)
 
 dmI_redondeada = round(duracionMediaInf,digits=0)
 
-# I_p_matrix = lapply(1:nrow(I_p), matrix, data=c(0,0,0,
-#                                                 0,0,0,
-#                                                 0,0,0), 
-#                     nrow=3, 
-#                     ncol=ncol(I_p))
-# 
-# for (t in 1:nrow(I_p)) {
-#   I_p_matrix[[t]][3,]  = as.numeric(I_p[t,])
-# }
-
-
 # susceptibles
 
 S_p = matrix(nrow=nrow(inf_p),ncol=3)
@@ -120,9 +110,8 @@ zero_R=colMeans(R_p[(nrow(R_p)):((nrow(R_p)-14)),])
 zero_d=colMeans(def_p[(nrow(def_p)):((nrow(def_p)-14)),])
 zero_D=colSums(def_p)
 zero_N = zero_S
- 
-source("functions/seirAges_matrices.R", encoding = "UTF-8")
 
+source("functions/seirAges_matrices.R", encoding = "UTF-8")
 
 proy <- seir_ages(dias=700,
                   duracionE = periodoPreinfPromedio,
@@ -147,90 +136,77 @@ proy <- seir_ages(dias=700,
                   
 )
 
-# grafs - chekeo
 
-fig <- plot_ly(proy %>% filter(Compart == 'e') %>% mutate(tot_dia = `0-19` + `20-64` + `65+`),
-               x = ~fecha, y = ~tot_dia, 
-               name = 'trace 0', type = 'scatter', mode = 'lines') 
-fig <- fig %>% add_segments(x = nrow(e_p)-20, xend = nrow(e_p)-20, y = 0, yend = 200000) 
-# fig <- fig %>% add_trace(y = ~`20-64`, name = 'trace 1', mode = 'lines') 
-# fig <- fig %>% add_trace(y = ~`65+`, name = 'trace 2', mode = 'lines')
-fig
-# comparts
-proy %>% 
-  pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 
-  ggplot(aes(x=fecha, y=Casos, color=Compartimento)) + 
-  geom_line() + theme_bw() + facet_grid(~Compart, scales= "free")
-# edades
-proy %>% 
-  pivot_longer(!c(fecha,Compart), names_to = "Compartimento", values_to = "Casos") %>% 
-  filter(Compart=="e") %>% 
-  ggplot(aes(x=fecha, y=Casos, color=Compartimento)) + 
-  geom_line() + theme_bw() + facet_grid(~Compartimento)
+ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
+                # fluidRow(column(12,h1("Visualizador"), align="center")),
+                # hr(),
+                fluidRow(id="inputs", column(width = 4, offset = 2,
+                                numericInput("t", label = NULL, value = 1, step = 1)
+                                , align="right"),
+                         column(width = 1,
+                                actionButton("submit", label = NULL, icon = icon("refresh"))
+                                , align="center"),
+                         column(width = 1,
+                                actionButton("prev", label = NULL, icon = icon("chevron-left"))
+                                , align="center"),
+                         column(width = 1,
+                                actionButton("prox", label = NULL, icon = icon("chevron-right"))
+                                , align="center")),
+                fluidRow(id="content"),
+                br(),
+                br(),
+                br(),
+                br(),
+                br()
+                )
+                
 
-
-View(proy[proy$Compart=="D",])
-
-
-# graficos compartimentos
-
-proy$total=proy$`0-19`+proy$`20-64`+proy$`65+`
-
-for (c in unique(proy$Compart)) {
+server <- function (input, output, session) {
+  comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
+  newUis <- c()
+  for (c in comp) {
+    insertUI("#content", "afterEnd",
+             column(6,fluidRow(column(1,p(c), align="center"),
+                      column(11,
+                             DTOutput(c)
+                             , align="center")
+                      )),
+             immediate = TRUE
+    )
+  }
+  updateTable <- function (table,t) {
+    output[[table]] <- renderDT(round(proy[[table]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+  }
+  updateTables <- function (t) {
+    lapply(
+      X = comp,
+      FUN = function(c){
+        output[[c]] <- renderDT(round(proy[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      }
+    )
+  }
   
-  plot <- ggplot(data=proy[proy$Compart==c,], aes(x=fecha, y=total, group=1)) +
-    geom_line()+
-    geom_point()
+  updateTables(input$t)
+  # observe event for updating the reactiveValues
+  observeEvent(input$submit,
+               {
+                 updateTables(input$t)
+               })
   
-  eval(parse(text=paste0("plot_",c," <<- plot")))
+  observeEvent(input$prev, {
+    updateNumericInput(session,"t", value =  input$t - 1)
+    updateTables(input$t)
+  })
+  
+  observeEvent(input$prox, {
+    updateNumericInput(session,"t", value =  input$t + 1)
+    updateTables(input$t)
+  })
+
 }
 
-ggarrange(plot_S,
-          plot_E,
-          plot_I,
-          plot_Ic,
-          plot_i,
-          plot_R,
-          plot_V,
-          plot_D,
-          plot_d,
-          plot_e,
-          labels = c("S",
-                     "E",
-                     "I",
-                     "Ic",
-                     "i",
-                     "R",
-                     "V",
-                     "D",
-                     "d",
-                     "e"))
+
+shinyApp(ui = ui, server = server)
 
 
 
-
-
-proy <- data.frame(proy[proy$group=="g1",8],
-                   proy[proy$group=="g2",8],
-                   proy[proy$group=="g3",8])
-colnames(proy) <- c("inf0019","inf2064","inf6599")
-
-full <- union_all(data.frame(inf_p),proy)
-
-plot(full[,3])
-
-
-smooth <- 
-cbind(
-GRUPO_00_19=predict(loess(inf0019 ~ seq(1,nrow(full),1), data=full, span=0.10)),
-GRUPO_20_64=predict(loess(inf2064 ~ seq(1,nrow(full),1), data=full, span=0.10)),
-GRUPO_65_MAS=predict(loess(inf6599 ~ seq(1,nrow(full),1), data=full, span=0.10))
-)
-
-
-library(plotly)
-fig <- plot_ly(data.frame(smooth), x = ~seq(1,nrow(full),1), y = ~GRUPO_00_19, name = 'Menor de 20', type = 'scatter', mode = 'lines') 
-fig <- fig %>% add_trace(y = ~GRUPO_20_64, name = '20 a 64', mode = 'lines') 
-fig <- fig %>% add_trace(y = ~GRUPO_65_MAS, name = '65 y más', mode = 'lines')
-
-fig

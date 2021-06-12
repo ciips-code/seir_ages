@@ -51,7 +51,6 @@ creaAv <-  function(diaCeroModelo) {
                    ncol=3)
   
   Av = c(vacPre,vacArg,vacPlan)
-  
   return(Av)
 }
 

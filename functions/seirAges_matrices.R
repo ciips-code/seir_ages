@@ -65,12 +65,12 @@ seir_ages <- function(dias = 500,
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   #Av = Historia de vacunación + Plan de vacunación futuro
-  Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
-                                     0,0,0, # en cero por compatibilidad con la estructura de la matriz
-                                     0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
-
-  # Av = creaAv(min(modeloSimulado$fecha)) 
-  print(length(Av))
+  # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
+  #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
+  #                                    0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
+  # 
+  Av = creaAv(min(modeloSimulado$fecha))
+  # print(length(Av))
   #R[1,] = zero_rec
   #d[1,] = zero_d
   #D[1,] = zero_D
@@ -191,21 +191,23 @@ seir_ages <- function(dias = 500,
     # 
   }
   
-  
   # org rr
-  out <- bind_rows(
-    tibble(Compart = "S", do.call(rbind, lapply(S,colSums)) %>% as_tibble()),
-    tibble(Compart = "V", do.call(rbind, lapply(V,colSums)) %>% as_tibble()),
-    tibble(Compart = "E", do.call(rbind, lapply(E,colSums)) %>% as_tibble()),
-    tibble(Compart = "e", do.call(rbind, lapply(e,colSums)) %>% as_tibble()),
-    tibble(Compart = "I", do.call(rbind, lapply(I,colSums)) %>% as_tibble()),
-    tibble(Compart = "Ic", do.call(rbind, lapply(Ic,colSums)) %>% as_tibble()),
-    tibble(Compart = "i", do.call(rbind, lapply(i,colSums)) %>% as_tibble()),
-    tibble(Compart = "D", do.call(rbind, lapply(D,colSums)) %>% as_tibble()),
-    tibble(Compart = "d", do.call(rbind, lapply(d,colSums)) %>% as_tibble()),
-    tibble(Compart = "R", do.call(rbind, lapply(R,colSums)) %>% as_tibble())) %>%
-    dplyr::mutate(fecha = rep(1:dias,10)) %>% 
-    dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
+  salida <- list(S,V,E,e,I,i,Ig,Ic,U,u,D,d)
+  names(salida) <- c("S","V","E","e","I","i","Ig","Ic","U","u","D","d")
+  out <- salida
+  # out <- bind_rows(
+  #   tibble(Compart = "S", do.call(rbind, lapply(S,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "V", do.call(rbind, lapply(V,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "E", do.call(rbind, lapply(E,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "e", do.call(rbind, lapply(e,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "I", do.call(rbind, lapply(I,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "Ic", do.call(rbind, lapply(Ic,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "i", do.call(rbind, lapply(i,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "D", do.call(rbind, lapply(D,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "d", do.call(rbind, lapply(d,colSums)) %>% as_tibble()),
+  #   tibble(Compart = "R", do.call(rbind, lapply(R,colSums)) %>% as_tibble())) %>%
+  #   dplyr::mutate(fecha = rep(1:dias,10)) %>% 
+  #   dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
   out  
 }
 
@@ -213,8 +215,9 @@ calcularFactorModificadorBeta = function() {
   # Calcular Rcori
   Rt = 1.12
   # Calcular Modificador con NGM
-  mod = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
+  # mod = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
   factorModificadorBeta = 1.12
+  return(factorModificadorBeta)
 }
 
 get_R0_given_cm = function(contact_matrix, transmission_probability,duracionI){
