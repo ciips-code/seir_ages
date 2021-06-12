@@ -178,6 +178,7 @@ server <- function (input, output, session) {
     output[[table]] <- renderDT(round(proy[[table]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
   }
   updateTables <- function (t) {
+    print(isolate(t))
     lapply(
       X = comp,
       FUN = function(c){
@@ -194,13 +195,13 @@ server <- function (input, output, session) {
                })
   
   observeEvent(input$prev, {
+    updateTables(input$t - 1)
     updateNumericInput(session,"t", value =  input$t - 1)
-    updateTables(input$t)
   })
   
   observeEvent(input$prox, {
+    updateTables(input$t + 1)
     updateNumericInput(session,"t", value =  input$t + 1)
-    updateTables(input$t)
   })
 
 }
