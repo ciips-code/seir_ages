@@ -112,12 +112,11 @@ seir_ages <- function(dias = 500,
     
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
+    #browser(expr = {t=200})
     if (t<tHoy){
       d[[t]][1,] = defunciones_reales[t,]
       
     } else {
-      
-      
       d[[t]]      = Ic[[t-1]]/duracionIc * (ifr *1.2) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       
     }
@@ -192,8 +191,8 @@ seir_ages <- function(dias = 500,
   }
   
   # org rr
-  salida <- list(S,V,E,e,I,i,Ig,Ic,U,u,D,d)
-  names(salida) <- c("S","V","E","e","I","i","Ig","Ic","U","u","D","d")
+  salida <- list(S,V,E,e,I,i,Ig,Ic,U,u,D,d,R)
+  names(salida) <- c("S","V","E","e","I","i","Ig","Ic","U","u","D","d","R")
   out <- salida
   # out <- bind_rows(
   #   tibble(Compart = "S", do.call(rbind, lapply(S,colSums)) %>% as_tibble()),

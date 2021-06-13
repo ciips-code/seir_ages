@@ -140,7 +140,8 @@ proy <- seir_ages(dias=700,
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 # fluidRow(column(12,h1("Visualizador"), align="center")),
                 # hr(),
-                fluidRow(id="inputs", column(width = 4, offset = 2,
+                fluidRow(id="inputs", 
+                         column(width = 4, offset = 2,
                                 numericInput("t", label = NULL, value = 1, step = 1)
                                 , align="right"),
                          column(width = 1,
@@ -152,12 +153,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                          column(width = 1,
                                 actionButton("prox", label = NULL, icon = icon("chevron-right"))
                                 , align="center")),
-                fluidRow(id="content"),
+                fluidRow(column(12,id="content")),
                 br(),
                 br(),
                 br(),
                 br(),
-                br()
+                br(), plotOutput("grafico")
                 )
                 
 
@@ -204,6 +205,57 @@ server <- function (input, output, session) {
     updateNumericInput(session,"t", value =  input$t + 1)
   })
 
+output$grafico <- renderPlot({
+  
+  data_graf <- bind_rows(
+    tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
+    tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
+    tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
+    tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
+    tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
+    tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
+    tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
+    tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
+    tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
+    tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
+    dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
+    dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
+  data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
+
+  for (c in unique(data_graf$Compart)) {
+    
+    plot <- ggplot(data=data_graf[data_graf$Compart==c,], aes(x=fecha, y=total, group=1)) +
+      geom_line()+
+      geom_point() + geom_vline(xintercept = as.numeric(input$t))
+    
+    eval(parse(text=paste0("plot_",c," <<- plot")))
+  }
+  ggarrange(plot_S,
+            plot_E,
+            plot_I,
+            plot_Ic,
+            plot_i,
+            plot_R,
+            plot_V,
+            plot_D,
+            plot_d,
+            plot_e,
+            labels = c("S",
+                       "E",
+                       "I",
+                       "Ic",
+                       "i",
+                       "R",
+                       "V",
+                       "D",
+                       "d",
+                       "e"))
+  
+  
+  
+  
+  
+})
 }
 
 
