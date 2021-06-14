@@ -114,7 +114,8 @@ proy <- seir_ages(dias=diasDeProyeccion,
                   Av=AvArg,
                   immunityStates=immunityStates,
                   ageGroups=ageGroups,
-                  paramVac=paramVac
+                  paramVac=paramVac,
+                  duracion_inmunidad=190
 )
 
 
