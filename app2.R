@@ -159,7 +159,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                      p("d:"),
                                      code("d[[t]][1,] = defunciones_reales[t,]"),
                                      br(),
-                                     code("d[[t]] = Ic[[t-1]]/duracionIc * (ifr *1.2) * modif_ifr/porc_cr*modif_porc_cr"),
+                                     code("d[[t]] = Ic[[t-1]]/duracionIc * ifr * modif_ifr/porc_cr*modif_porc_cr"),
                                      br(),
                                      br(),
                                      br(),
@@ -182,35 +182,43 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                      ),
                                      br(),
                                      fluidRow(
-                                       column(width = 2,
+                                       column(width = 3,
                                               p("Ic[[t-1]]"),
                                               br(),
                                               DTOutput("Ic[[t-1]]")
                                        ),
-                                       column(width = 2,
+                                       column(width = 1,
                                               p("duracionIc"),
                                               br(),
                                               textOutput("duracionIc")
                                        ),
-                                       column(width = 2,
+                                       column(width = 1,
                                               p("ifr"),
                                               br(),
                                               textOutput("ifr")
                                        ),
-                                       column(width = 2,
+                                       column(width = 3,
                                               p("modif_ifr"),
                                               br(),
                                               DTOutput("modif_ifr")
                                        ),
-                                       column(width = 2,
+                                       column(width = 1,
                                               p("porc_cr"),
                                               br(),
                                               textOutput("porc_cr")
                                        ),
-                                       column(width = 2,
+                                       column(width = 3,
                                               p("modif_porc_cr"),
                                               br(),
                                               DTOutput("modif_porc_cr")
+                                       ),
+                                     ),
+                                     br(),
+                                     fluidRow(align="center",
+                                       column(width = 8, offset = 2,
+                                              textOutput("calculo-dt12"),
+                                              br(),
+                                              DTOutput("calculo-dt")
                                        ),
                                      ),
                             ),
@@ -252,7 +260,7 @@ server <- function (input, output, session) {
                        .60,.60,.60),3,3,byrow=T)
   updateTables <- function (t) {
     
-    # code("d[[t]] = Ic[[t-1]]/duracionIc * (ifr *1.2) * modif_ifr/porc_cr*modif_porc_cr"),
+    # code("d[[t]] = Ic[[t-1]]/duracionIc * (ifr) * modif_ifr/porc_cr*modif_porc_cr"),
     if (isolate(t)>1) {
       output[["d[[t-1]]"]] <- renderDT(round(proy[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["d[[t]]"]] <- renderDT(round(proy[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
@@ -264,6 +272,10 @@ server <- function (input, output, session) {
       output[["modif_ifr"]] <- renderDT(round(modif_ifr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["porc_cr"]] <- renderText(porcentajeCasosCriticos)
       output[["modif_porc_cr"]] <- renderDT(round(modif_porc_cr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      calculo_dt <- proy[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifr) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
+      calculo_dt12 <-  proy[["Ic"]][[t-1]][1,2]/diasHospCasosCriticos * ifr[2] * modif_ifr[1,2]/porcentajeCasosCriticos*modif_porc_cr[1,2]
+      output[["calculo-dt12"]] <- renderText(paste("dt Calculado [1,2]:", calculo_dt12))
+      output[["calculo-dt"]] <- renderDT(round(calculo_dt,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
     }
     
     lapply(

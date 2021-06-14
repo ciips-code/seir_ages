@@ -33,6 +33,7 @@ seir_ages <- function(dias = 500,
                       defunciones_reales,
                       expuestos_reales
 ){
+  ifrm = matrix(rep(ifr,5),3,3,byrow = T)
   immunityStates = c("no inmunes", "recuperados", "Vacunado")
   ageGroups = c("0 a 19", "20 a 64", "65 y mas")
   names = list(immunityStates,
@@ -65,6 +66,10 @@ seir_ages <- function(dias = 500,
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   #Av = Historia de vacunación + Plan de vacunación futuro
+  # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
+  #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
+  #                                    0,0,0), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
+
   # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
   #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
   #                                    0,50,100), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
@@ -117,8 +122,7 @@ seir_ages <- function(dias = 500,
       d[[t]][1,] = defunciones_reales[t,]
       
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifr *1.2) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
-      
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
     D[[t]]      = D[[t-1]] + d[[t]]
     u[[t]]      = Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
