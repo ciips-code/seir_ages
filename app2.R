@@ -18,7 +18,7 @@ source("vacunas historico arg.R", encoding = 'UTF-8')
 
 # carga RData
 
-load("DatosIniciales_ARG.RData")
+load("DatosIniciales_ARG.RData", envir = .GlobalEnv)
 # rm(list=setdiff(ls(), c("modeloSimulado",
 #                         "duracionMediaInf", 
 #                         "diasHospCasosCriticos",
@@ -65,81 +65,60 @@ def6599_loess <- predict(loess(def6599~seq(1,length(def6599), by=1),span=.2))
 # muertes
 def_p <- cbind(def0019_loess,def2064_loess,def6599_loess)
 
-# casos nuevos diarios
-inf_p <- sweep(def_p, MARGIN = 2, ifr, "/")
+modif_beta <- matrix(c(1,1,1,
+                      .70,.70,.70,
+                      .60,.60,.60),3,3,byrow=T)
+modif_porc_gr <- matrix(c(1,1,1,
+                         .70,.70,.70,
+                         .60,.60,.60),3,3,byrow=T)
+modif_porc_cr <- matrix(c(1,1,1,
+                         .70,.70,.70,
+                         .60,.60,.60),3,3,byrow=T)
+modif_ifr <- matrix(c(1,1,1,
+                     .70,.70,.70,
+                     .60,.60,.60),3,3,byrow=T)
 
-inf_p=inf_p[-c(1:17),]
-e_p=inf_p[-c(1:round(periodoPreinfPromedio,0)),]
+#Av = Historia de vacunación + Plan de vacunación futuro
+# Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
+#                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
+#                                    0,0,0), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
+AvArg = creaAv(min(modeloSimulado$fecha))
+immunityStates = c("no inmunes", "recuperados", "Vacunado")
+ageGroups = c("0 a 19", "20 a 64", "65 y mas")
+names = list(immunityStates,
+             ageGroups)
+namesVac = list(immunityStates,
+                c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
 
-colnames(inf_p) <- c("inf0019","inf2064","inf6599")
-
-# expuestos
-E_p = inf_p[-round(periodoPreinfPromedio,digits=0),]
-
-# infectados
-I_p = matrix(nrow=nrow(inf_p),ncol=3)
-
-dmI_redondeada = round(duracionMediaInf,digits=0)
-
-# susceptibles
-
-S_p = matrix(nrow=nrow(inf_p),ncol=3)
-
-lastS = N
-
-for (t in 1:nrow(E_p)) {
-  lastS = lastS - E_p[t,]
-  S_p[t,] = lastS
-}
-
-# recuperados
-
-R_p = matrix(nrow=nrow(inf_p),ncol=3)
-lastR = c(0,0,0)
-
-for (t in (dmI_redondeada+1):nrow(inf_p)) {
-  lastR = lastR + inf_p[t-dmI_redondeada,]
-  R_p[t,]= lastR
-}
-
-# arranque para seir
-zero_S=colMeans(S_p[(nrow(S_p)-1):(nrow(S_p)-15),])
-zero_E=colMeans(E_p[(nrow(E_p)):((nrow(E_p)-14)),])
-zero_I=colMeans(I_p[(nrow(I_p)):((nrow(I_p)-14)),])
-zero_R=colMeans(R_p[(nrow(R_p)):((nrow(R_p)-14)),])
-zero_d=colMeans(def_p[(nrow(def_p)):((nrow(def_p)-14)),])
-zero_D=colSums(def_p)
-zero_N = zero_S
-
+paramVac <- matrix(data=c(0,0,0,0,0,
+                          0,0,0,0,0,
+                          20,.2,180,.3,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
-
-proy <- seir_ages(dias=700,
+diasDeProyeccion = 700
+proy <- seir_ages(dias=diasDeProyeccion,
                   duracionE = periodoPreinfPromedio,
                   duracionIi = duracionMediaInf,
                   porc_gr = porcentajeCasosGraves,
                   porc_cr = porcentajeCasosCriticos,
                   duracionIg = diasHospCasosGraves,
                   duracionIc = diasHospCasosCriticos,
-                  ifr = c(.003,.005,0.01),
-                  vacunados = c(0,0,0),
+                  ifr = ifr,
                   contact_matrix = contact_matrix,
                   transmission_probability = transmission_probability,
                   N = N,
-                  zero_sus = zero_S,
-                  zero_exp = zero_E,
-                  zero_cases = zero_I,
-                  zero_rec = zero_R,
-                  zero_D = zero_D,
-                  zero_d = zero_d,
-                  expuestos_reales=e_p,
-                  defunciones_reales=def_p
-                  
+                  defunciones_reales=def_p,
+                  modif_beta=modif_beta,
+                  modif_porc_gr=modif_porc_gr,
+                  modif_porc_cr=modif_porc_cr,
+                  modif_ifr=modif_ifr,
+                  Av=AvArg,
+                  immunityStates=immunityStates,
+                  ageGroups=ageGroups,
+                  paramVac=paramVac
 )
 
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
-                # fluidRow(column(12,h1("Visualizador"), align="center")),
-                # hr(),
                 fluidRow(id="inputs", 
                          column(width = 4, offset = 2,
                                 numericInput("t", label = NULL, value = 1, step = 1)
@@ -154,6 +133,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                 actionButton("prox", label = NULL, icon = icon("chevron-right"))
                                 , align="center")),
                 tabsetPanel(type = "tabs",
+                            tabPanel("Graficos",
+                                     selectInput("compart_a_graficar","Compartimento",names(proy),selected = "i"),
+                                     plotlyOutput("graficoUnico"),
+                                     plotOutput("grafico")
+                            ),
                             tabPanel("Compartimentos", fluidRow(id="content")),
                             tabPanel("Formulas",
                                      p("d:"),
@@ -221,8 +205,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                               DTOutput("calculo-dt")
                                        ),
                                      ),
-                            ),
-                            tabPanel("Graficos",plotOutput("grafico"))
+                            )
                 ),
                 fluidRow(column(12,id="content")),
                 br(),
@@ -260,7 +243,6 @@ server <- function (input, output, session) {
                        .60,.60,.60),3,3,byrow=T)
   updateTables <- function (t) {
     
-    # code("d[[t]] = Ic[[t-1]]/duracionIc * (ifr) * modif_ifr/porc_cr*modif_porc_cr"),
     if (isolate(t)>1) {
       output[["d[[t-1]]"]] <- renderDT(round(proy[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["d[[t]]"]] <- renderDT(round(proy[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
@@ -275,7 +257,8 @@ server <- function (input, output, session) {
       output[["modif_ifr"]] <- renderDT(round(modif_ifr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["porc_cr"]] <- renderText(porcentajeCasosCriticos)
       output[["modif_porc_cr"]] <- renderDT(round(modif_porc_cr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      calculo_dt <- proy[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifr) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
+      ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),3,byrow = T)
+      calculo_dt <- proy[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifrm) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
       calculo_dt12 <-  proy[["Ic"]][[t-1]][1,2]/diasHospCasosCriticos * ifr[2] * modif_ifr[1,2]/porcentajeCasosCriticos*modif_porc_cr[1,2]
       output[["calculo-dt12"]] <- renderText(paste("dt Calculado [1,2]:", calculo_dt12))
       output[["calculo-dt"]] <- renderDT(round(calculo_dt,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
@@ -306,8 +289,6 @@ server <- function (input, output, session) {
     updateNumericInput(session,"t", value =  input$t + 1)
   })
 
-output$grafico <- renderPlot({
-  
   data_graf <- bind_rows(
     tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
     tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
@@ -322,41 +303,12 @@ output$grafico <- renderPlot({
     dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
     dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
   data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
-
-  for (c in unique(data_graf$Compart)) {
-    
-    plot <- ggplot(data=data_graf[data_graf$Compart==c,], aes(x=fecha, y=total, group=1)) +
-      geom_line()+
-      geom_point() + geom_vline(xintercept = as.numeric(input$t))
-    
-    eval(parse(text=paste0("plot_",c," <<- plot")))
-  }
-  ggarrange(plot_S,
-            plot_E,
-            plot_I,
-            plot_Ic,
-            plot_i,
-            plot_R,
-            plot_V,
-            plot_D,
-            plot_d,
-            plot_e,
-            labels = c("S",
-                       "E",
-                       "I",
-                       "Ic",
-                       "i",
-                       "R",
-                       "V",
-                       "D",
-                       "d",
-                       "e"))
   
-  
-  
-  
-  
-})
+  output$graficoUnico <- renderPlotly({
+    dataTemp = data_graf %>% filter(Compart == input$compart_a_graficar)
+    dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
+    plot_ly(dataTemp, x=~dataTemp$fechaDia, y=~dataTemp$total, type="scatter", mode="lines")
+  })
 }
 
 
