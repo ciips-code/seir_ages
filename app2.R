@@ -264,8 +264,11 @@ server <- function (input, output, session) {
     if (isolate(t)>1) {
       output[["d[[t-1]]"]] <- renderDT(round(proy[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["d[[t]]"]] <- renderDT(round(proy[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      # output[["defunciones_reales[t,]"]] <- renderDT(round(proy[["defunciones_reales"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["defunciones_reales[t,]"]] <- renderText(proy[["defunciones_reales"]][t,])
+      if (isolate(t)<= nrow(proy[["defunciones_reales"]])) {
+        output[["defunciones_reales[t,]"]] <- renderText(proy[["defunciones_reales"]][t,])
+      } else {
+        output[["defunciones_reales[t,]"]] <- renderText("Sin datos")
+      }
       output[["Ic[[t-1]]"]] <- renderDT(round(proy[["Ic"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["duracionIc"]] <- renderText(diasHospCasosCriticos)
       output[["ifr"]] <- renderText(ifr)
