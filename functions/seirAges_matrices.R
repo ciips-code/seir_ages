@@ -192,8 +192,8 @@ seir_ages <- function(dias = 500,
   }
   
   # org rr
-  salida <- list(S,V,E,e,I,i,Ig,Ic,U,u,D,d)
-  names(salida) <- c("S","V","E","e","I","i","Ig","Ic","U","u","D","d")
+  salida <- list(S,V,E,e,I,i,Ig,Ic,U,u,D,d, defunciones_reales)
+  names(salida) <- c("S","V","E","e","I","i","Ig","Ic","U","u","D","d", "defunciones_reales")
   out <- salida
   # out <- bind_rows(
   #   tibble(Compart = "S", do.call(rbind, lapply(S,colSums)) %>% as_tibble()),
