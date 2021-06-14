@@ -51,7 +51,9 @@ creaAv <-  function(diaCeroModelo) {
                    ncol=3)
   
   Av = c(vacPre,vacArg,vacPlan)
-  return(Av)
+  return(result=list(Av=Av,
+                     diaPlan=length(vacPre)+length(vacArg)))
+                
 }
 
 

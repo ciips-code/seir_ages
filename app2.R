@@ -82,7 +82,10 @@ modif_ifr <- matrix(c(1,1,1,
 # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
 #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
 #                                    0,0,0), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
-AvArg = creaAv(min(modeloSimulado$fecha))
+AvArg = creaAv(min(modeloSimulado$fecha))[[1]]
+vacPlanDia <- creaAv(min(modeloSimulado$fecha))[[2]]
+
+
 immunityStates = c("no inmunes", "recuperados", "Vacunado")
 ageGroups = c("0 a 19", "20 a 64", "65 y mas")
 names = list(immunityStates,
@@ -114,8 +117,7 @@ proy <- seir_ages(dias=diasDeProyeccion,
                   Av=AvArg,
                   immunityStates=immunityStates,
                   ageGroups=ageGroups,
-                  paramVac=paramVac
-)
+                  paramVac=paramVac)
 
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
@@ -136,7 +138,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                             tabPanel("Graficos",
                                      selectInput("compart_a_graficar","Compartimento",names(proy),selected = "i"),
                                      plotlyOutput("graficoUnico"),
-                                     plotOutput("grafico")
+                                     plotOutput("grafico"),
+                                     sliderInput("modifica_planVac",
+                                                 "Modificar plan de vacunación (%)",
+                                                 min=-100,
+                                                 max=100,value= 1)
                             ),
                             tabPanel("Compartimentos", fluidRow(id="content")),
                             tabPanel("Formulas",
@@ -216,6 +222,38 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 
 
 server <- function (input, output, session) {
+  observeEvent(input$modifica_planVac,{
+    print("pasa")
+    for (i in vacPlanDia:length(AvArg))
+    {
+      AvArg[[i]] <- AvArg[[i]] * input$modifica_planVac /100
+    }
+    
+    reproy <<- reactive({seir_ages(dias=diasDeProyeccion,
+                         duracionE = periodoPreinfPromedio,
+                         duracionIi = duracionMediaInf,
+                         porc_gr = porcentajeCasosGraves,
+                         porc_cr = porcentajeCasosCriticos,
+                         duracionIg = diasHospCasosGraves,
+                         duracionIc = diasHospCasosCriticos,
+                         ifr = ifr,
+                         contact_matrix = contact_matrix,
+                         transmission_probability = transmission_probability,
+                         N = N,
+                         defunciones_reales=def_p,
+                         modif_beta=modif_beta,
+                         modif_porc_gr=modif_porc_gr,
+                         modif_porc_cr=modif_porc_cr,
+                         modif_ifr=modif_ifr,
+                         Av=AvArg,
+                         immunityStates=immunityStates,
+                         ageGroups=ageGroups,
+                         paramVac=paramVac
+                        ) 
+      })
+    
+  })
+  
   comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
   newUis <- c()
   for (c in comp) {
@@ -288,27 +326,34 @@ server <- function (input, output, session) {
     updateTables(input$t + 1)
     updateNumericInput(session,"t", value =  input$t + 1)
   })
-
-  data_graf <- bind_rows(
-    tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
-    tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
-    tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
-    tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
-    tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
-    tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
-    tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
-    tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
-    tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
-    tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
-    dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
-    dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
-  data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
+  
+  
   
   output$graficoUnico <- renderPlotly({
+    print(input$modifica_planVac)
+    
+    proy <- reproy()
+    data_graf <- bind_rows(
+      tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
+      tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
+      tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
+      tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
+      tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
+      tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
+      tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
+      tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
+      tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
+      dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
+      dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
+    data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
+    
     dataTemp = data_graf %>% filter(Compart == input$compart_a_graficar)
     dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
     plot_ly(dataTemp, x=~dataTemp$fechaDia, y=~dataTemp$total, type="scatter", mode="lines")
   })
+  
+
 }
 
 
