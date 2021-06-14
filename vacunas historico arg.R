@@ -1,7 +1,8 @@
 library(dplyr)
 library(reshape)
 
-creaAv <-  function(diaCeroModelo) {
+creaAv <-  function(diaCeroModelo, diasDeProyeccion) {
+  print(diasDeProyeccion)
   #browser()
   #download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
   #unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
@@ -46,12 +47,14 @@ creaAv <-  function(diaCeroModelo) {
   }
   
   promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
-  vacPlan = lapply(1:(700-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
+  vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
                    nrow=3, 
                    ncol=3)
   
   Av = c(vacPre,vacArg,vacPlan)
-  return(Av)
+  return(result=list(Av=Av,
+                     diaPlan=length(vacPre)+length(vacArg)))
+                
 }
 
 

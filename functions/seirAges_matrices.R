@@ -14,7 +14,7 @@ seir_ages <- function(dias,
                       modif_porc_gr,
                       modif_porc_cr,
                       modif_ifr,
-                      duracion_inmunidad, # cuanto se quedan en U
+                      duracion_inmunidad,
                       defunciones_reales,
                       Av,
                       immunityStates,
