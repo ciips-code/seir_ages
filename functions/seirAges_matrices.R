@@ -39,10 +39,10 @@ seir_ages <- function(dias,
   
   # seir
   # tHoy = cantidad de dias con muertes reales - 17 dias de inf - 5 dias de preinf - 7 dias de ajuste por retrasos en la notificacion
-  tHoy = nrow(defunciones_reales)-17-round(periodoPreinfPromedio,0)-20
+  tHoy <<- nrow(defunciones_reales)-17-round(periodoPreinfPromedio,0)
   factorModificadorBeta = NULL
   for(t in 2:dias){
-    print(t)
+    # print(t)
     # contagiados según matriz de contacto
     beta       = contact_matrix * transmission_probability
     I_edad = colSums(I[[t-1]])
@@ -72,7 +72,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = defunciones_reales[t,]
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm * 1.19) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
     D[[t]]      = D[[t-1]] + d[[t]]
     u[[t]]      = Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
@@ -174,58 +174,3 @@ get_factor_given_rt = function(contact_matrix, transmission_probability, duracio
   return(list(contact_matrix_equivalent = contact_matrix_equivalent,
               factor = factor))
 }
-
-# graficar
-# do.call(rbind, lapply(S,colSums))[,2]
-
-
-# seir_ages <- function(dias,
-#                       duracionE, 
-#                       duracionIi, porc_gr, duracionIg, porc_cr, duracionIc,
-#                       ifr = c(.03,.03,.03),
-#                       vacunados = c(0,0,0),
-#                       contact_matrix,
-#                       transmission_probability,
-#                       N = c(1/3,1/3,1/3), 
-#                       zero_cases = c(0,1/45e6*N,0)){
-#   
-#   # cada columna es un grupo
-#   e = E = S =  i = I = Ii = Ig = Ic = r = R = D = d = U = beta = matrix(0,dias,3)
-#   # zero cases
-#   I[1,] = zero_cases
-#   S[1,] = N - zero_cases
-#   # efecto vacunas
-#   porc_gr = porc_gr * (1-vacunados)
-#   porc_cr = porc_cr * (1-vacunados)
-#   
-#   # seir
-#   for(t in 2:dias){
-#     
-#     # contagiados según matriz de contacto
-#     beta       = contact_matrix * transmission_probability
-#     e[[t-1]]    = S[[t-1]] * (beta %*% I[[t-1]]/N)
-#     e[[t-1]]    =  pmin(e[[t-1]], S[[t-1]]) # no negativo
-#     
-#     # resto seir
-#     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
-#     i[[t]]      = E[[t-1]]/duracionE
-#     Ii[[t]]     = Ii[[t-1]] + i[[t]] - Ii[[t-1]]/duracionIi
-#     Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr
-#     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr
-#     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
-#     d[[t]]      = Ic[[t-1]]/duracionIc * ifr/porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
-#     D[[t]]      = D[[t-1]] + d[[t]]
-#     U[[t]]      = U[[t-1]] + Ii[[t-1]]/duracionIi*(1-porc_gr-porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr)
-#     R[[t]]      = U[[t]] + D[[t]]
-#     S[[t]]      = N - E[[t]] - I[[t]] - R[[t]]
-#   }
-#   results = list(g1 = data.frame(fecha = 1:dias, S=S[,1], E=E[,1], I=I[,1], D=D[,1],R=R[,1]),
-#                  g2 = data.frame(fecha = 1:dias, S=S[,2], E=E[,2], I=I[,2], D=D[,2],R=R[,2]),
-#                  g3 = data.frame(fecha = 1:dias, S=S[,3], E=E[,3], I=I[,3], D=D[,3],R=R[,3]))
-#   return(bind_rows(
-#     tibble(group = "g1", results[["g1"]]),
-#     tibble(group = "g2", results[["g2"]]),
-#     tibble(group = "g3", results[["g3"]]))
-#   )
-# }
-# 

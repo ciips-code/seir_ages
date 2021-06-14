@@ -2,7 +2,6 @@ library(dplyr)
 library(reshape)
 
 creaAv <-  function(diaCeroModelo, diasDeProyeccion) {
-  print(diasDeProyeccion)
   #browser()
   #download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
   #unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')

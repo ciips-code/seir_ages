@@ -19,21 +19,20 @@ source("vacunas historico arg.R", encoding = 'UTF-8')
 # carga RData
 
 load("DatosIniciales_ARG.RData", envir = .GlobalEnv)
-# rm(list=setdiff(ls(), c("modeloSimulado",
-#                         "duracionMediaInf", 
-#                         "diasHospCasosCriticos",
-#                         "diasHospCasosGraves", 
-#                         "periodoPreinfPromedio",
-#                         "dataEcdc",
-#                         "porcentajeCasosGraves",
-#                         "porcentajeCasosCriticos",
-#                         "creaAv")))
+rm(list=setdiff(ls(), c("modeloSimulado",
+                        "duracionMediaInf",
+                        "diasHospCasosCriticos",
+                        "diasHospCasosGraves",
+                        "periodoPreinfPromedio",
+                        "dataEcdc",
+                        "porcentajeCasosGraves",
+                        "porcentajeCasosCriticos")))
 
 
 # lee funciones
 source("functions/seirAges.R", encoding = "UTF-8")
 ifr = c(.003,.005,0.01)
-
+primeraVez = TRUE
 
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,
@@ -99,29 +98,6 @@ paramVac <- matrix(data=c(0,0,0,0,0,
                           20,.2,180,.3,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 
-proy <- seir_ages(dias=diasDeProyeccion,
-                  duracionE = periodoPreinfPromedio,
-                  duracionIi = duracionMediaInf,
-                  porc_gr = porcentajeCasosGraves,
-                  porc_cr = porcentajeCasosCriticos,
-                  duracionIg = diasHospCasosGraves,
-                  duracionIc = diasHospCasosCriticos,
-                  ifr = ifr,
-                  contact_matrix = contact_matrix,
-                  transmission_probability = transmission_probability,
-                  N = N,
-                  defunciones_reales=def_p,
-                  modif_beta=modif_beta,
-                  modif_porc_gr=modif_porc_gr,
-                  modif_porc_cr=modif_porc_cr,
-                  modif_ifr=modif_ifr,
-                  Av=AvArg,
-                  immunityStates=immunityStates,
-                  ageGroups=ageGroups,
-                  paramVac=paramVac,
-                  duracion_inmunidad=duracion_inmunidad
-)
-
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 fluidRow(id="inputs", 
                          column(width = 4, offset = 2,
@@ -138,7 +114,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                 , align="center")),
                 tabsetPanel(type = "tabs",
                             tabPanel("Graficos",
-                                     selectInput("compart_a_graficar","Compartimento",names(proy),selected = "i"),
+                                     selectInput("compart_a_graficar","Compartimento",choices = NULL),
                                      plotlyOutput("graficoUnico"),
                                      # fluidRow(plotOutput("grafico"),
                                      # ),
@@ -225,39 +201,69 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 
 
 server <- function (input, output, session) {
-  observeEvent(input$modifica_planVac,{
-    print("pasa")
-    for (i in vacPlanDia:length(AvArg))
-    {
+  proy <- reactive({
+    for (i in vacPlanDia:length(AvArg)) {
       AvArg[[i]] <- AvArg[[i]] * input$modifica_planVac /100
     }
-    
-    reproy <<- reactive({seir_ages(dias=diasDeProyeccion,
-                         duracionE = periodoPreinfPromedio,
-                         duracionIi = duracionMediaInf,
-                         porc_gr = porcentajeCasosGraves,
-                         porc_cr = porcentajeCasosCriticos,
-                         duracionIg = diasHospCasosGraves,
-                         duracionIc = diasHospCasosCriticos,
-                         ifr = ifr,
-                         contact_matrix = contact_matrix,
-                         transmission_probability = transmission_probability,
-                         N = N,
-                         defunciones_reales=def_p,
-                         modif_beta=modif_beta,
-                         modif_porc_gr=modif_porc_gr,
-                         modif_porc_cr=modif_porc_cr,
-                         modif_ifr=modif_ifr,
-                         Av=AvArg,
-                         immunityStates=immunityStates,
-                         ageGroups=ageGroups,
-                         paramVac=paramVac,
-                         duracion_inmunidad=duracion_inmunidad,
-                        ) 
-      })
-    
+    seir_ages(dias=diasDeProyeccion,
+                    duracionE = periodoPreinfPromedio,
+                    duracionIi = duracionMediaInf,
+                    porc_gr = porcentajeCasosGraves,
+                    porc_cr = porcentajeCasosCriticos,
+                    duracionIg = diasHospCasosGraves,
+                    duracionIc = diasHospCasosCriticos,
+                    ifr = ifr,
+                    contact_matrix = contact_matrix,
+                    transmission_probability = transmission_probability,
+                    N = N,
+                    defunciones_reales=def_p,
+                    modif_beta=modif_beta,
+                    modif_porc_gr=modif_porc_gr,
+                    modif_porc_cr=modif_porc_cr,
+                    modif_ifr=modif_ifr,
+                    Av=AvArg,
+                    immunityStates=immunityStates,
+                    ageGroups=ageGroups,
+                    paramVac=paramVac,
+                    duracion_inmunidad=duracion_inmunidad
+    )
   })
-  
+  observe({
+    updateSelectInput(session, "compart_a_graficar", choices = names(proy()), selected="i")
+    if (primeraVez) {
+      updateNumericInput(session, inputId = "t", value = tHoy)
+      primeraVez <<- FALSE
+    }
+    t = input$t
+    if (t>1) {
+      # Actualiza tab pane de formula
+      output[["d[[t-1]]"]] <- renderDT(round(proy()[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      output[["d[[t]]"]] <- renderDT(round(proy()[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      if (isolate(t)<= nrow(proy()[["defunciones_reales"]])) {
+        output[["defunciones_reales[t,]"]] <- renderText(proy()[["defunciones_reales"]][t,])
+      } else {
+        output[["defunciones_reales[t,]"]] <- renderText("Sin datos")
+      }
+      output[["Ic[[t-1]]"]] <- renderDT(round(proy()[["Ic"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      output[["duracionIc"]] <- renderText(diasHospCasosCriticos)
+      output[["ifr"]] <- renderText(ifr)
+      output[["modif_ifr"]] <- renderDT(round(modif_ifr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      output[["porc_cr"]] <- renderText(porcentajeCasosCriticos)
+      output[["modif_porc_cr"]] <- renderDT(round(modif_porc_cr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),3,byrow = T)
+      calculo_dt <- proy()[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifrm) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
+      calculo_dt12 <-  proy()[["Ic"]][[t-1]][1,2]/diasHospCasosCriticos * ifr[2] * modif_ifr[1,2]/porcentajeCasosCriticos*modif_porc_cr[1,2]
+      output[["calculo-dt12"]] <- renderText(paste("dt Calculado [1,2]:", calculo_dt12))
+      output[["calculo-dt"]] <- renderDT(round(calculo_dt,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+    }
+    # Actualiza tab pane de tablas de comapartimentos
+    lapply(
+      X = comp,
+      FUN = function(c){
+        output[[c]] <- renderDT(round(proy()[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+      }
+    )
+  })
   comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
   newUis <- c()
   for (c in comp) {
@@ -271,80 +277,43 @@ server <- function (input, output, session) {
     )
   }
   
-  updateTables <- function (t) {
-    if (isolate(t)>1) {
-      output[["d[[t-1]]"]] <- renderDT(round(proy[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["d[[t]]"]] <- renderDT(round(proy[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      if (isolate(t)<= nrow(proy[["defunciones_reales"]])) {
-        output[["defunciones_reales[t,]"]] <- renderText(proy[["defunciones_reales"]][t,])
-      } else {
-        output[["defunciones_reales[t,]"]] <- renderText("Sin datos")
-      }
-      output[["Ic[[t-1]]"]] <- renderDT(round(proy[["Ic"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["duracionIc"]] <- renderText(diasHospCasosCriticos)
-      output[["ifr"]] <- renderText(ifr)
-      output[["modif_ifr"]] <- renderDT(round(modif_ifr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["porc_cr"]] <- renderText(porcentajeCasosCriticos)
-      output[["modif_porc_cr"]] <- renderDT(round(modif_porc_cr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),3,byrow = T)
-      calculo_dt <- proy[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifrm) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
-      calculo_dt12 <-  proy[["Ic"]][[t-1]][1,2]/diasHospCasosCriticos * ifr[2] * modif_ifr[1,2]/porcentajeCasosCriticos*modif_porc_cr[1,2]
-      output[["calculo-dt12"]] <- renderText(paste("dt Calculado [1,2]:", calculo_dt12))
-      output[["calculo-dt"]] <- renderDT(round(calculo_dt,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-    }
-    
-    lapply(
-      X = comp,
-      FUN = function(c){
-        output[[c]] <- renderDT(round(proy[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      }
-    )
-  }
-  
-  updateTables(input$t)
-  # observe event for updating the reactiveValues
-  observeEvent(input$submit,
-               {
-                 updateTables(input$t)
-               })
-  
   observeEvent(input$prev, {
-    updateTables(input$t - 1)
+    # updateTables(input$t - 1)
     updateNumericInput(session,"t", value =  input$t - 1)
   })
   
   observeEvent(input$prox, {
-    updateTables(input$t + 1)
+    # updateTables(input$t + 1)
     updateNumericInput(session,"t", value =  input$t + 1)
   })
   
   output$graficoUnico <- renderPlotly({
-    print(input$modifica_planVac)
-    proy <- reproy()
-    data_graf <- bind_rows(
-      tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
-      tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
-      tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
-      tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
-      tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
-      tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
-      tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
-      tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
-      tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
-      tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
-      dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
-      dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
-    data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
-    dataTemp = data_graf %>% filter(Compart == input$compart_a_graficar)
-    dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
-    plot_ly(dataTemp, x=~dataTemp$fechaDia, y=~dataTemp$total, type="scatter", mode="lines")
+    if (length(proy()) > 0 & input$compart_a_graficar != "") {
+      proy <- proy()
+      data_graf <- bind_rows(
+        tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
+        tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
+        tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
+        tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
+        tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
+        tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
+        tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
+        tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
+        tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
+        tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
+        dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
+        dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
+      data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
+      dataTemp = data_graf %>% dplyr::filter(Compart == input$compart_a_graficar)
+      dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
+      valx = dataTemp$fechaDia[input$t]
+      maxy = max(dataTemp$total)
+      plot_ly(dataTemp, x=~dataTemp$fechaDia, 
+              y=~dataTemp$total,
+              type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
+              add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
+    }
   })
-  
-
 }
 
-
 shinyApp(ui = ui, server = server)
-
-
-
