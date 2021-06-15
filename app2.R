@@ -33,6 +33,7 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 source("functions/seirAges.R", encoding = "UTF-8")
 ifr = c(.003,.005,0.01)
 primeraVez = TRUE
+paramVac_primeraVez = TRUE
 
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,
@@ -77,7 +78,7 @@ modif_ifr <- matrix(c(1,1,1,
                      .70,.70,.70,
                      .60,.60,.60),3,3,byrow=T)
 diasDeProyeccion = 900
-duracion_inmunidad = 190
+duracion_inmunidad = 180
 #Av = Historia de vacunación + Plan de vacunación futuro
 # Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
 #                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
@@ -118,11 +119,34 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                      plotlyOutput("graficoUnico"),
                                      # fluidRow(plotOutput("grafico"),
                                      # ),
-                                     sliderInput("modifica_planVac",
-                                                 "Modificar plan de vacunación (%)",
-                                                 min=-100,
-                                                 max=100,value= 1)
-                            ),
+                                     br(),
+                                     br(),
+                                     br(),
+                                     br(),
+                                     br(),
+                                     br(),
+                                     hr(),
+                                     br(),
+                                     fluidRow(column(12,h3("Parámetros"), align="center")),
+                                     br(),
+                                     br(),
+                                     fluidRow(column(2,
+                                                    numericInput("diasProy",
+                                                    "Días de proyección",
+                                                    min=30,
+                                                    max=1000,
+                                                    value = 700)),
+                                              column(2,sliderInput("modifica_planVac",
+                                                     "Modificar plan de vacunación (%)",
+                                                     min=-100,
+                                                     max=100,value= 1)),
+                                              column(2,numericInput("duracionInm",
+                                                     "Duración de la inmunidad",
+                                                     min=1,
+                                                     max=360,
+                                                     value = 180)),
+                                              column(6,DT::dataTableOutput("paramVac"))
+                            )),
                             tabPanel("Compartimentos", fluidRow(id="content")),
                             tabPanel("Formulas",
                                      p("d:"),
@@ -201,10 +225,34 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 
 
 server <- function (input, output, session) {
+  
+  observe({
+    input$paramVac_cell_edit
+    if (paramVac_primeraVez==T) {
+          paramVac_edit <- paramVac
+          paramVac_edit <<- as.matrix(paramVac_edit)
+          paramVac_primeraVez<<-F
+    } else {
+        paramVac_edit[as.numeric(input$paramVac_cell_edit[1]),
+                      as.numeric(input$paramVac_cell_edit[2])] <- as.numeric(input$paramVac_cell_edit[3])
+        paramVac_edit <<- paramVac_edit  
+      }
+    })
+  
+  output$paramVac <- renderDT({
+    DT::datatable(paramVac_edit, editable = T)
+  })
+
+  
   proy <- reactive({
-    for (i in vacPlanDia:length(AvArg)) {
+    # print activa reactive (no comentar)
+    print(input$paramVac_cell_edit)
+    
+    duracion_inmunidad = input$duracionInm
+    for (i in vacPlanDia:diasDeProyeccion) {
       AvArg[[i]] <- AvArg[[i]] * input$modifica_planVac /100
     }
+    
     seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
@@ -224,7 +272,7 @@ server <- function (input, output, session) {
                     Av=AvArg,
                     immunityStates=immunityStates,
                     ageGroups=ageGroups,
-                    paramVac=paramVac,
+                    paramVac=paramVac_edit,
                     duracion_inmunidad=duracion_inmunidad
     )
   })
@@ -308,10 +356,14 @@ server <- function (input, output, session) {
       dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
-      plot_ly(dataTemp, x=~dataTemp$fechaDia, 
-              y=~dataTemp$total,
-              type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
-              add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
+      #browser()
+      if (is.na(input$diasProy)==F)
+        {
+          plot_ly(dataTemp[1:(input$t+input$diasProy),], x=~fechaDia, 
+                  y=~total,
+                  type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
+                  add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
+        }
     }
   })
 }
