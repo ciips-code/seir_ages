@@ -9,6 +9,7 @@ library(stats)
 library(ggpubr)
 library(reshape2)
 library(ggplot2)
+library(EpiEstim)
 
 rm(list = ls())
 
@@ -146,6 +147,7 @@ proy <- seir_ages(dias=700,
                   defunciones_reales=def_p
                   
 )
+
 
 # grafs - chekeo
 

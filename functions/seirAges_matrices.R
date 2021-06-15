@@ -53,9 +53,13 @@ seir_ages <- function(dias,
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
       if (is.null(factorModificadorBeta)) {
-        factorModificadorBeta = calcularFactorModificadorBeta()
+        # factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents = e[[(t-10):(t-1)]], 
+        #                                                       contact_matrix, 
+        #                                                       transmission_probability)
+        factorModificadorBeta = 1.12
       }
-      e[[t-1]] = S[[t-1]] * matrix((1.12 * beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta * beta) %*% I_edad/N_edad, 
+                                   nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     }
     
@@ -142,11 +146,12 @@ seir_ages <- function(dias,
   return(salida) 
 }
 
-calcularFactorModificadorBeta = function() {
+calcularFactorModificadorBeta = function(ten_days_incidents, contact_matrix, transmission_probability) {
   # Calcular Rcori
-  Rt = 1.12
-  # Calcular Modificador con NGM
-  # mod = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
+  # Rt_estimate <- estimate_R(ten_days_incidents, method = "parametric_si",config = make_config(list(mean_si = 2.6, std_si = 1.5)))$R
+  # Rt <- Rt_estimate$`Median(R)`[nrow(Rt_estimate)]
+  # # Calcular Modificador con NGM
+  # factorModificadorBeta = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
   factorModificadorBeta = 1.12
   return(factorModificadorBeta)
 }
