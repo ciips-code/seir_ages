@@ -38,7 +38,7 @@ paramVac_primeraVez = TRUE
 ifr_primeraVez = TRUE
 transprob_primeraVez = TRUE
 immunityStates = c("no inmunes", "recuperados", "Vacunado")
-ageGroups = c("0 a 19", "20 a 64", "65 y mas")
+ageGroups = c("0-19", "20-64", "65+")
 ageGroupsV = c(0,20,65)
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,
@@ -87,12 +87,6 @@ duracion_inmunidad = 180
 AvArg = creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
 vacPlanDia <- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[2]]
 
-<<<<<<< HEAD
-
-immunityStates = c("no inmunes", "recuperados", "Vacunado")
-ageGroups = c("0-19", "20-64", "65+")
-=======
->>>>>>> ed3a92990c30643e3b4ed035c04794906bf3e368
 names = list(immunityStates,
              ageGroups)
 namesVac = list(immunityStates,
@@ -123,8 +117,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                      fluidRow(column(3,selectInput("compart_a_graficar","Compartimento",choices = NULL)),
                                               column(2,selectInput("edad","Ver grupos de edad",
                                                                    choices=c("Todas las edades"="total",ageGroups),
-                                                                   multiple = F,
-                                                                   selected= "total"))
+                                                                   multiple = T,
+                                                                   selected= c("total")))
                                               ),
                                      plotlyOutput("graficoUnico"),
                                      hr(),
@@ -420,17 +414,34 @@ server <- function (input, output, session) {
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
       
-      if (is.na(input$diasProy)==F & is.na(input$edad)==F)
-        {
+      if (is.null(input$edad)==F & is.na(input$diasProy)==F) {
           data=dataTemp[1:(input$t+input$diasProy),]
-          plot <- plot_ly(data=data, x=~fechaDia,
-                  y=~eval(parse(text=paste0('`',input$edad,'`'))),
-                  type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
-                  add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
+          plot=plot_ly(data=data, x=~fechaDia)          
+          
+          if (length(input$edad)>0) {
+            lapply(X=input$edad, FUN = function(edad) {
+              plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
+            })
+          
+            plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
+            
+            
+            
+            plot %>% layout(xaxis = list(title = "Fecha"), 
+                            yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+          }
+          
+          
+          # plot <- plot_ly(data=data, x=~fechaDia,
+          #         y=~eval(parse(text=paste0('`',input$edad,'`'))),
+          #         type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
+          #         add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
+          # 
+          
           
           
       }
-      plot
+      
     }
     
   })
