@@ -88,7 +88,7 @@ vacPlanDia <- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[2]]
 
 
 immunityStates = c("no inmunes", "recuperados", "Vacunado")
-ageGroups = c("0 a 19", "20 a 64", "65 y mas")
+ageGroups = c("0-19", "20-64", "65+")
 names = list(immunityStates,
              ageGroups)
 namesVac = list(immunityStates,
@@ -115,7 +115,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                 , align="center")),
                 tabsetPanel(type = "tabs",
                             tabPanel("Graficos",
-                                     selectInput("compart_a_graficar","Compartimento",choices = NULL),
+                                     br(),
+                                     fluidRow(column(3,selectInput("compart_a_graficar","Compartimento",choices = NULL)),
+                                              column(2,selectInput("edad","Ver grupos de edad",
+                                                                   choices=c("Todas las edades"="total",ageGroups),
+                                                                   multiple = F,
+                                                                   selected= "total"))
+                                              ),
                                      plotlyOutput("graficoUnico"),
                                      # fluidRow(plotOutput("grafico"),
                                      # ),
@@ -336,6 +342,7 @@ server <- function (input, output, session) {
   })
   
   output$graficoUnico <- renderPlotly({
+    
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       proy <- proy()
       data_graf <- bind_rows(
@@ -356,15 +363,20 @@ server <- function (input, output, session) {
       dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
-      #browser()
-      if (is.na(input$diasProy)==F)
+      
+      if (is.na(input$diasProy)==F & is.na(input$edad)==F)
         {
-          plot_ly(dataTemp[1:(input$t+input$diasProy),], x=~fechaDia, 
-                  y=~total,
+          data=dataTemp[1:(input$t+input$diasProy),]
+          plot <- plot_ly(data=data, x=~fechaDia,
+                  y=~eval(parse(text=paste0('`',input$edad,'`'))),
                   type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
                   add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
-        }
+          
+          
+      }
+      plot
     }
+    
   })
 }
 
