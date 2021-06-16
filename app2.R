@@ -10,6 +10,7 @@ library(ggpubr)
 library(reshape2)
 library(ggplot2)
 library(DT)
+library(EpiEstim)
 
 rm(list = ls())
 
@@ -34,14 +35,18 @@ source("functions/seirAges.R", encoding = "UTF-8")
 ifr = c(.003,.005,0.01)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
-
+ifr_primeraVez = TRUE
+transprob_primeraVez = TRUE
+immunityStates = c("no inmunes", "recuperados", "Vacunado")
+ageGroups = c("0 a 19", "20 a 64", "65 y mas")
+ageGroupsV = c(0,20,65)
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,
                           2,4,4,
                           .5,1,5),3,byrow = T)
-colnames(contact_matrix) = rownames(contact_matrix) = c("0-19","20-65","65+")
-transmission_probability = matrix(.035,3,3)
-colnames(transmission_probability) = rownames(transmission_probability) = c("0-19","20-65","65+")
+colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
+transmission_probability = matrix(.035,length(ageGroups),length(ageGroups))
+colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
 N1 <- 14554190
@@ -79,16 +84,15 @@ modif_ifr <- matrix(c(1,1,1,
                      .60,.60,.60),3,3,byrow=T)
 diasDeProyeccion = 900
 duracion_inmunidad = 180
-#Av = Historia de vacunación + Plan de vacunación futuro
-# Av = lapply(1:dias, matrix, data=c(0,0,0, # en cero por compatibilidad con la estructura de la matriz
-#                                    0,0,0, # en cero por compatibilidad con la estructura de la matriz
-#                                    0,0,0), nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
 AvArg = creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
 vacPlanDia <- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[2]]
 
+<<<<<<< HEAD
 
 immunityStates = c("no inmunes", "recuperados", "Vacunado")
 ageGroups = c("0-19", "20-64", "65+")
+=======
+>>>>>>> ed3a92990c30643e3b4ed035c04794906bf3e368
 names = list(immunityStates,
              ageGroups)
 namesVac = list(immunityStates,
@@ -123,35 +127,40 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                    selected= "total"))
                                               ),
                                      plotlyOutput("graficoUnico"),
-                                     # fluidRow(plotOutput("grafico"),
-                                     # ),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     br(),
                                      hr(),
-                                     br(),
-                                     fluidRow(column(12,h3("Parámetros"), align="center")),
-                                     br(),
-                                     br(),
-                                     fluidRow(column(2,
-                                                    numericInput("diasProy",
-                                                    "Días de proyección",
-                                                    min=30,
-                                                    max=1000,
-                                                    value = 700)),
-                                              column(2,sliderInput("modifica_planVac",
-                                                     "Modificar plan de vacunación (%)",
-                                                     min=-100,
-                                                     max=100,value= 1)),
-                                              column(2,numericInput("duracionInm",
-                                                     "Duración de la inmunidad",
-                                                     min=1,
-                                                     max=360,
-                                                     value = 180)),
-                                              column(6,DT::dataTableOutput("paramVac"))
+                                     fluidRow(
+                                       column(12,
+                                         fluidRow(
+                                           column(6,
+                                              fluidRow(
+                                                column(4,
+                                                      numericInput("diasProy",
+                                                      "Días de proyección",
+                                                      min=30,
+                                                      max=1000,
+                                                      value = 700)),
+                                                column(4,sliderInput("modifica_planVac",
+                                                       "Modificar plan de vacunación (%)",
+                                                       min=-100,
+                                                       max=100,value= 1)),
+                                                column(4,numericInput("duracionInm",
+                                                       "Duración de la inmunidad",
+                                                       min=1,
+                                                       max=360,
+                                                       value = 180))
+                                              ),
+                                              fluidRow(
+                                                column(12,
+                                                       DT::dataTableOutput("transprob")
+                                                )
+                                              )
+                                           ),
+                                          column(6,
+                                                 DT::dataTableOutput("paramVac"),
+                                                 DT::dataTableOutput("ifrt")
+                                                 )
+                                         )
+                                       )
                             )),
                             tabPanel("Compartimentos", fluidRow(id="content")),
                             tabPanel("Formulas",
@@ -227,32 +236,79 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 br(),
                 br(),
                 br(),
-                )
+                br()
+)
+
                 
 
 server <- function (input, output, session) {
   
   observe({
+    input$ifrt_cell_edit
+    if (ifr_primeraVez==T) {
+      ifr_edit <- matrix(ifr, 1,3)
+      colnames(ifr_edit) = ageGroups
+      ifr_edit <<- ifr_edit
+      ifr_primeraVez<<-F
+    } else {
+      ifr_edit[as.numeric(input$ifrt_cell_edit[1]),
+                    as.numeric(input$ifrt_cell_edit[2])+1] <- as.numeric(input$ifrt_cell_edit[3])
+      ifr_edit <<- ifr_edit
+    }
+  })
+  
+  output$ifrt <- renderDT({
+    DT::datatable(ifr_edit, editable = T, options = list(ordering=F, 
+                                                     searching=F, 
+                                                     paging=F, 
+                                                     info=F))
+  })
+  
+  observe({
+    input$transprob_cell_edit
+    if (transprob_primeraVez==T) {
+      transprob_edit <- transmission_probability
+      transprob_edit <<- as.matrix(transprob_edit)
+      transprob_primeraVez<<-F
+    } else {
+      transprob_edit[as.numeric(input$transprob_cell_edit[1]),
+                    as.numeric(input$transprob_cell_edit[2])] <- as.numeric(input$transprob_cell_edit[3])
+      transprob_edit <<- transprob_edit  
+    }
+  })
+  
+  output$transprob <- renderDT({
+    DT::datatable(transprob_edit, editable = T, options = list(ordering=F, 
+                                                              searching=F, 
+                                                              paging=F, 
+                                                              info=F))
+  })
+  
+  observe({
     input$paramVac_cell_edit
     if (paramVac_primeraVez==T) {
-          paramVac_edit <- paramVac
-          paramVac_edit <<- as.matrix(paramVac_edit)
-          paramVac_primeraVez<<-F
+        paramVac_edit <- paramVac
+        paramVac_edit <<- as.matrix(paramVac_edit)
+        paramVac_primeraVez<<-F
     } else {
         paramVac_edit[as.numeric(input$paramVac_cell_edit[1]),
                       as.numeric(input$paramVac_cell_edit[2])] <- as.numeric(input$paramVac_cell_edit[3])
         paramVac_edit <<- paramVac_edit  
-      }
-    })
+    }
+  })
   
   output$paramVac <- renderDT({
-    DT::datatable(paramVac_edit, editable = T)
+    DT::datatable(paramVac_edit, editable = T, options = list(ordering=F, 
+                                                              searching=F, 
+                                                              paging=F, 
+                                                              info=F))
   })
 
-  
   proy <- reactive({
-    # print activa reactive (no comentar)
-    print(input$paramVac_cell_edit)
+    # paste activa reactive (no comentar)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
+    paste(input$transprob_cell_edit)
     
     duracion_inmunidad = input$duracionInm
     for (i in vacPlanDia:diasDeProyeccion) {
@@ -260,26 +316,26 @@ server <- function (input, output, session) {
     }
     
     seir_ages(dias=diasDeProyeccion,
-                    duracionE = periodoPreinfPromedio,
-                    duracionIi = duracionMediaInf,
-                    porc_gr = porcentajeCasosGraves,
-                    porc_cr = porcentajeCasosCriticos,
-                    duracionIg = diasHospCasosGraves,
-                    duracionIc = diasHospCasosCriticos,
-                    ifr = ifr,
-                    contact_matrix = contact_matrix,
-                    transmission_probability = transmission_probability,
-                    N = N,
-                    defunciones_reales=def_p,
-                    modif_beta=modif_beta,
-                    modif_porc_gr=modif_porc_gr,
-                    modif_porc_cr=modif_porc_cr,
-                    modif_ifr=modif_ifr,
-                    Av=AvArg,
-                    immunityStates=immunityStates,
-                    ageGroups=ageGroups,
-                    paramVac=paramVac_edit,
-                    duracion_inmunidad=duracion_inmunidad
+              duracionE = periodoPreinfPromedio,
+              duracionIi = duracionMediaInf,
+              porc_gr = porcentajeCasosGraves,
+              porc_cr = porcentajeCasosCriticos,
+              duracionIg = diasHospCasosGraves,
+              duracionIc = diasHospCasosCriticos,
+              ifr = ifr_edit[1,],
+              contact_matrix = contact_matrix,
+              transmission_probability = transprob_edit,
+              N = N,
+              defunciones_reales=def_p,
+              modif_beta=modif_beta,
+              modif_porc_gr=modif_porc_gr,
+              modif_porc_cr=modif_porc_cr,
+              modif_ifr=modif_ifr,
+              Av=AvArg,
+              immunityStates=immunityStates,
+              ageGroups=ageGroups,
+              paramVac=paramVac_edit,
+              duracion_inmunidad=duracion_inmunidad
     )
   })
   observe({
