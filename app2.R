@@ -10,6 +10,7 @@ library(ggpubr)
 library(reshape2)
 library(ggplot2)
 library(DT)
+library(EpiEstim)
 
 rm(list = ls())
 
