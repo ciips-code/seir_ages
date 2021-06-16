@@ -53,12 +53,15 @@ seir_ages <- function(dias,
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
       if (is.null(factorModificadorBeta)) {
-        # factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents = e[[(t-10):(t-1)]], 
-        #                                                       contact_matrix, 
-        #                                                       transmission_probability)
-        factorModificadorBeta = 1.12
+        ten_days_incidents = sapply((t-10):(t-1), function(s) {sum(i[[s]])})
+        porc_S = sum(S[[t-1]])/sum(N)
+        factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents,
+                                                              contact_matrix,
+                                                              diag(transmission_probability),
+                                                              porc_S,
+                                                              duracionIi)
       }
-      e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta * beta) %*% I_edad/N_edad, 
+      e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
                                    nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     }
@@ -146,13 +149,14 @@ seir_ages <- function(dias,
   return(salida) 
 }
 
-calcularFactorModificadorBeta = function(ten_days_incidents, contact_matrix, transmission_probability) {
+calcularFactorModificadorBeta = function(ten_days_incidents, contact_matrix, transmission_probability, porc_S,duracionI) {
   # Calcular Rcori
-  # Rt_estimate <- estimate_R(ten_days_incidents, method = "parametric_si",config = make_config(list(mean_si = 2.6, std_si = 1.5)))$R
-  # Rt <- Rt_estimate$`Median(R)`[nrow(Rt_estimate)]
-  # # Calcular Modificador con NGM
-  # factorModificadorBeta = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
-  factorModificadorBeta = 1.12
+  Rt_estimate <- estimate_R(ten_days_incidents, method = "parametric_si",
+                            config = make_config(list(mean_si = 3, std_si = 4)))$R # parámetros de biblio
+  Rt <- Rt_estimate$`Median(R)`[nrow(Rt_estimate)]
+  # Calcular Modificador con NGM
+  factorModificadorBeta = get_factor_given_rt(contact_matrix, transmission_probability, duracionI, porc_S, Rt)
+  # factorModificadorBeta = 1.12
   return(factorModificadorBeta)
 }
 
@@ -169,8 +173,8 @@ get_R0_given_cm = function(contact_matrix, transmission_probability,duracionI){
 
 get_factor_given_rt = function(contact_matrix, transmission_probability, duracionI, porc_S, Rt){
   # R0 teórico inicial
-  R0 <- get_R0_given_cm(contact_matrix, transmission_probability,duracionI)
-  # R0 implícito en lo observado (era asi????)
+  R0 <- get_R0_given_cm(contact_matrix, transmission_probability, duracionI)
+  # R0 implícito en lo observado
   R0_equivalent <- Rt/porc_S
   # aca esto lo simple
   factor <- R0_equivalent/R0
