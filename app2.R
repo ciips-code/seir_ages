@@ -116,35 +116,37 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                      plotlyOutput("graficoUnico"),
                                      hr(),
                                      fluidRow(
-                                       fluidRow(
-                                         column(6,
-                                            fluidRow(
-                                              column(4,
-                                                    numericInput("diasProy",
-                                                    "Días de proyección",
-                                                    min=30,
-                                                    max=1000,
-                                                    value = 700)),
-                                              column(4,sliderInput("modifica_planVac",
-                                                     "Modificar plan de vacunación (%)",
-                                                     min=-100,
-                                                     max=100,value= 1)),
-                                              column(4,numericInput("duracionInm",
-                                                     "Duración de la inmunidad",
-                                                     min=1,
-                                                     max=360,
-                                                     value = 180))
-                                            ),
-                                            fluidRow(
-                                              column(12,
-                                                     DT::dataTableOutput("transprob")
+                                       column(12,
+                                         fluidRow(
+                                           column(6,
+                                              fluidRow(
+                                                column(4,
+                                                      numericInput("diasProy",
+                                                      "Días de proyección",
+                                                      min=30,
+                                                      max=1000,
+                                                      value = 700)),
+                                                column(4,sliderInput("modifica_planVac",
+                                                       "Modificar plan de vacunación (%)",
+                                                       min=-100,
+                                                       max=100,value= 1)),
+                                                column(4,numericInput("duracionInm",
+                                                       "Duración de la inmunidad",
+                                                       min=1,
+                                                       max=360,
+                                                       value = 180))
+                                              ),
+                                              fluidRow(
+                                                column(12,
+                                                       DT::dataTableOutput("transprob")
+                                                )
                                               )
-                                            )
-                                         ),
-                                        column(6,
-                                               DT::dataTableOutput("paramVac"),
-                                               DT::dataTableOutput("ifrt")
-                                               )
+                                           ),
+                                          column(6,
+                                                 DT::dataTableOutput("paramVac"),
+                                                 DT::dataTableOutput("ifrt")
+                                                 )
+                                         )
                                        )
                             )),
                             tabPanel("Compartimentos", fluidRow(id="content")),

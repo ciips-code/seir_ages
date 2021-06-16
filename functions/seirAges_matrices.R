@@ -21,7 +21,6 @@ seir_ages <- function(dias,
                       ageGroups,
                       paramVac
 ){
-  print(transmission_probability)
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),3,byrow = T)
   names = list(immunityStates,
                ageGroups)
