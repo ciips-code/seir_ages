@@ -35,6 +35,7 @@ source("functions/seirAges.R", encoding = "UTF-8")
 ifr = c(.003,.005,0.01)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
+ifr_primeraVez = TRUE
 
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,
@@ -118,19 +119,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                             tabPanel("Graficos",
                                      selectInput("compart_a_graficar","Compartimento",choices = NULL),
                                      plotlyOutput("graficoUnico"),
-                                     # fluidRow(plotOutput("grafico"),
-                                     # ),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     br(),
                                      hr(),
-                                     br(),
-                                     fluidRow(column(12,h3("Parámetros"), align="center")),
-                                     br(),
-                                     br(),
                                      fluidRow(column(2,
                                                     numericInput("diasProy",
                                                     "Días de proyección",
@@ -146,7 +135,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                      min=1,
                                                      max=360,
                                                      value = 180)),
-                                              column(6,DT::dataTableOutput("paramVac"))
+                                              column(6,
+                                                     DT::dataTableOutput("paramVac"),
+                                                     DT::dataTableOutput("ifrt")
+                                                     )
                             )),
                             tabPanel("Compartimentos", fluidRow(id="content")),
                             tabPanel("Formulas",
@@ -222,32 +214,58 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 br(),
                 br(),
                 br(),
-                )
+                br()
+)
+
                 
 
 server <- function (input, output, session) {
   
   observe({
+    input$ifrt_cell_edit
+    if (ifr_primeraVez==T) {
+      ifr_edit <- matrix(ifr, 1,3)
+      colnames(ifr_edit) = ageGroups
+      ifr_edit <<- ifr_edit
+      ifr_primeraVez<<-F
+    } else {
+      ifr_edit[as.numeric(input$ifrt_cell_edit[1]),
+                    as.numeric(input$ifrt_cell_edit[2])+1] <- as.numeric(input$ifrt_cell_edit[3])
+      ifr_edit <<- ifr_edit
+    }
+  })
+  
+  output$ifrt <- renderDT({
+    DT::datatable(ifr_edit, editable = T, options = list(ordering=F, 
+                                                     searching=F, 
+                                                     paging=F, 
+                                                     info=F))
+  })
+  
+  observe({
     input$paramVac_cell_edit
     if (paramVac_primeraVez==T) {
-          paramVac_edit <- paramVac
-          paramVac_edit <<- as.matrix(paramVac_edit)
-          paramVac_primeraVez<<-F
+        paramVac_edit <- paramVac
+        paramVac_edit <<- as.matrix(paramVac_edit)
+        paramVac_primeraVez<<-F
     } else {
         paramVac_edit[as.numeric(input$paramVac_cell_edit[1]),
                       as.numeric(input$paramVac_cell_edit[2])] <- as.numeric(input$paramVac_cell_edit[3])
         paramVac_edit <<- paramVac_edit  
-      }
-    })
+    }
+  })
   
   output$paramVac <- renderDT({
-    DT::datatable(paramVac_edit, editable = T)
+    DT::datatable(paramVac_edit, editable = T, options = list(ordering=F, 
+                                                              searching=F, 
+                                                              paging=F, 
+                                                              info=F))
   })
 
-  
   proy <- reactive({
-    # print activa reactive (no comentar)
-    print(input$paramVac_cell_edit)
+    # paste activa reactive (no comentar)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
     
     duracion_inmunidad = input$duracionInm
     for (i in vacPlanDia:diasDeProyeccion) {
@@ -255,26 +273,26 @@ server <- function (input, output, session) {
     }
     
     seir_ages(dias=diasDeProyeccion,
-                    duracionE = periodoPreinfPromedio,
-                    duracionIi = duracionMediaInf,
-                    porc_gr = porcentajeCasosGraves,
-                    porc_cr = porcentajeCasosCriticos,
-                    duracionIg = diasHospCasosGraves,
-                    duracionIc = diasHospCasosCriticos,
-                    ifr = ifr,
-                    contact_matrix = contact_matrix,
-                    transmission_probability = transmission_probability,
-                    N = N,
-                    defunciones_reales=def_p,
-                    modif_beta=modif_beta,
-                    modif_porc_gr=modif_porc_gr,
-                    modif_porc_cr=modif_porc_cr,
-                    modif_ifr=modif_ifr,
-                    Av=AvArg,
-                    immunityStates=immunityStates,
-                    ageGroups=ageGroups,
-                    paramVac=paramVac_edit,
-                    duracion_inmunidad=duracion_inmunidad
+              duracionE = periodoPreinfPromedio,
+              duracionIi = duracionMediaInf,
+              porc_gr = porcentajeCasosGraves,
+              porc_cr = porcentajeCasosCriticos,
+              duracionIg = diasHospCasosGraves,
+              duracionIc = diasHospCasosCriticos,
+              ifr = ifr_edit[1,],
+              contact_matrix = contact_matrix,
+              transmission_probability = transmission_probability,
+              N = N,
+              defunciones_reales=def_p,
+              modif_beta=modif_beta,
+              modif_porc_gr=modif_porc_gr,
+              modif_porc_cr=modif_porc_cr,
+              modif_ifr=modif_ifr,
+              Av=AvArg,
+              immunityStates=immunityStates,
+              ageGroups=ageGroups,
+              paramVac=paramVac_edit,
+              duracion_inmunidad=duracion_inmunidad
     )
   })
   observe({
