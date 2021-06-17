@@ -1,0 +1,12 @@
+name: seir_ages
+title: seir_ages
+username:
+account: iecs
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4281684
+bundleId: 4725079
+url: https://iecs.shinyapps.io/seir_ages/
+when: 1623885664.7923
+asMultiple: FALSE
+asStatic: FALSE
