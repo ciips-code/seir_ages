@@ -134,7 +134,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                       max=1000,
                                                       value = 700)),
                                                 column(4,sliderInput("modifica_planVac",
-                                                       "Modificar plan de vacunación (%)",
+                                                       "Modificar ritmo de vacunación (%)",
                                                        min=-100,
                                                        max=100,value= 1)),
                                                 column(4,numericInput("duracionInm",
@@ -252,10 +252,12 @@ server <- function (input, output, session) {
   })
   
   output$ifrt <- renderDT({
-    DT::datatable(ifr_edit, editable = T, options = list(ordering=F, 
-                                                     searching=F, 
-                                                     paging=F, 
-                                                     info=F))
+    DT::datatable(ifr_edit, editable = T,
+                  caption = 'IFR por edad',
+                  options = list(ordering=F, 
+                                 searching=F, 
+                                 paging=F, 
+                                 info=F))
   })
   
   observe({
@@ -272,10 +274,12 @@ server <- function (input, output, session) {
   })
   
   output$transprob <- renderDT({
-    DT::datatable(transprob_edit, editable = T, options = list(ordering=F, 
-                                                              searching=F, 
-                                                              paging=F, 
-                                                              info=F))
+    DT::datatable(transprob_edit, editable = T,
+                  caption = 'Matriz de contacto efectivo (probabilidades de transmisión)',
+                  options = list(ordering=F, 
+                                searching=F, 
+                                paging=F, 
+                                info=F))
   })
   
   observe({
@@ -292,10 +296,12 @@ server <- function (input, output, session) {
   })
   
   output$paramVac <- renderDT({
-    DT::datatable(paramVac_edit, editable = T, options = list(ordering=F, 
-                                                              searching=F, 
-                                                              paging=F, 
-                                                              info=F))
+    DT::datatable(paramVac_edit, editable = T,
+                  caption = 'Parámetros de las vacunas',
+                  options = list(ordering=F, 
+                                searching=F, 
+                                paging=F, 
+                                info=F))
   })
 
   proy <- reactive({
