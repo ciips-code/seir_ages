@@ -84,9 +84,8 @@ modif_ifr <- matrix(c(1,1,1,
                      .60,.60,.60),3,3,byrow=T)
 diasDeProyeccion = 900
 duracion_inmunidad = 180
-AvArg = creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
+AvArg <<- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
 vacPlanDia <- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[2]]
-
 names = list(immunityStates,
              ageGroups)
 namesVac = list(immunityStates,
@@ -345,7 +344,7 @@ server <- function (input, output, session) {
       primeraVez <<- FALSE
     }
     t = input$t
-    if (t>1) {
+    if (!is.na(t) & !is.null(t) & is.numeric(t) & t>1) {
       # Actualiza tab pane de formula
       output[["d[[t-1]]"]] <- renderDT(round(proy()[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["d[[t]]"]] <- renderDT(round(proy()[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
