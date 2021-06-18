@@ -53,13 +53,14 @@ seir_ages <- function(dias,
       a = matrix(rbind(rep(expuestosTotalesHoy,3)),length(immunityStates),length(ageGroups), byrow = T,
                  dimnames = names)
       b = S[[t-1]]
-      c = matrix(rbind(rep(colSums(S[[t-1]]),3)),length(immunityStates),length(ageGroups), byrow = T,
+      b = pmax(b,0)
+      c = matrix(rbind(rep(colSums(b),3)),length(immunityStates),length(ageGroups), byrow = T,
                  dimnames = names)
       e[[t-1]] = a*b/c
+      e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
       # e[[t-1]][1,] = expuestosTotalesHoy
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
-      factorModificadorBeta = list(factor=1.1)
       if (is.null(factorModificadorBeta)) {
         ten_days_incidents = sapply((t-10):(t-1), function(s) {sum(i[[s]])})
         porc_S = sum(S[[t-1]])/sum(N)
@@ -87,10 +88,12 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = defunciones_reales[t,]
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm * 1.19) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
     D[[t]]      = D[[t-1]] + d[[t]]
-    u[[t]]      = Ii[[t-1]]/duracionIi*(1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) + Ig[[t-1]]/duracionIg + Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
+    u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +
+                  Ig[[t-1]]/duracionIg +
+                  Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
     U[[t]]      = U[[t-1]] + u[[t]]
     R[[t]]      = U[[t]] + D[[t]]
     
@@ -115,7 +118,7 @@ seir_ages <- function(dias,
       tiempoV = paramVac[vacuna,3]
       porcProt = paramVac[vacuna,4]
       # print(haySparaVacunar)
-      if (t > latencia & all(haySparaVacunar) & F) {
+      if (t > latencia & all(haySparaVacunar)) {
         vacunadosVacunaDia = Av[[t-latencia]][vacuna,]
         # Los que pasan a V
         Vin[vacuna,] =  vacunadosVacunaDia * porcV
@@ -156,6 +159,13 @@ seir_ages <- function(dias,
     S[[t]][1,]=S[[t]][1,] - colSums(protegidosAyer)
     S[[t]] =  S[[t]] + protegidosAyer
     # Pendiente: Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
+    # Borrador
+    if (t>181) {
+      S[[t]][1,] = S[[t]][1,] + colSums(v[[t-180]])
+      S[[t]] = S[[t]] - v[[t-180]]
+    }
+    # Saca negativos
+    S[[t]] <- ifelse(S[[t]]<0.1,0,S[[t]])
   }
   salida <- list(S,V,E,e,I,Ii,i,Ig,Ic,U,u,D,d,R, defunciones_reales)
   names(salida) <- c("S","V","E","e","I","Ii","i","Ig","Ic","U","u","D","d","R", "defunciones_reales")

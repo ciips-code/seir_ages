@@ -32,7 +32,7 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 
 # lee funciones
 source("functions/seirAges.R", encoding = "UTF-8")
-ifr = c(.003,.005,0.01)
+ifr = c(.003,.005,0.03)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
 ifr_primeraVez = TRUE
@@ -45,7 +45,9 @@ contact_matrix = matrix(c(5,1,1,
                           2,4,4,
                           .5,1,5),3,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-transmission_probability = matrix(.035,length(ageGroups),length(ageGroups))
+transmission_probability = matrix(c(0.003,0.003,0.003,
+                                    0.048,0.048,0.048,
+                                    0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
@@ -82,7 +84,7 @@ modif_porc_cr <- matrix(c(1,1,1,
 modif_ifr <- matrix(c(1,1,1,
                      .70,.70,.70,
                      .60,.60,.60),3,3,byrow=T)
-diasDeProyeccion = 900
+diasDeProyeccion = 1100
 duracion_inmunidad = 180
 AvArg <<- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
 vacPlanDia <- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[2]]
@@ -130,8 +132,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                       numericInput("diasProy",
                                                       "Días de proyección",
                                                       min=30,
-                                                      max=1000,
-                                                      value = 700)),
+                                                      max=1100,
+                                                      value = 1100)),
                                                 column(4,sliderInput("modifica_planVac",
                                                        "Modificar ritmo de vacunación (%)",
                                                        min=-100,
