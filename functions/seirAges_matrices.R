@@ -165,7 +165,7 @@ seir_ages <- function(dias,
       S[[t]] = S[[t]] - v[[t-180]]
     }
     # Saca negativos
-    S[[t]] <- ifelse(S[[t]]<0.1,0,S[[t]])
+    # S[[t]] <- ifelse(S[[t]]<0.1,0,S[[t]])
   }
   salida <- list(S,V,E,e,I,Ii,i,Ig,Ic,U,u,D,d,R, defunciones_reales)
   names(salida) <- c("S","V","E","e","I","Ii","i","Ig","Ic","U","u","D","d","R", "defunciones_reales")
