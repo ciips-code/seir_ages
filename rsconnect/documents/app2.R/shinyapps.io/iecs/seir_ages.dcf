@@ -5,8 +5,8 @@ account: iecs
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4281684
-bundleId: 4725079
+bundleId: 4732438
 url: https://iecs.shinyapps.io/seir_ages/
-when: 1623885664.7923
+when: 1624053208.32983
 asMultiple: FALSE
 asStatic: FALSE

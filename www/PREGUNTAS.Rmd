@@ -1,0 +1,66 @@
+---
+title: "Preguntas"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Topic II: Vaccination strategies to keep health system use below maximum capacity
+
+#### Question 1. 
+In which order should the following groups be prioritized for COVID-19 vaccination as vaccine supply increases so as to keep hospitalizations, and intensive care unit use (where available), due to COVID-19 and other background causes below maximum hospital capacity in the setting(s) modelled?
+
+  a. older adults (50+, 60+, 65+ or 75+ years)
+  b. younger adults (18-49 years)
+  c. school-age children (5-17 years)
+  d. those at high risk of severe disease because of their underlying health conditions (e.g., cardiovascular
+disease, kidney disease)
+  e. key workers (e.g., workers in health and social care, teachers)
+  f. groups at high risk of infection (e.g., dense urban slums/informal settlements)
+
+#### Question 2. 
+What would be the optimal vaccination strategy in combination with which non-pharmaceutical interventions to keep hospitalizations due to COVID-19 and other background causes below maximum hospital capacity in the settings modelled?
+
+
+## Topic IV.
+Extent to which vaccination can allow non-pharmaceutical interventions to be lifted
+
+#### Question 1. 
+What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations (including peak demand), and COVID-19 morbidity and mortality of lifting non-pharmaceutical interventions (e.g., business closures, school closures, travel restrictions, gathering size limits, mask wearing) at different levels of vaccine efficacy and vaccination coverage for different priority groups as outlined in the SAGE Prioritization Roadmap?
+
+#### Question 2. 
+What combinations of vaccine efficacy and vaccination coverage in different priority groups as outlined in the SAGE Prioritization Roadmap together with which combinations of non-pharmaceutical interventions could keep Rt below 1?
+
+#### Question 3. 
+What is the probability and stability of local or regional elimination of SARS-CoV-2 transmission under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of non-pharmaceutical interventions?
+
+
+
+
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

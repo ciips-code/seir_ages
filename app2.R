@@ -32,58 +32,67 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 
 # lee funciones
 source("functions/seirAges.R", encoding = "UTF-8")
-ifr = c(.003,.005,0.03)
+ifr = c(0.003,0.004,0.005,0.01,0.03)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
 ifr_primeraVez = TRUE
 transprob_primeraVez = TRUE
 immunityStates = c("no inmunes", "recuperados", "Vacunado")
-ageGroups = c("0-19", "20-64", "65+")
-ageGroupsV = c(0,20,65)
+ageGroups = c("0-17", "18-49", "50-59", "60-69", "70+")
+ageGroupsV = c(0,18,50,60,70)
 # crea matrices de contacto y efectividad
-contact_matrix = matrix(c(5,1,1,
-                          2,4,4,
-                          .5,1,5),3,byrow = T)
+contact_matrix = matrix(c(5,1,1,1,1,
+                          2,4,4,4,4,
+                          2,4,4,4,4,
+                          2,4,4,4,4,
+                          .5,1,1,1,5),5,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-transmission_probability = matrix(c(0.003,0.003,0.003,
-                                    0.048,0.048,0.048,
-                                    0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
+transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,
+                                    0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,
+                                    0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
-N1 <- 14554190
-N2 <- 25594851
-N3 <-  5227722
-
-N = c(N1,N2,N3)
+N = c(14554190,8531617,8531617,8531617,5227722)
 
 # prepara datos reportados
 
 t <- seq(1:nrow(dataEcdc))
 
-def0019 <- dataEcdc$nd0004+dataEcdc$nd0509+dataEcdc$nd1014+dataEcdc$nd1519
-def2064 <- dataEcdc$nd2024+dataEcdc$nd2529+dataEcdc$nd3034+dataEcdc$nd3539+dataEcdc$nd4044+dataEcdc$nd4549+dataEcdc$nd5054+dataEcdc$nd5559+dataEcdc$nd6064
-def6599 <- dataEcdc$nd6569+dataEcdc$nd7074+dataEcdc$nd7579+dataEcdc$nd8084+dataEcdc$nd8589+dataEcdc$nd9099
+# def_p = c()
+# for (i  in 1:length(ageGroupsV)) {
+#   rangoDesde = ageGroupsV[i]
+#   rangoHasta = 99
+#   if (i+1 <= length(ageGroupsV)) {
+#     rangoHasta = ageGroupsV[i+1]-1
+#   }
+#   if (rangoDesde == 0) {
+#     rangoDesde = "00"
+#   }
+#   print(paste0("dataEcdc$nd",rangoDesde,rangoHasta))
+# }
 
-def0019_loess <- predict(loess(def0019~seq(1,length(def0019), by=1),span=.2))
-def2064_loess <- predict(loess(def2064~seq(1,length(def2064), by=1),span=.2))
-def6599_loess <- predict(loess(def6599~seq(1,length(def6599), by=1),span=.2))
+def0017 <- dataEcdc$nd0004+dataEcdc$nd0509+dataEcdc$nd1014
+def1849 <- dataEcdc$nd1519+dataEcdc$nd2024+dataEcdc$nd2529+dataEcdc$nd3034+dataEcdc$nd3539+dataEcdc$nd4044+dataEcdc$nd4549
+def5059 <- dataEcdc$nd5054+dataEcdc$nd5559
+def6069 <- dataEcdc$nd6064+dataEcdc$nd6569
+def7099 <- dataEcdc$nd7074+dataEcdc$nd7579+dataEcdc$nd8084+dataEcdc$nd8589+dataEcdc$nd9099
+
+def0017_loess <- predict(loess(def0017~seq(1,length(def0017), by=1),span=.2))
+def1849_loess <- predict(loess(def1849~seq(1,length(def1849), by=1),span=.2))
+def5059_loess <- predict(loess(def5059~seq(1,length(def5059), by=1),span=.2))
+def6069_loess <- predict(loess(def6069~seq(1,length(def6069), by=1),span=.2))
+def7099_loess <- predict(loess(def7099~seq(1,length(def7099), by=1),span=.2))
 
 # muertes
-def_p <- cbind(def0019_loess,def2064_loess,def6599_loess)
+def_p <- cbind(def0017_loess,def1849_loess,def5059_loess,def6069_loess,def7099_loess)
 
-modif_beta <- matrix(c(1,1,1,
-                      .70,.70,.70,
-                      .60,.60,.60),3,3,byrow=T)
-modif_porc_gr <- matrix(c(1,1,1,
-                         .70,.70,.70,
-                         .60,.60,.60),3,3,byrow=T)
-modif_porc_cr <- matrix(c(1,1,1,
-                         .70,.70,.70,
-                         .60,.60,.60),3,3,byrow=T)
-modif_ifr <- matrix(c(1,1,1,
-                     .70,.70,.70,
-                     .60,.60,.60),3,3,byrow=T)
+modif_beta <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
+modif_porc_gr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
+modif_porc_cr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
+modif_ifr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
 diasDeProyeccion = 1100
 duracion_inmunidad = 180
 AvArg <<- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
@@ -241,7 +250,7 @@ server <- function (input, output, session) {
   observe({
     input$ifrt_cell_edit
     if (ifr_primeraVez==T) {
-      ifr_edit <- matrix(ifr, 1,3)
+      ifr_edit <- matrix(ifr, 1, length(ageGroups))
       colnames(ifr_edit) = ageGroups
       ifr_edit <<- ifr_edit
       ifr_primeraVez<<-F
@@ -361,7 +370,7 @@ server <- function (input, output, session) {
       output[["modif_ifr"]] <- renderDT(round(modif_ifr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       output[["porc_cr"]] <- renderText(porcentajeCasosCriticos)
       output[["modif_porc_cr"]] <- renderDT(round(modif_porc_cr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),3,byrow = T)
+      ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
       calculo_dt <- proy()[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifrm) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
       calculo_dt12 <-  proy()[["Ic"]][[t-1]][1,2]/diasHospCasosCriticos * ifr[2] * modif_ifr[1,2]/porcentajeCasosCriticos*modif_porc_cr[1,2]
       output[["calculo-dt12"]] <- renderText(paste("dt Calculado [1,2]:", calculo_dt12))
@@ -414,8 +423,9 @@ server <- function (input, output, session) {
         tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
         tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
         dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
-        dplyr::rename("0-19"=2,"20-64"=3,"65+"=4)
-      data_graf$total=data_graf$`0-19`+data_graf$`20-64`+data_graf$`65+`
+        # TODO: Arreglar
+        dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
+      data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
       dataTemp = data_graf %>% dplyr::filter(Compart == input$compart_a_graficar)
       dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
