@@ -1,0 +1,120 @@
+library(dplyr)
+library(reshape)
+
+
+update <-  function(pais,diasDeProyeccion) {
+  if (pais=="ARG") {
+
+    # dataCountry
+    url <- 'https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.zip'
+    download.file(url, "Covid19Casos.zip")
+    unzip("Covid19Casos.zip")
+    file.remove('Covid19Casos.zip')
+    #file.remove('datos_nomivac_covid19.csv')
+    
+    data <- read.csv("Covid19Casos.csv", 
+                     fileEncoding = "UTF-8")
+    
+    data <- data %>% dplyr::filter(clasificacion_resumen=="Confirmado" &
+                                   fallecido=="SI") %>%
+                     dplyr::select(edad,
+                                   edad_años_meses,
+                                   fecha_fallecimiento,
+                                   fecha_diagnostico,
+                                   fecha_apertura,
+                                   fecha_inicio_sintomas,
+                                   clasificacion_resumen) %>%
+                     dplyr::mutate(fecha=dplyr::coalesce(na_if(fecha_fallecimiento,""),
+                                                         na_if(fecha_diagnostico,""),
+                                                         na_if(fecha_apertura,""),
+                                                         na_if(fecha_inicio_sintomas,""))) %>%
+                     dplyr::mutate(gredad=case_when(edad_años_meses=="Meses" | edad_años_meses=="Años" & edad>=1 & edad <=4 ~ "00-04",
+                                                    edad_años_meses=="Años" & edad>=5 & edad <=9 ~ "05-09",
+                                                    edad_años_meses=="Años" & edad>=10 & edad <=14 ~ "10-14",
+                                                    edad_años_meses=="Años" & edad>=15 & edad <=19 ~ "15-19",
+                                                    edad_años_meses=="Años" & edad>=20 & edad <=24 ~ "20-24",
+                                                    edad_años_meses=="Años" & edad>=25 & edad <=29 ~ "25-29",
+                                                    edad_años_meses=="Años" & edad>=30 & edad <=34 ~ "30-34",
+                                                    edad_años_meses=="Años" & edad>=35 & edad <=39 ~ "35-39",
+                                                    edad_años_meses=="Años" & edad>=40 & edad <=44 ~ "40-44",
+                                                    edad_años_meses=="Años" & edad>=45 & edad <=49 ~ "45-49",
+                                                    edad_años_meses=="Años" & edad>=50 & edad <=54 ~ "50-54",
+                                                    edad_años_meses=="Años" & edad>=55 & edad <=59 ~ "55-59",
+                                                    edad_años_meses=="Años" & edad>=60 & edad <=64 ~ "60-64",
+                                                    edad_años_meses=="Años" & edad>=65 & edad <=69 ~ "65-69",
+                                                    edad_años_meses=="Años" & edad>=70 & edad <=74 ~ "70-74",
+                                                    edad_años_meses=="Años" & edad>=75 & edad <=79 ~ "75-79",
+                                                    edad_años_meses=="Años" & edad>=80 & edad <=84 ~ "80-84",
+                                                    edad_años_meses=="Años" & edad>=85 & edad <=89 ~ "85-89",
+                                                    edad_años_meses=="Años" & edad>=90 & edad <=110 ~ "90-99",
+                                                    TRUE ~ "S.I.")) %>%
+                     dplyr::mutate(cuenta=1) %>% 
+                     reshape::cast(fecha~gredad, sum) %>%
+                     dplyr::select(-`S.I.`)
+        
+        
+
+
+
+creaAv <-  function(diaCeroModelo, diasDeProyeccion) {
+  
+  # download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
+  # unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
+  # VacunasArg = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
+  #file.remove('datos_nomivac_covid19.csv')
+  #file.remove('datos_nomivac_covid19.zip')
+
+  # VacunasArg = VacunasArg %>% dplyr::filter(orden_dosis==1 &
+  #                                           fecha_aplicacion!="S.I.") %>%
+  #                             dplyr::mutate(edad = case_when(grupo_etario %in% c(">=100") ~ "100+",
+  #                                                            TRUE ~ grupo_etario)) %>%
+  #                             dplyr::filter(edad!="S.I.") %>%
+  #                             dplyr::group_by(fecha_aplicacion, edad) %>%
+  #                             dplyr::summarise(n=n()) %>%
+  #                             reshape::cast(fecha_aplicacion~edad, mean) %>%
+  #                             dplyr::select(fecha_aplicacion,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`,`100+`) %>%
+  #                             dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+  # 
+  # VacunasArg[is.na(VacunasArg)] <- 0
+  # save(VacunasArg,file="vacunasArg.RData")
+  # 
+
+  
+  
+  load("vacunasArg.RData")
+  
+  diaCeroVac <- min(VacunasArg$fecha_aplicacion)
+  
+  tVacunasCero <-  as.Date(diaCeroVac)-as.Date(diaCeroModelo)
+  
+  vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=c(0,0,0,
+                                                                 0,0,0,
+                                                                 0,0,0), 
+                                                          nrow=3, 
+                                                          ncol=ncol(VacunasArg)-1)
+  
+  vacArg = lapply(1:nrow(VacunasArg), matrix, data=c(0,0,0,
+                                                     0,0,0,
+                                                     0,0,0), 
+                  nrow=3, 
+                  ncol=ncol(VacunasArg)-1)
+  
+  for (t in 1:length(vacArg)) {
+    vacArg[[t]][3,]  = as.numeric(VacunasArg[t,2:4])
+  }
+  
+  promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
+  vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
+                   nrow=3, 
+                   ncol=3)
+  
+  Av = c(vacPre,vacArg,vacPlan)
+  return(result=list(Av=Av,
+                     diaPlan=length(vacPre)+length(vacArg)))
+                
+}
+
+
+
+
+
