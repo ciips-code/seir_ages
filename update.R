@@ -3,14 +3,15 @@ library(reshape)
 
 
 update <-  function(pais,diasDeProyeccion) {
+  browser()
+  countryData <- list()
   if (pais=="ARG") {
-
-    # dataCountry
+    
     url <- 'https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.zip'
     download.file(url, "Covid19Casos.zip")
     unzip("Covid19Casos.zip")
     file.remove('Covid19Casos.zip')
-    #file.remove('datos_nomivac_covid19.csv')
+    file.remove('datos_nomivac_covid19.csv')
     
     data <- read.csv("Covid19Casos.csv", 
                      fileEncoding = "UTF-8")
@@ -52,68 +53,75 @@ update <-  function(pais,diasDeProyeccion) {
                      reshape::cast(fecha~gredad, sum) %>%
                      dplyr::select(-`S.I.`)
         
-        
+      download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
+      unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
+      Vacunas = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
+      file.remove('datos_nomivac_covid19.csv')
+      file.remove('datos_nomivac_covid19.zip')
+
+      Vacunas = Vacunas %>% dplyr::filter(orden_dosis==1 &
+                                          fecha_aplicacion!="S.I.") %>%
+                            dplyr::mutate(edad = case_when(grupo_etario %in% c(">=100") ~ "90-99",
+                                                           TRUE ~ grupo_etario)) %>%
+                            dplyr::filter(edad!="S.I.") %>%
+                            dplyr::group_by(fecha_aplicacion, edad) %>%
+                            dplyr::summarise(n=n()) %>%
+                            reshape::cast(fecha_aplicacion~edad, mean) %>%
+                            dplyr::select(fecha_aplicacion,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`) %>%
+                            dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+
+      Vacunas[is.na(Vacunas)] <- 0
+      
+      eval(parse(text=paste0('countryData$',
+                             pais,
+                             ' <- list(def=data,vac=Vacunas)')))
+      
+      
+      
 
 
 
-creaAv <-  function(diaCeroModelo, diasDeProyeccion) {
+      
+      #load("vacunasArg.RData")
+      
+      # diaCeroVac <- min(VacunasArg$fecha_aplicacion)
+      # 
+      # tVacunasCero <-  as.Date(diaCeroVac)-as.Date(min(data$fecha))
+      # 
+      # vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=c(0,0,0,
+      #                                                                0,0,0,
+      #                                                                0,0,0), 
+      #                                                         nrow=3, 
+      #                                                         ncol=ncol(VacunasArg)-1)
+      # 
+      # vacArg = lapply(1:nrow(VacunasArg), matrix, data=c(0,0,0,
+      #                                                    0,0,0,
+      #                                                    0,0,0), 
+      #                 nrow=3, 
+      #                 ncol=ncol(VacunasArg)-1)
+      # 
+      # for (t in 1:length(vacArg)) {
+      #   vacArg[[t]][3,]  = as.numeric(VacunasArg[t,2:4])
+      # }
+      # 
+      # promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
+      # vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
+      #                  nrow=3, 
+      #                  ncol=3)
+      # 
+      # Av = c(vacPre,vacArg,vacPlan)
+      # return(result=list(Av=Av,
+      #                    diaPlan=length(vacPre)+length(vacArg)))
+      #           
+      
+  } # cierra if de ARG
   
-  # download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
-  # unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
-  # VacunasArg = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
-  #file.remove('datos_nomivac_covid19.csv')
-  #file.remove('datos_nomivac_covid19.zip')
-
-  # VacunasArg = VacunasArg %>% dplyr::filter(orden_dosis==1 &
-  #                                           fecha_aplicacion!="S.I.") %>%
-  #                             dplyr::mutate(edad = case_when(grupo_etario %in% c(">=100") ~ "100+",
-  #                                                            TRUE ~ grupo_etario)) %>%
-  #                             dplyr::filter(edad!="S.I.") %>%
-  #                             dplyr::group_by(fecha_aplicacion, edad) %>%
-  #                             dplyr::summarise(n=n()) %>%
-  #                             reshape::cast(fecha_aplicacion~edad, mean) %>%
-  #                             dplyr::select(fecha_aplicacion,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`,`100+`) %>%
-  #                             dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
-  # 
-  # VacunasArg[is.na(VacunasArg)] <- 0
-  # save(VacunasArg,file="vacunasArg.RData")
-  # 
-
-  
-  
-  load("vacunasArg.RData")
-  
-  diaCeroVac <- min(VacunasArg$fecha_aplicacion)
-  
-  tVacunasCero <-  as.Date(diaCeroVac)-as.Date(diaCeroModelo)
-  
-  vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=c(0,0,0,
-                                                                 0,0,0,
-                                                                 0,0,0), 
-                                                          nrow=3, 
-                                                          ncol=ncol(VacunasArg)-1)
-  
-  vacArg = lapply(1:nrow(VacunasArg), matrix, data=c(0,0,0,
-                                                     0,0,0,
-                                                     0,0,0), 
-                  nrow=3, 
-                  ncol=ncol(VacunasArg)-1)
-  
-  for (t in 1:length(vacArg)) {
-    vacArg[[t]][3,]  = as.numeric(VacunasArg[t,2:4])
-  }
-  
-  promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
-  vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
-                   nrow=3, 
-                   ncol=3)
-  
-  Av = c(vacPre,vacArg,vacPlan)
-  return(result=list(Av=Av,
-                     diaPlan=length(vacPre)+length(vacArg)))
-                
+  save(countryData,file=paste0('data/data',pais,'.RData'))
 }
 
+# actualiza argentina
+datosArg <- update(pais = "ARG",
+                  diasDeProyeccion = 900)
 
 
 
