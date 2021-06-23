@@ -131,109 +131,45 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                    selected= c("total")))
                                               ),
                                      plotlyOutput("graficoUnico"),
-                                     hr(),
-                                     fluidRow(
-                                       column(12,
+                                     tabsetPanel(type = "tabs",
+                                       tabPanel("Model",
                                          fluidRow(
-                                           column(6,
-                                              fluidRow(
-                                                column(4,
-                                                      numericInput("diasProy",
-                                                      "Días de proyección",
-                                                      min=30,
-                                                      max=1100,
-                                                      value = 1100)),
-                                                column(4,sliderInput("modifica_planVac",
-                                                       "Modificar ritmo de vacunación (%)",
-                                                       min=-100,
-                                                       max=100,value= 1)),
-                                                column(4,numericInput("duracionInm",
-                                                       "Duración de la inmunidad",
-                                                       min=1,
-                                                       max=360,
-                                                       value = 180))
-                                              ),
-                                              fluidRow(
-                                                column(12,
-                                                       DT::dataTableOutput("transprob")
-                                                )
-                                              )
-                                           ),
-                                          column(6,
-                                                 DT::dataTableOutput("paramVac"),
-                                                 DT::dataTableOutput("ifrt")
-                                                 )
+                                           column(12,
+                                             fluidRow(
+                                               column(6,
+                                                  fluidRow(
+                                                    column(4,
+                                                          numericInput("diasProy",
+                                                          "Días de proyección",
+                                                          min=30,
+                                                          max=1100,
+                                                          value = 1100)),
+                                                    column(4,sliderInput("modifica_planVac",
+                                                           "Modificar ritmo de vacunación (%)",
+                                                           min=-100,
+                                                           max=100,value= 1)),
+                                                    column(4,numericInput("duracionInm",
+                                                           "Duración de la inmunidad",
+                                                           min=1,
+                                                           max=360,
+                                                           value = 180))
+                                                  ),
+                                                  fluidRow(
+                                                    column(12,
+                                                           DT::dataTableOutput("transprob")
+                                                    )
+                                                  )
+                                               ),
+                                              column(6,
+                                                     DT::dataTableOutput("paramVac"),
+                                                     DT::dataTableOutput("ifrt")
+                                                     )
+                                             )
+                                           )
                                          )
                                        )
                             )),
-                            tabPanel("Compartimentos", fluidRow(id="content")),
-                            tabPanel("Formulas",
-                                     p("d:"),
-                                     code("d[[t]][1,] = defunciones_reales[t,]"),
-                                     br(),
-                                     code("d[[t]] = Ic[[t-1]]/duracionIc * ifr * modif_ifr/porc_cr*modif_porc_cr"),
-                                     br(),
-                                     br(),
-                                     br(),
-                                     fluidRow(
-                                       column(width = 4,
-                                              p("d[[t-1]]"),
-                                              br(),
-                                              DTOutput("d[[t-1]]")
-                                       ),
-                                       column(width = 4,
-                                              p("d[[t]]"),
-                                              br(),
-                                              DTOutput("d[[t]]")
-                                       ),
-                                       column(width = 4,
-                                              p("defunciones_reales[t,]"),
-                                              br(),
-                                              textOutput("defunciones_reales[t,]")
-                                       ),
-                                     ),
-                                     br(),
-                                     fluidRow(
-                                       column(width = 3,
-                                              p("Ic[[t-1]]"),
-                                              br(),
-                                              DTOutput("Ic[[t-1]]")
-                                       ),
-                                       column(width = 1,
-                                              p("duracionIc"),
-                                              br(),
-                                              textOutput("duracionIc")
-                                       ),
-                                       column(width = 1,
-                                              p("ifr"),
-                                              br(),
-                                              textOutput("ifr")
-                                       ),
-                                       column(width = 3,
-                                              p("modif_ifr"),
-                                              br(),
-                                              DTOutput("modif_ifr")
-                                       ),
-                                       column(width = 1,
-                                              p("porc_cr"),
-                                              br(),
-                                              textOutput("porc_cr")
-                                       ),
-                                       column(width = 3,
-                                              p("modif_porc_cr"),
-                                              br(),
-                                              DTOutput("modif_porc_cr")
-                                       ),
-                                     ),
-                                     br(),
-                                     fluidRow(align="center",
-                                       column(width = 8, offset = 2,
-                                              textOutput("calculo-dt12"),
-                                              br(),
-                                              DTOutput("calculo-dt")
-                                       ),
-                                     ),
-                            )
+                            tabPanel("Compartimentos", fluidRow(id="content"))
                 ),
                 fluidRow(column(12,id="content")),
                 br(),
@@ -355,27 +291,6 @@ server <- function (input, output, session) {
       primeraVez <<- FALSE
     }
     t = input$t
-    if (!is.na(t) & !is.null(t) & is.numeric(t) & t>1) {
-      # Actualiza tab pane de formula
-      output[["d[[t-1]]"]] <- renderDT(round(proy()[["d"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["d[[t]]"]] <- renderDT(round(proy()[["d"]][[t]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      if (isolate(t)<= nrow(proy()[["defunciones_reales"]])) {
-        output[["defunciones_reales[t,]"]] <- renderText(proy()[["defunciones_reales"]][t,])
-      } else {
-        output[["defunciones_reales[t,]"]] <- renderText("Sin datos")
-      }
-      output[["Ic[[t-1]]"]] <- renderDT(round(proy()[["Ic"]][[t-1]],2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["duracionIc"]] <- renderText(diasHospCasosCriticos)
-      output[["ifr"]] <- renderText(ifr)
-      output[["modif_ifr"]] <- renderDT(round(modif_ifr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      output[["porc_cr"]] <- renderText(porcentajeCasosCriticos)
-      output[["modif_porc_cr"]] <- renderDT(round(modif_porc_cr,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-      ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
-      calculo_dt <- proy()[["Ic"]][[t-1]]/diasHospCasosCriticos * (ifrm) * modif_ifr/porcentajeCasosCriticos*modif_porc_cr
-      calculo_dt12 <-  proy()[["Ic"]][[t-1]][1,2]/diasHospCasosCriticos * ifr[2] * modif_ifr[1,2]/porcentajeCasosCriticos*modif_porc_cr[1,2]
-      output[["calculo-dt12"]] <- renderText(paste("dt Calculado [1,2]:", calculo_dt12))
-      output[["calculo-dt"]] <- renderDT(round(calculo_dt,2), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-    }
     # Actualiza tab pane de tablas de comapartimentos
     lapply(
       X = comp,

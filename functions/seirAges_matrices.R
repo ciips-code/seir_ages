@@ -25,7 +25,12 @@ seir_ages <- function(dias,
   names = list(immunityStates,
                ageGroups)
   # cada columna es un grupo
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = beta = lapply(1:dias, matrix, data= 0, nrow=length(immunityStates), ncol=length(ageGroups), dimnames = names)
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = beta = lapply(1:dias, 
+                                                                                        matrix, 
+                                                                                        data= 0, 
+                                                                                        nrow=length(immunityStates), 
+                                                                                        ncol=length(ageGroups), 
+                                                                                        dimnames = names)
   
   S[[1]] = matrix(c(N[1],N[2],N[3],0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
