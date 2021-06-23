@@ -1,18 +1,17 @@
 library(dplyr)
 library(reshape)
 
-
+##### funcion update #####
 update <-  function(pais,diasDeProyeccion) {
-  browser()
   countryData <- list()
   if (pais=="ARG") {
     
-    url <- 'https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.zip'
-    download.file(url, "Covid19Casos.zip")
-    unzip("Covid19Casos.zip")
-    file.remove('Covid19Casos.zip')
-    file.remove('datos_nomivac_covid19.csv')
-    
+    # url <- 'https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.zip'
+    # download.file(url, "Covid19Casos.zip")
+    # unzip("Covid19Casos.zip")
+    #file.remove('Covid19Casos.zip')
+    #file.remove('datos_nomivac_covid19.csv')
+
     data <- read.csv("Covid19Casos.csv", 
                      fileEncoding = "UTF-8")
     
@@ -32,8 +31,8 @@ update <-  function(pais,diasDeProyeccion) {
                      dplyr::mutate(gredad=case_when(edad_años_meses=="Meses" | edad_años_meses=="Años" & edad>=1 & edad <=4 ~ "00-04",
                                                     edad_años_meses=="Años" & edad>=5 & edad <=9 ~ "05-09",
                                                     edad_años_meses=="Años" & edad>=10 & edad <=14 ~ "10-14",
-                                                    edad_años_meses=="Años" & edad>=15 & edad <=19 ~ "15-19",
-                                                    edad_años_meses=="Años" & edad>=20 & edad <=24 ~ "20-24",
+                                                    edad_años_meses=="Años" & edad>=15 & edad <=17 ~ "15-17",
+                                                    edad_años_meses=="Años" & edad>=18 & edad <=24 ~ "18-24",
                                                     edad_años_meses=="Años" & edad>=25 & edad <=29 ~ "25-29",
                                                     edad_años_meses=="Años" & edad>=30 & edad <=34 ~ "30-34",
                                                     edad_años_meses=="Años" & edad>=35 & edad <=39 ~ "35-39",
@@ -53,11 +52,11 @@ update <-  function(pais,diasDeProyeccion) {
                      reshape::cast(fecha~gredad, sum) %>%
                      dplyr::select(-`S.I.`)
         
-      download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
-      unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
+      #download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
+      #unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
       Vacunas = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
-      file.remove('datos_nomivac_covid19.csv')
-      file.remove('datos_nomivac_covid19.zip')
+      #file.remove('datos_nomivac_covid19.csv')
+      #file.remove('datos_nomivac_covid19.zip')
 
       Vacunas = Vacunas %>% dplyr::filter(orden_dosis==1 &
                                           fecha_aplicacion!="S.I.") %>%
@@ -67,7 +66,8 @@ update <-  function(pais,diasDeProyeccion) {
                             dplyr::group_by(fecha_aplicacion, edad) %>%
                             dplyr::summarise(n=n()) %>%
                             reshape::cast(fecha_aplicacion~edad, mean) %>%
-                            dplyr::select(fecha_aplicacion,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`) %>%
+                            dplyr::mutate(`00-17`= 0) %>%
+                            dplyr::select(fecha_aplicacion,`00-17`,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`) %>%
                             dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
 
       Vacunas[is.na(Vacunas)] <- 0
@@ -75,13 +75,7 @@ update <-  function(pais,diasDeProyeccion) {
       eval(parse(text=paste0('countryData$',
                              pais,
                              ' <- list(def=data,vac=Vacunas)')))
-      
-      
-      
 
-
-
-      
       #load("vacunasArg.RData")
       
       # diaCeroVac <- min(VacunasArg$fecha_aplicacion)
@@ -115,14 +109,72 @@ update <-  function(pais,diasDeProyeccion) {
       #           
       
   } # cierra if de ARG
-  
+  print(paste('Actualizado:',pais, Sys.Date()))
   save(countryData,file=paste0('data/data',pais,'.RData'))
 }
 
-# actualiza argentina
-datosArg <- update(pais = "ARG",
-                  diasDeProyeccion = 900)
 
+##### funcion formatData #####
+
+formatData <- function(pais,
+                       ageGroups=c("00","18","50","60","80")) {
+
+  load(paste0("data/data",pais,".RData"))
+  eval(parse(text=paste0('countryData$FMTD <- countryData$',pais)))
+  
+  # muertes
+  fechasDef <- countryData$ARG$def$fecha
+  fechasVac <- countryData$ARG$vac$fecha
+  ageGSel <- colnames(countryData$FMTD$def)[substring(colnames(countryData$FMTD$def),1,2) %in% ageGroups]
+  ageSelCol <- which(colnames(countryData$FMTD$def) %in% ageGSel)
+  group <- c()
+  vector <- c()
+  
+  for (i in 1:length(ageSelCol)) {
+    if (i!=length(ageSelCol)) {
+      vector <- c(vector,rowSums(countryData$FMTD$def[,ageSelCol[i]:(ageSelCol[(i+1)]-1)]))
+    } else
+    {
+      vector <- c(vector,rowSums(countryData$FMTD$def[,ageSelCol[i]:(ncol(countryData$FMTD$def))]))
+    }
+  }
+  
+  countryData$FMTD$def <- data.frame(matrix(vector, byrow=T, ncol=length(ageSelCol)))
+  countryData$FMTD$def <- cbind(fechasDef,countryData$FMTD$def)
+  substring(ageGSel[length(ageGSel)],4,5) <- "99"
+  colnames(countryData$FMTD$def) <- c("fecha",ageGSel)
+  countryData$FMTD$def$fecha <- as.Date(as.character(countryData$FMTD$def$fecha))
+  # vacunas
+  ageGSel <- colnames(countryData$FMTD$vac)[substring(colnames(countryData$FMTD$vac),1,2) %in% ageGroups]
+  ageSelCol <- which(colnames(countryData$FMTD$vac) %in% ageGSel)
+  
+  label <- c()
+  group <- c()
+  vector <- c()
+  
+  for (i in 1:length(ageSelCol)) {
+    if (i!=length(ageSelCol)) {
+      vector <- c(vector,rowSums(data.frame(countryData$FMTD$vac[,ageSelCol[i]:(ageSelCol[(i+1)]-1)])))
+    } else
+    {
+      vector <- c(vector,rowSums(countryData$FMTD$vac[,ageSelCol[i]:(ncol(countryData$FMTD$vac))]))
+    }
+  }
+  
+  countryData$FMTD$vac <-  data.frame(matrix(vector, byrow=T, ncol=length(ageSelCol)))
+  countryData$FMTD$vac <-  cbind(fechasVac,countryData$FMTD$vac)
+  substring(ageGSel[length(ageGSel)],4,5) <- "99"
+  colnames(countryData$FMTD$vac) <- c("fecha",ageGSel)
+  return(countryData)
+}
+
+
+# actualiza argentina y guarda RData
+# update(pais = "ARG",
+#        diasDeProyeccion = 900)
+
+# agrupa edades
+# datosArg <- formatData("ARG")
 
 
 

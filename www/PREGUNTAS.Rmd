@@ -19,18 +19,51 @@ In which order should the following groups be prioritized for COVID-19 vaccinati
 disease, kidney disease)
   e. key workers (e.g., workers in health and social care, teachers)
   f. groups at high risk of infection (e.g., dense urban slums/informal settlements)
+  
+##### Implementación
+- Entrada: Plan de vacunación futuro re-priorizado segun un orden de prioridad en la vacunación
+  - Desplegable con 5 opciones de ordenes de prioridad para la vacunación
+- Salida: Curva de ocupación de camas (Generales y UTI), con línea de capacidad
+- Indicadores: días de saturación, porcentaje de exceso de ocupación
 
 #### Question 2. 
 What would be the optimal vaccination strategy in combination with which non-pharmaceutical interventions to keep hospitalizations due to COVID-19 and other background causes below maximum hospital capacity in the settings modelled?
 
+##### Implementación
+- Entrada: Plan de vacunación futuro re-priorizado segun un orden de prioridad en la vacunación + opciones de mofificación del nivel de NPI actual
+  - Desplegable con 5 opciones de ordenes de prioridad para la vacunación
+  - Desplegable con 5 opciones de NPI, con la del medio R actual, +/- 30% y +/- 60%
+- Salida: Curva de ocupación de camas (Generales y UTI), con línea de capacidad
+- Indicadores: días de saturación, porcentaje de exceso de ocupación
 
 ### Topic IV. Extent to which vaccination can allow non-pharmaceutical interventions to be lifted
 
 #### Question 1. 
 What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations (including peak demand), and COVID-19 morbidity and mortality of lifting non-pharmaceutical interventions (e.g., business closures, school closures, travel restrictions, gathering size limits, mask wearing) at different levels of vaccine efficacy and vaccination coverage for different priority groups as outlined in the SAGE Prioritization Roadmap?
 
+##### Implementación
+- Entrada: Plan de vacunación futuro re-priorizado segun un orden de prioridad en la vacunación + opciones de mofificación del nivel de NPI actual
+  - Desplegable con 5 opciones de cobertura (pensar variable tiempo)
+  - Desplegable con 5 opciones de eficacia de vacunas
+  - Desplegable con 5 opciones de NPI, con la del medio R actual, +/- 30% y +/- 60%
+- Salida: Curva de ocupación de camas (Generales y UTI), casos y muertes
+
 #### Question 2. 
 What combinations of vaccine efficacy and vaccination coverage in different priority groups as outlined in the SAGE Prioritization Roadmap together with which combinations of non-pharmaceutical interventions could keep Rt below 1?
 
+##### Implementación
+- Entrada: Plan de vacunación futuro re-priorizado segun un orden de prioridad en la vacunación + opciones de mofificación del nivel de NPI actual
+  - Desplegable con 5 opciones de cobertura (pensar variable tiempo)
+  - Desplegable con 5 opciones de eficacia de vacunas
+  - Desplegable con 5 opciones de NPI, con la del medio R actual, +/- 30% y +/- 60%
+- Salida: Curva de rt
+
 #### Question 3. 
 What is the probability and stability of local or regional elimination of SARS-CoV-2 transmission under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of non-pharmaceutical interventions?
+
+##### Implementación
+- Entrada: Plan de vacunación futuro re-priorizado segun un orden de prioridad en la vacunación + opciones de mofificación del nivel de NPI actual
+  - Desplegable con 5 opciones de cobertura (pensar variable tiempo)
+  - Desplegable con 5 opciones de eficacia de vacunas
+  - Desplegable con 5 opciones de NPI, con la del medio R actual, +/- 30% y +/- 60%
+- Salida: Curva de casos

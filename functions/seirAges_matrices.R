@@ -21,7 +21,7 @@ seir_ages <- function(dias,
                       ageGroups,
                       paramVac
 ){
-  ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),3,byrow = T)
+  ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   names = list(immunityStates,
                ageGroups)
   # cada columna es un grupo
@@ -32,11 +32,9 @@ seir_ages <- function(dias,
                                                                                         ncol=length(ageGroups), 
                                                                                         dimnames = names)
   
-  S[[1]] = matrix(c(N[1],N[2],N[3],0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
-                   dimnames = names)
+  S[[1]][1,] = N
   
-  N = matrix(c(N[1],N[2],N[3],0,0,0,0,0,0,0,0,0),length(immunityStates),length(ageGroups), byrow = T,
-               dimnames = names)
+  N = S[[1]]
   
   I[[1]] = matrix(0,length(immunityStates),length(ageGroups), byrow = T,
                     dimnames = names)
@@ -53,15 +51,15 @@ seir_ages <- function(dias,
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
     if (t<tHoy){
-      expuestosTotalesHoy = defunciones_reales[t+17+round(periodoPreinfPromedio,0),] / ifr
+      expuestosTotalesHoy = as.numeric(defunciones_reales[t+17+round(periodoPreinfPromedio,0),]) / ifr
       # distribuir segun filas en S[[t-1]]
-      a = matrix(rbind(rep(expuestosTotalesHoy,3)),length(immunityStates),length(ageGroups), byrow = T,
+      apor = matrix(rbind(rep(expuestosTotalesHoy,3)),length(immunityStates),length(ageGroups), byrow = T,
                  dimnames = names)
-      b = S[[t-1]]
-      b = pmax(b,0)
-      c = matrix(rbind(rep(colSums(b),3)),length(immunityStates),length(ageGroups), byrow = T,
+      bpor <- S[[t-1]]
+      bpor <- pmax(bpor,0)
+      cpor <- matrix(rbind(rep(colSums(bpor),3)),length(immunityStates),length(ageGroups), byrow = T,
                  dimnames = names)
-      e[[t-1]] = a*b/c
+      e[[t-1]] = apor*bpor/cpor
       e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
       # e[[t-1]][1,] = expuestosTotalesHoy
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
@@ -91,7 +89,7 @@ seir_ages <- function(dias,
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     if (t<tHoy){
-      d[[t]][1,] = defunciones_reales[t,]
+      d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
       d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
@@ -190,8 +188,8 @@ calcularFactorModificadorBeta = function(ten_days_incidents, contact_matrix, tra
 
 get_R0_given_cm = function(contact_matrix, transmission_probability,duracionI){
   # matrices de duración y transmisión (no depende de la edad del infectado, solo del susceptible)
-  transmission_probability <- diag(transmission_probability, 3)
-  duracionI <- diag(duracionI, 3)
+  transmission_probability <- diag(transmission_probability)
+  duracionI <- diag(duracionI, ncol(transmission_probability))
   # next generation matrix
   NGM <- transmission_probability %*% contact_matrix %*% duracionI
   # autovalor dominante es R0

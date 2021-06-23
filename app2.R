@@ -14,9 +14,6 @@ library(EpiEstim)
 
 rm(list = ls())
 
-# historico vacunas
-source("vacunas historico arg.R", encoding = 'UTF-8')
-
 # carga RData
 
 load("DatosIniciales_ARG.RData", envir = .GlobalEnv)
@@ -32,6 +29,7 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 
 # lee funciones
 source("functions/seirAges.R", encoding = "UTF-8")
+diasDeProyeccion = 700
 ifr = c(0.003,0.004,0.005,0.01,0.03)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
@@ -39,7 +37,7 @@ ifr_primeraVez = TRUE
 transprob_primeraVez = TRUE
 immunityStates = c("no inmunes", "recuperados", "Vacunado")
 ageGroups = c("0-17", "18-49", "50-59", "60-69", "70+")
-ageGroupsV = c(0,18,50,60,70)
+ageGroupsV = c("00","18","50","60","70")
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,1,1,
                           2,4,4,4,4,
@@ -58,45 +56,51 @@ colnames(transmission_probability) = rownames(transmission_probability) = ageGro
 N = c(14554190,8531617,8531617,8531617,5227722)
 
 # prepara datos reportados
+load("data/dataARG.RData", envir = .GlobalEnv)
+source("update.R", encoding = "UTF-8")
+dataPorEdad = formatData("ARG", ageGroupsV)
 
-t <- seq(1:nrow(dataEcdc))
+diaCeroVac <- min(dataPorEdad$FMTD$vac$fecha)
+tVacunasCero <-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
 
-# def_p = c()
-# for (i  in 1:length(ageGroupsV)) {
-#   rangoDesde = ageGroupsV[i]
-#   rangoHasta = 99
-#   if (i+1 <= length(ageGroupsV)) {
-#     rangoHasta = ageGroupsV[i+1]-1
-#   }
-#   if (rangoDesde == 0) {
-#     rangoDesde = "00"
-#   }
-#   print(paste0("dataEcdc$nd",rangoDesde,rangoHasta))
-# }
+vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
+                                                        nrow=length(immunityStates),
+                                                        ncol=length(ageGroups))
 
-def0017 <- dataEcdc$nd0004+dataEcdc$nd0509+dataEcdc$nd1014
-def1849 <- dataEcdc$nd1519+dataEcdc$nd2024+dataEcdc$nd2529+dataEcdc$nd3034+dataEcdc$nd3539+dataEcdc$nd4044+dataEcdc$nd4549
-def5059 <- dataEcdc$nd5054+dataEcdc$nd5559
-def6069 <- dataEcdc$nd6064+dataEcdc$nd6569
-def7099 <- dataEcdc$nd7074+dataEcdc$nd7579+dataEcdc$nd8084+dataEcdc$nd8589+dataEcdc$nd9099
+vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
+                                             nrow=length(immunityStates),
+                                             ncol=length(ageGroups))
 
-def0017_loess <- predict(loess(def0017~seq(1,length(def0017), by=1),span=.2))
-def1849_loess <- predict(loess(def1849~seq(1,length(def1849), by=1),span=.2))
-def5059_loess <- predict(loess(def5059~seq(1,length(def5059), by=1),span=.2))
-def6069_loess <- predict(loess(def6069~seq(1,length(def6069), by=1),span=.2))
-def7099_loess <- predict(loess(def7099~seq(1,length(def7099), by=1),span=.2))
+for (t in 1:length(vacArg)) {
+  # TODO: Expandir a otras vacunas
+  vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
+}
 
+promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
+vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
+                 nrow=length(immunityStates),
+                 ncol=length(ageGroups))
+
+Av = c(vacPre,vacArg,vacPlan)
+AvArg <<- Av
+vacPlanDia <- length(vacPre)+length(vacArg)
+
+# t <- seq(1:nrow(dataEcdc))
+temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
+  loessCol = paste0(loopCol,'_loess')
+  dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.2))
+})
+rm(temp)
 # muertes
-def_p <- cbind(def0017_loess,def1849_loess,def5059_loess,def6069_loess,def7099_loess)
+loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
+def_p <- dataPorEdad$FMTD$def[,loessCols]
 
 modif_beta <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
 modif_porc_gr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
 modif_porc_cr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
 modif_ifr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
-diasDeProyeccion = 1100
 duracion_inmunidad = 180
-AvArg <<- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[1]]
-vacPlanDia <- creaAv(min(modeloSimulado$fecha), diasDeProyeccion)[[2]]
+
 names = list(immunityStates,
              ageGroups)
 namesVac = list(immunityStates,
