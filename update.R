@@ -138,8 +138,8 @@ formatData <- function(pais,
       vector <- c(vector,rowSums(countryData$FMTD$def[,ageSelCol[i]:(ncol(countryData$FMTD$def))]))
     }
   }
-  
-  countryData$FMTD$def <- data.frame(matrix(vector, byrow=T, ncol=length(ageSelCol)))
+ 
+  countryData$FMTD$def <- data.frame((matrix(vector, ncol=length(ageSelCol))))
   countryData$FMTD$def <- cbind(fechasDef,countryData$FMTD$def)
   substring(ageGSel[length(ageGSel)],4,5) <- "99"
   colnames(countryData$FMTD$def) <- c("fecha",ageGSel)
@@ -161,7 +161,7 @@ formatData <- function(pais,
     }
   }
   
-  countryData$FMTD$vac <-  data.frame(matrix(vector, byrow=T, ncol=length(ageSelCol)))
+  countryData$FMTD$vac <-  data.frame(matrix(vector, ncol=length(ageSelCol)))
   countryData$FMTD$vac <-  cbind(fechasVac,countryData$FMTD$vac)
   substring(ageGSel[length(ageGSel)],4,5) <- "99"
   colnames(countryData$FMTD$vac) <- c("fecha",ageGSel)

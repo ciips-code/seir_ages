@@ -91,6 +91,7 @@ temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
   dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.2))
 })
 rm(temp)
+
 # muertes
 loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
 def_p <- dataPorEdad$FMTD$def[,loessCols]
