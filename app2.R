@@ -29,7 +29,7 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 
 # lee funciones
 source("functions/seirAges.R", encoding = "UTF-8")
-diasDeProyeccion = 700
+diasDeProyeccion = 1100
 ifr = c(0.003,0.004,0.005,0.01,0.03)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
@@ -53,7 +53,7 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
-N = c(14554190,8531617,8531617,8531617,5227722)
+N = c(13150705,20713779,4381897,3560538,3569844)
 
 # prepara datos reportados
 load("data/dataARG.RData", envir = .GlobalEnv)
@@ -95,6 +95,7 @@ rm(temp)
 # muertes
 loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
 def_p <- dataPorEdad$FMTD$def[,loessCols]
+def_p <- def_p[1:(nrow(def_p)-15),]
 
 modif_beta <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
 modif_porc_gr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
@@ -360,12 +361,16 @@ server <- function (input, output, session) {
               plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
             })
           
-            plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
-            
-            
-            
-            plot %>% layout(xaxis = list(title = "Fecha"), 
-                            yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+            # if (input$compart_a_graficar == "i") {
+            #   plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = 100000, name = paste(valx), line=list(color="#bdbdbd"))    
+            #   plot %>% layout(xaxis = list(title = "Fecha"), 
+            #                   yaxis = list(title = paste("Compartimento:",input$compart_a_graficar), 
+            #                                range = c(0,100000)))
+            # } else {
+              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
+              plot %>% layout(xaxis = list(title = "Fecha"), 
+                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+            # }
           }
           
           
