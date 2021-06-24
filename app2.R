@@ -172,7 +172,25 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                              )
                                            )
                                          )
-                                       )
+                                       ),
+                                       tabPanel("Question #1",
+                                                fluidRow(column(6,
+                                                                selectInput(
+                                                                  "vacStrat",
+                                                                  label="Vaccination strategy",
+                                                                  choices = c("Observed strategy",
+                                                                              "No vaccination",
+                                                                              "No priority",
+                                                                              "Priority: older -> adults -> young",
+                                                                              "Priority: older + adults -> young",
+                                                                              "Priority: adults -> older -> young")
+                                                                  )
+                                                                )
+                                                         )
+                                                )
+                                       
+                                       
+                                       
                             )),
                             tabPanel("Compartimentos", fluidRow(id="content"))
                 ),
@@ -262,9 +280,22 @@ server <- function (input, output, session) {
     paste(input$transprob_cell_edit)
     
     duracion_inmunidad = input$duracionInm
-    for (i in vacPlanDia:diasDeProyeccion) {
-      AvArg[[i]] <- AvArg[[i]] * input$modifica_planVac /100
+    
+    
+    if (input$vacStrat == "No vaccination") {
+      
+      AvArgParam <- lapply(AvArg, function(dia) {
+        return(dia * 0)  
+      })
+       
+    } else {
+      AvArgParam <- AvArg
     }
+    
+    for (i in vacPlanDia:diasDeProyeccion) {
+      AvArgParam[[i]] <- AvArgParam[[i]] * input$modifica_planVac /100
+    }
+    
     
     seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
@@ -282,11 +313,12 @@ server <- function (input, output, session) {
               modif_porc_gr=modif_porc_gr,
               modif_porc_cr=modif_porc_cr,
               modif_ifr=modif_ifr,
-              Av=AvArg,
+              Av=AvArgParam,
               immunityStates=immunityStates,
               ageGroups=ageGroups,
               paramVac=paramVac_edit,
-              duracion_inmunidad=duracion_inmunidad
+              duracion_inmunidad=duracion_inmunidad,
+              tVacunasCero=tVacunasCero
     )
   })
   observe({

@@ -19,7 +19,8 @@ seir_ages <- function(dias,
                       Av,
                       immunityStates,
                       ageGroups,
-                      paramVac
+                      paramVac,
+                      tVacunasCero
 ){
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   names = list(immunityStates,
@@ -31,7 +32,7 @@ seir_ages <- function(dias,
                                                                                         nrow=length(immunityStates), 
                                                                                         ncol=length(ageGroups), 
                                                                                         dimnames = names)
-  
+        
   S[[1]][1,] = N
   
   N = S[[1]]
@@ -42,7 +43,8 @@ seir_ages <- function(dias,
   
   # seir
   # tHoy = cantidad de dias con muertes reales - 17 dias de inf - 5 dias de preinf - 7 dias de ajuste por retrasos en la notificacion
-  tHoy <<- nrow(defunciones_reales)-17-round(periodoPreinfPromedio,0)
+  #tHoy <<- nrow(defunciones_reales)-17-round(periodoPreinfPromedio,0)
+  tHoy <<- tVacunasCero
   factorModificadorBeta = NULL
   for(t in 2:dias){
     # print(t)
