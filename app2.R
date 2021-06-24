@@ -55,6 +55,11 @@ colnames(transmission_probability) = rownames(transmission_probability) = ageGro
 # datos de poblacion ejemplo Argentina
 N = c(13150705,20713779,4381897,3560538,3569844)
 
+# datos de recursos
+capacidadUTI <- 11517
+porcAsignadoCovid <- .7
+
+
 # prepara datos reportados
 load("data/dataARG.RData", envir = .GlobalEnv)
 source("update.R", encoding = "UTF-8")
@@ -146,10 +151,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                   fluidRow(
                                                     column(4,
                                                           numericInput("diasProy",
-                                                          "Días de proyección",
+                                                          "Rango de días graficados",
                                                           min=30,
-                                                          max=1100,
-                                                          value = 1100)),
+                                                          max=diasDeProyeccion,
+                                                          value = diasDeProyeccion)),
                                                     column(4,sliderInput("modifica_planVac",
                                                            "Modificar ritmo de vacunación (%)",
                                                            min=-100,
@@ -288,15 +293,37 @@ server <- function (input, output, session) {
       AvArgParam <- lapply(AvArg, function(dia) {
         return(dia * 0)  
       })
-       
+    } else if (input$vacStrat=="No priority") {
+      AvArgParam <- lapply(AvArg, function(dia) {
+        totalDia <- sum(dia)
+        for (i in 1:ncol(dia)) {
+          for (j in 3:length(immunityStates)) {
+            dia[j,i] <- totalDia * N[i]/sum(N)    
+          }
+        }
+        return(dia)
+      })
+    } else if (input$vacStrat=="Priority: older -> adults -> young") {
+      prioridad <- c(10,10,25,25,30)
+      AvArgParam <- lapply(AvArg, function(dia) {
+        totalDia <- sum(dia)
+        for (i in 1:ncol(dia)) {
+          for (j in 3:length(immunityStates)) {
+            dia[j,i] <- totalDia * prioridad[i]/sum(prioridad)    
+          }
+        }
+        return(dia)
+      })
+      
     } else {
-      AvArgParam <- AvArg
+        AvArgParam <- AvArg
     }
+      
+    
     
     for (i in vacPlanDia:diasDeProyeccion) {
       AvArgParam[[i]] <- AvArgParam[[i]] * input$modifica_planVac /100
     }
-    
     
     seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
@@ -323,8 +350,8 @@ server <- function (input, output, session) {
     )
   })
   observe({
-    updateSelectInput(session, "compart_a_graficar", choices = names(proy()), selected="i")
     if (primeraVez) {
+      updateSelectInput(session, "compart_a_graficar", choices = names(proy()), selected="i")
       updateNumericInput(session, inputId = "t", value = tHoy)
       primeraVez <<- FALSE
     }
@@ -364,18 +391,23 @@ server <- function (input, output, session) {
     
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       proy <- proy()
+      
       data_graf <- bind_rows(
         tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
         tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
         tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
         tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
         tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
+        tibble(Compart = "Ii", do.call(rbind, lapply(proy$Ii,colSums)) %>% as_tibble()),
         tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
+        tibble(Compart = "Ig", do.call(rbind, lapply(proy$Ig,colSums)) %>% as_tibble()),
         tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
         tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
         tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
-        tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble())) %>%
-        dplyr::mutate(fecha = rep(1:length(proy$S),10)) %>%
+        tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble()),
+        tibble(Compart = "U", do.call(rbind, lapply(proy$U,colSums)) %>% as_tibble()),
+        tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble())) %>%
+        dplyr::mutate(fecha = rep(1:length(proy$S),14)) %>%
         # TODO: Arreglar
         dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
       data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
@@ -393,16 +425,23 @@ server <- function (input, output, session) {
               plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
             })
           
-            # if (input$compart_a_graficar == "i") {
-            #   plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = 100000, name = paste(valx), line=list(color="#bdbdbd"))    
-            #   plot %>% layout(xaxis = list(title = "Fecha"), 
-            #                   yaxis = list(title = paste("Compartimento:",input$compart_a_graficar), 
-            #                                range = c(0,100000)))
-            # } else {
+            if (input$compart_a_graficar == "i") {
+              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = 60000, name = paste(valx), line=list(color="#bdbdbd"))
+              plot %>% layout(xaxis = list(title = "Fecha"),
+                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar),
+                                           range = c(0,60000)))
+            } else if (input$compart_a_graficar == "Ic") {
+              #browser()
+              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds", line=list(color="#fc9272", dash="dot"))
+              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
+              plot %>% layout(xaxis = list(title = "Fecha"), 
+                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+              
+            } else {
               plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
               plot %>% layout(xaxis = list(title = "Fecha"), 
                               yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
-            # }
+            }
           }
           
           
