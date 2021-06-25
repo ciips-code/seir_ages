@@ -51,7 +51,7 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,
                                     0.048,0.048,0.048,0.048,0.048,
                                     0.048,0.048,0.048,0.048,0.048,
                                     0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
-transmission_probability = transmission_probability * 0.43
+# transmission_probability = transmission_probability * 0.43
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
@@ -82,7 +82,7 @@ for (t in 1:length(vacArg)) {
   vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
 }
 
-promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
+promedio = round(Reduce("+", vacArg) / length(vacArg),0)
 vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
                  nrow=length(immunityStates),
                  ncol=length(ageGroups))
@@ -157,10 +157,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                           min=30,
                                                           max=diasDeProyeccion,
                                                           value = diasDeProyeccion)),
-                                                    column(4,sliderInput("modifica_planVac",
-                                                           "Modificar ritmo de vacunación (%)",
-                                                           min=-100,
-                                                           max=100,value= 1)),
+                                                    column(4,sliderInput("ajusta_beta",
+                                                           "Ajusta beta",
+                                                           min=.3,
+                                                           max=.5,
+                                                           value= .48,
+                                                           step=.01)),
                                                     column(4,numericInput("duracionInm",
                                                            "Duración de la inmunidad",
                                                            min=1,
@@ -323,15 +325,18 @@ server <- function (input, output, session) {
     } else {
         AvArgParam <- AvArg
     }
-      
     
+    AvArgParam <- lapply(AvArgParam, function (dia) {
+        
+      colnames(dia) <- ageGroups
+      return(dia)
+    })
     
-    for (i in vacPlanDia:diasDeProyeccion) {
-      AvArgParam[[i]] <- AvArgParam[[i]] * input$modifica_planVac /100
-    }
-    # AvArgParam[[i]] <- ifelse(AvArgParam[[i]]<0.1,0,AvArgParam[[i]])
-    AvArgParam <<- AvArgParam
-    seir_ages(dias=diasDeProyeccion,
+    AvArgParam <<- AvArgParam 
+    
+    trans_prob_param <- transprob_edit * input$ajusta_beta
+    
+    proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
               porc_gr = porcentajeCasosGraves,
@@ -340,7 +345,7 @@ server <- function (input, output, session) {
               duracionIc = diasHospCasosCriticos,
               ifr = ifr_edit[1,],
               contact_matrix = contact_matrix,
-              transmission_probability = transprob_edit,
+              transmission_probability = trans_prob_param,
               N = N,
               defunciones_reales=def_p,
               modif_beta=modif_beta,
@@ -354,6 +359,10 @@ server <- function (input, output, session) {
               duracion_inmunidad=duracion_inmunidad,
               tVacunasCero=tVacunasCero
     )
+    
+    proy$AvArg=AvArgParam
+    return(proy)
+    
   })
   observe({
     if (primeraVez) {
@@ -394,8 +403,8 @@ server <- function (input, output, session) {
   })
   
   output$graficoUnico <- renderPlotly({
-    
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
+      
       proy <- proy()
       data_graf <- bind_rows(
         tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),

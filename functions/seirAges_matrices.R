@@ -67,19 +67,23 @@ seir_ages <- function(dias,
       # e[[t-1]][1,] = expuestosTotalesHoy
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
-      if (is.null(factorModificadorBeta)) {
-        ten_days_incidents = sapply((t-10):(t-1), function(s) {sum(i[[s]])})
-        porc_S = sum(S[[t-1]])/sum(N)
-        factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents,
-                                                              contact_matrix,
-                                                              diag(transmission_probability),
-                                                              porc_S,
-                                                              duracionIi)
-      }
-      factorModificadorBeta$factor = 1
-      e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
-                                   nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
-      e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
+      # if (is.null(factorModificadorBeta)) {
+      #   ten_days_incidents = sapply((t-10):(t-1), function(s) {sum(i[[s]])})
+      #   porc_S = sum(S[[t-1]])/sum(N)
+      #   factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents,
+      #                                                         contact_matrix,
+      #                                                         diag(transmission_probability),
+      #                                                         porc_S,
+      #                                                         duracionIi)
+      # }
+      # factorModificadorBeta$factor = 1
+      # e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
+      #                              nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      # e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
+      beta       = contact_matrix * transmission_probability
+      
+      e[[t-1]] = S[[t-1]] * matrix((1.12 * beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      
     }
     
     # resto seir
