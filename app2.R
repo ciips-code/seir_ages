@@ -32,11 +32,8 @@ source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
 ifr = c(0.003,0.0035,0.005,0.008,0.02)
-primeraVez = TRUE
-paramVac_primeraVez = TRUE
-ifr_primeraVez = TRUE
-transprob_primeraVez = TRUE
-immunityStates = c("no inmunes", "recuperados", "Vacunado")
+primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
+immunityStates = c("No immunity", "Recovered", "Vaccinated")
 ageGroups = c("0-17", "18-49", "50-59", "60-69", "70+")
 ageGroupsV = c("00","18","50","60","70")
 # crea matrices de contacto y efectividad
@@ -104,21 +101,20 @@ def_p <- dataPorEdad$FMTD$def[,loessCols]
 def_p <- def_p[1:(nrow(def_p)-15),]
 fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
-
-modif_beta <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
-modif_porc_gr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
-modif_porc_cr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
-modif_ifr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
-duracion_inmunidad = 180
-
 names = list(immunityStates,
              ageGroups)
+modif_beta <- matrix(rep(c(1,1,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_porc_gr <- matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_porc_cr <- matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_ifr <- matrix(rep(c(1,.05,.01),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+duracion_inmunidad = 180
+
 namesVac = list(immunityStates,
                 c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
 
 paramVac <- matrix(data=c(0,0,0,0,0,
                           0,0,0,0,0,
-                          20,.2,180,.3,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
+                          20,.2,180,.6,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 fluidRow(id="inputs", 
@@ -135,11 +131,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                 actionButton("prox", label = NULL, icon = icon("chevron-right"))
                                 , align="center")),
                 tabsetPanel(type = "tabs",
-                            tabPanel("Graficos",
+                            tabPanel("Graphs",
                                      br(),
-                                     fluidRow(column(3,selectInput("compart_a_graficar","Compartimento",choices = NULL)),
-                                              column(2,selectInput("edad","Ver grupos de edad",
-                                                                   choices=c("Todas las edades"="total",ageGroups),
+                                     fluidRow(column(3,selectInput("compart_a_graficar","Compartment",choices = NULL)),
+                                              column(2,selectInput("edad","Age groups",
+                                                                   choices=c("All ages"="total",ageGroups),
                                                                    multiple = T,
                                                                    selected= c("total")))
                                               ),
@@ -153,18 +149,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                   fluidRow(
                                                     column(4,
                                                           numericInput("diasProy",
-                                                          "Rango de días graficados",
+                                                          "Days to display",
                                                           min=30,
                                                           max=diasDeProyeccion,
                                                           value = diasDeProyeccion)),
-                                                    column(4,sliderInput("ajusta_beta",
-                                                           "Ajusta beta",
-                                                           min=.3,
-                                                           max=.5,
-                                                           value= .48,
-                                                           step=.01)),
                                                     column(4,numericInput("duracionInm",
-                                                           "Duración de la inmunidad",
+                                                           "Immunity duration",
                                                            min=1,
                                                            max=360,
                                                            value = 180))
@@ -176,34 +166,70 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                   )
                                                ),
                                               column(6,
-                                                     DT::dataTableOutput("paramVac"),
-                                                     DT::dataTableOutput("ifrt")
+                                                     DT::dataTableOutput("ifrt"),
                                                      )
                                              )
                                            )
                                          )
                                        ),
-                                       tabPanel("Question #1",
-                                                fluidRow(column(6,
+                                       tabPanel("Scenarios",
+                                                fluidRow(column(3,
+                                                                selectInput(
+                                                                  "vacUptake",
+                                                                  label="Vaccination uptake",
+                                                                  choices = c("Current uptake",
+                                                                              "High uptake: 95%",
+                                                                              "High uptake: 80%",
+                                                                              "Mid-range uptake: 50%",
+                                                                              "Low uptake: 20%",
+                                                                              "No vaccination")
+                                                                ),
+                                                                selectInput(
+                                                                  "vacDateGoal",
+                                                                  label="Vaccination date goal",
+                                                                  choices = c("Current goal",
+                                                                              "Mid 2021",
+                                                                              "End 2021",
+                                                                              "Mid 2022",
+                                                                              "End 2022")
+                                                                ),
                                                                 selectInput(
                                                                   "vacStrat",
-                                                                  label="Vaccination strategy",
-                                                                  choices = c("Observed strategy",
+                                                                  label="Vaccination priorities",
+                                                                  choices = c("Current priorities",
                                                                               "No vaccination",
                                                                               "No priority",
-                                                                              "Metas 1",
+                                                                              "Coverage goals 1",
                                                                               "Priority: older -> adults -> young",
                                                                               "Priority: older + adults -> young",
                                                                               "Priority: adults -> older -> young")
                                                                   )
-                                                                )
-                                                         )
+                                                                ),
+                                                         column(3,
+                                                                radioButtons("dist", "NPI strategy:",
+                                                                             c("Continued NPIs" = "cont",
+                                                                               "Relaxation of NPIs" = "relax")),
+                                                                sliderInput("ajusta_beta",
+                                                                              "NPI strength modifier",
+                                                                              min=-1, #.3,
+                                                                              max=1, #.5,
+                                                                              value=0, #.40,
+                                                                              step=.1)),
+                                                         column(3,p("Results:")),
+                                                         column(3,DT::dataTableOutput("paramVac"))
+                                                         ),
+                                                fluidRow(
+                                                  column(3,DT::dataTableOutput("mbeta")),
+                                                  column(3,DT::dataTableOutput("mgraves")),
+                                                  column(3,DT::dataTableOutput("mcriticos")),
+                                                  column(3,DT::dataTableOutput("mifr"))
+                                                )
                                                 )
                                        
                                        
                                        
                             )),
-                            tabPanel("Compartimentos", fluidRow(id="content"))
+                            tabPanel("Compartments", fluidRow(id="content"))
                 ),
                 fluidRow(column(12,id="content")),
                 br(),
@@ -216,6 +242,67 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 
 
 server <- function (input, output, session) {
+  
+  
+  observe({
+    input$mbeta_cell_edit
+    if (mbeta_primeraVez==T) {
+      mbeta_edit <<- modif_beta
+      mbeta_primeraVez<<-F
+    } else {
+      mbeta_edit[as.numeric(input$mbeta_cell_edit[1]),
+               as.numeric(input$mbeta_cell_edit[2])+1] <- as.numeric(input$mbeta_cell_edit[3])
+      mbeta_edit <<- mbeta_edit
+    }
+  })
+  output$mbeta <- renderDT({
+    DT::datatable(mbeta_edit, editable = T, caption = 'Beta modifier', options = list(ordering=F, searching=F, paging=F, info=F))
+  })
+  
+  observe({
+    input$mgraves_cell_edit
+    if (mgraves_primeraVez==T) {
+      mgraves_edit <<- modif_porc_gr
+      mgraves_primeraVez<<-F
+    } else {
+      mgraves_edit[as.numeric(input$mgraves_cell_edit[1]),
+                 as.numeric(input$mgraves_cell_edit[2])+1] <- as.numeric(input$mgraves_cell_edit[3])
+      mgraves_edit <<- mgraves_edit
+    }
+  })
+  output$mgraves <- renderDT({
+    DT::datatable(mgraves_edit, editable = T, caption = 'Severe disease modifier', options = list(ordering=F, searching=F, paging=F, info=F))
+  })
+  
+  observe({
+    input$mcriticos_cell_edit
+    if (mcriticos_primeraVez==T) {
+      mcriticos_edit <<- modif_porc_cr
+      mcriticos_primeraVez<<-F
+    } else {
+      mcriticos_edit[as.numeric(input$mcriticos_cell_edit[1]),
+                   as.numeric(input$mcriticos_cell_edit[2])+1] <- as.numeric(input$mcriticos_cell_edit[3])
+      mcriticos_edit <<- mcriticos_edit
+    }
+  })
+  output$mcriticos <- renderDT({
+    DT::datatable(mcriticos_edit, editable = T, caption = 'Critical disease modifier', options = list(ordering=F, searching=F, paging=F, info=F))
+  })
+  
+  observe({
+    input$mifr_cell_edit
+    if (mifr_primeraVez==T) {
+      mifr_edit <<- modif_ifr
+      mifr_primeraVez<<-F
+    } else {
+      mifr_edit[as.numeric(input$mifr_cell_edit[1]),
+                     as.numeric(input$mifr_cell_edit[2])+1] <- as.numeric(input$mifr_cell_edit[3])
+      mifr_edit <<- mifr_edit
+    }
+  })
+  output$mifr <- renderDT({
+    DT::datatable(mifr_edit, editable = T, caption = 'IFR modifier', options = list(ordering=F, searching=F, paging=F, info=F))
+  })
   
   observe({
     input$ifrt_cell_edit
@@ -233,7 +320,7 @@ server <- function (input, output, session) {
   
   output$ifrt <- renderDT({
     DT::datatable(ifr_edit, editable = T,
-                  caption = 'IFR por edad',
+                  caption = 'Age specific IFR',
                   options = list(ordering=F, 
                                  searching=F, 
                                  paging=F, 
@@ -255,7 +342,7 @@ server <- function (input, output, session) {
   
   output$transprob <- renderDT({
     DT::datatable(transprob_edit, editable = T,
-                  caption = 'Matriz de contacto efectivo (probabilidades de transmisión)',
+                  caption = 'Effective contacts matrix',
                   options = list(ordering=F, 
                                 searching=F, 
                                 paging=F, 
@@ -277,7 +364,7 @@ server <- function (input, output, session) {
   
   output$paramVac <- renderDT({
     DT::datatable(paramVac_edit, editable = T,
-                  caption = 'Parámetros de las vacunas',
+                  caption = 'Vaccines parameters',
                   options = list(ordering=F, 
                                 searching=F, 
                                 paging=F, 
@@ -289,6 +376,10 @@ server <- function (input, output, session) {
     paste(input$paramVac_cell_edit)
     paste(input$ifrt_cell_edit)
     paste(input$transprob_cell_edit)
+    paste(input$mbeta_cell_edit)
+    paste(input$mgraves_cell_edit)
+    paste(input$mcriticos_cell_edit)
+    paste(input$mifr_cell_edit)
     
     duracion_inmunidad = input$duracionInm
     
@@ -319,7 +410,7 @@ server <- function (input, output, session) {
         }
         return(dia)
       })
-    } else if (input$vacStrat=="Metas 1") {
+    } else if (input$vacStrat=="Coverage goals 1") {
       metas <- c(0,.50,.65,.75,.85)
       AvArgParam <- generaPlanVacunacion(metas, N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg)
     } else {
@@ -334,7 +425,8 @@ server <- function (input, output, session) {
     
     AvArgParam <<- AvArgParam 
     
-    trans_prob_param <- transprob_edit * input$ajusta_beta
+    ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+    trans_prob_param <- transprob_edit * ajuste
     
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
@@ -409,6 +501,8 @@ server <- function (input, output, session) {
       data_graf <- bind_rows(
         tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
         tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
+        tibble(Compart = "v", do.call(rbind, lapply(proy$v,colSums)) %>% as_tibble()),
+        tibble(Compart = "vA", do.call(rbind, lapply(proy$vA,colSums)) %>% as_tibble()),
         tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
         tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
         tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
@@ -421,8 +515,9 @@ server <- function (input, output, session) {
         tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble()),
         tibble(Compart = "U", do.call(rbind, lapply(proy$U,colSums)) %>% as_tibble()),
         tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble()),
+        tibble(Compart = "tot", do.call(rbind, lapply(proy$tot,colSums)) %>% as_tibble()),
         tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
-        dplyr::mutate(fecha = rep(1:length(proy$S),15)) %>%
+        dplyr::mutate(fecha = rep(1:length(proy$S),18)) %>%
         # TODO: Arreglar
         dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
       data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`

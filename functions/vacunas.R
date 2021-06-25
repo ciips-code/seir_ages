@@ -13,3 +13,12 @@ generaPlanVacunacion <- function(metas, N, fechaInicio, fechaObjetivo, tVacunasC
   AvArg[(tVacunasCero+dias):length(AvArg)] = planCero
   return(AvArg)
 }
+
+
+# for (j in c(3:nrow(vacunasDelDia))) {
+#   for (i in seq_len(length(ageGroups))) {
+#     if (!haySparaVacunar[i]) {
+#       vacunasDelDia[j,i] = 0
+#     }
+#   }
+# }
