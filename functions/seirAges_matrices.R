@@ -22,6 +22,7 @@ seir_ages <- function(dias,
                       paramVac,
                       tVacunasCero
 ){
+  # browser()
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   names = list(immunityStates,
                ageGroups)
@@ -75,6 +76,7 @@ seir_ages <- function(dias,
                                                               porc_S,
                                                               duracionIi)
       }
+      factorModificadorBeta$factor = 1
       e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
                                    nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
@@ -116,7 +118,7 @@ seir_ages <- function(dias,
     }
     # TODO: No esta vacunando recuperados
     haySparaVacunar = S[[t-1]][1,] > colSums(vacunasDelDia)
-    
+    haySparaVacunar[is.na(haySparaVacunar)] <- FALSE
     for (vacuna in c(3:nrow(paramVac))) {
       latencia = paramVac[vacuna,1]
       porcV = paramVac[vacuna,2]

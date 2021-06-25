@@ -116,8 +116,7 @@ update <-  function(pais,diasDeProyeccion) {
 
 ##### funcion formatData #####
 
-formatData <- function(pais,
-                       ageGroups=c("00","18","50","60","80")) {
+formatData <- function(pais, ageGroups) {
 
   load(paste0("data/data",pais,".RData"))
   eval(parse(text=paste0('countryData$FMTD <- countryData$',pais)))

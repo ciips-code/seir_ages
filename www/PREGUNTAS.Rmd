@@ -67,3 +67,17 @@ What is the probability and stability of local or regional elimination of SARS-C
   - Desplegable con 5 opciones de eficacia de vacunas
   - Desplegable con 5 opciones de NPI, con la del medio R actual, +/- 30% y +/- 60%
 - Salida: Curva de casos
+
+
+
+## Plan de Vacunacion ARG
+
+A Enero 2022:
+0-17:   0%
+18-49: 50%
+50-59: 65%
+60-69: 75%
+70+:   85%
+
+
+

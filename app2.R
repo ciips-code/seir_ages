@@ -28,9 +28,10 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 
 
 # lee funciones
-source("functions/seirAges.R", encoding = "UTF-8")
+source("functions/seirAges_matrices.R", encoding = "UTF-8")
+source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
-ifr = c(0.003,0.004,0.005,0.01,0.03)
+ifr = c(0.003,0.0035,0.005,0.008,0.02)
 primeraVez = TRUE
 paramVac_primeraVez = TRUE
 ifr_primeraVez = TRUE
@@ -50,6 +51,7 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,
                                     0.048,0.048,0.048,0.048,0.048,
                                     0.048,0.048,0.048,0.048,0.048,
                                     0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
+transmission_probability = transmission_probability * 0.43
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
@@ -67,7 +69,6 @@ dataPorEdad = formatData("ARG", ageGroupsV)
 
 diaCeroVac <- min(dataPorEdad$FMTD$vac$fecha)
 tVacunasCero <-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
-
 vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
                                                         nrow=length(immunityStates),
                                                         ncol=length(ageGroups))
@@ -101,6 +102,8 @@ rm(temp)
 loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
 def_p <- dataPorEdad$FMTD$def[,loessCols]
 def_p <- def_p[1:(nrow(def_p)-15),]
+fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
+                    min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
 
 modif_beta <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
 modif_porc_gr <- matrix(rep(c(1,.70,.60),length(ageGroups)),3,length(ageGroups),byrow=F)
@@ -116,7 +119,6 @@ namesVac = list(immunityStates,
 paramVac <- matrix(data=c(0,0,0,0,0,
                           0,0,0,0,0,
                           20,.2,180,.3,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
-source("functions/seirAges_matrices.R", encoding = "UTF-8")
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 fluidRow(id="inputs", 
@@ -187,6 +189,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                   choices = c("Observed strategy",
                                                                               "No vaccination",
                                                                               "No priority",
+                                                                              "Metas 1",
                                                                               "Priority: older -> adults -> young",
                                                                               "Priority: older + adults -> young",
                                                                               "Priority: adults -> older -> young")
@@ -314,7 +317,9 @@ server <- function (input, output, session) {
         }
         return(dia)
       })
-      
+    } else if (input$vacStrat=="Metas 1") {
+      metas <- c(0,.50,.65,.75,.85)
+      AvArgParam <- generaPlanVacunacion(metas, N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg)
     } else {
         AvArgParam <- AvArg
     }
@@ -324,7 +329,8 @@ server <- function (input, output, session) {
     for (i in vacPlanDia:diasDeProyeccion) {
       AvArgParam[[i]] <- AvArgParam[[i]] * input$modifica_planVac /100
     }
-    
+    # AvArgParam[[i]] <- ifelse(AvArgParam[[i]]<0.1,0,AvArgParam[[i]])
+    AvArgParam <<- AvArgParam
     seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
@@ -351,7 +357,7 @@ server <- function (input, output, session) {
   })
   observe({
     if (primeraVez) {
-      updateSelectInput(session, "compart_a_graficar", choices = names(proy()), selected="i")
+      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy()),"pV"), selected="i")
       updateNumericInput(session, inputId = "t", value = tHoy)
       primeraVez <<- FALSE
     }
@@ -391,7 +397,6 @@ server <- function (input, output, session) {
     
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       proy <- proy()
-      
       data_graf <- bind_rows(
         tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
         tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
@@ -406,13 +411,15 @@ server <- function (input, output, session) {
         tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
         tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble()),
         tibble(Compart = "U", do.call(rbind, lapply(proy$U,colSums)) %>% as_tibble()),
-        tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble())) %>%
-        dplyr::mutate(fecha = rep(1:length(proy$S),14)) %>%
+        tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble()),
+        tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
+        dplyr::mutate(fecha = rep(1:length(proy$S),15)) %>%
         # TODO: Arreglar
         dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
       data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
       dataTemp = data_graf %>% dplyr::filter(Compart == input$compart_a_graficar)
-      dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
+      dataTemp$fechaDia = fechas_master
+      # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
       
