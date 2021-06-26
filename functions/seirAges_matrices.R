@@ -20,7 +20,9 @@ seir_ages <- function(dias,
                       immunityStates,
                       ageGroups,
                       paramVac,
-                      tVacunasCero
+                      tVacunasCero,
+                      relaxNpi,
+                      relaxGoal
 ){
   # browser()
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
@@ -47,6 +49,18 @@ seir_ages <- function(dias,
   #tHoy <<- nrow(defunciones_reales)-17-round(periodoPreinfPromedio,0)
   tHoy <<- tVacunasCero
   factorModificadorBeta = NULL
+  relaxValue = rep(1,dias)
+  if (relaxNpi) {
+    vectorRelajado = rep(1,relaxGoal-tHoy)
+    dailyRelax = 0.5 / (relaxGoal-tHoy)
+    relaxSum = 0
+    for(ri in c(1:length(vectorRelajado))) {
+      relaxSum = relaxSum + dailyRelax
+      vectorRelajado[ri] = vectorRelajado[ri]+relaxSum
+    }
+    relaxValue[tHoy:relaxGoal] = vectorRelajado
+    relaxValue[relaxGoal:length(relaxValue)] = 1.5
+  }
   for(t in 2:dias){
     # print(t)
     # contagiados según matriz de contacto
@@ -79,7 +93,7 @@ seir_ages <- function(dias,
       # e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
       #                              nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       # e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
-      beta       = contact_matrix * transmission_probability
+      beta       = contact_matrix * transmission_probability * relaxValue[t]
       e[[t-1]] = S[[t-1]] * matrix((1.12 * beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
     }
     

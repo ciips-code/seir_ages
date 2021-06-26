@@ -11,6 +11,8 @@ library(reshape2)
 library(ggplot2)
 library(DT)
 library(EpiEstim)
+library(shinyjs)
+library(modelr)
 
 rm(list = ls())
 
@@ -33,9 +35,9 @@ source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
 ifr = c(0.003,0.0035,0.005,0.008,0.02)
 primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
-immunityStates = c("No immunity", "Recovered", "Vaccinated")
-ageGroups = c("0-17", "18-49", "50-59", "60-69", "70+")
-ageGroupsV = c("00","18","50","60","70")
+immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
+ageGroups <<- c("0-17", "18-49", "50-59", "60-69", "70+")
+ageGroupsV <<- c("00","18","50","60","70")
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,1,1,
                           2,4,4,4,4,
@@ -117,6 +119,7 @@ paramVac <- matrix(data=c(0,0,0,0,0,
                           20,.2,180,.6,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
+                useShinyjs(),
                 fluidRow(id="inputs", 
                          column(width = 4, offset = 2,
                                 numericInput("t", label = NULL, value = 1, step = 1)
@@ -187,30 +190,41 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                 selectInput(
                                                                   "vacDateGoal",
                                                                   label="Vaccination date goal",
-                                                                  choices = c("Current goal",
-                                                                              "Mid 2021",
-                                                                              "End 2021",
-                                                                              "Mid 2022",
-                                                                              "End 2022")
+                                                                  choices = c("Mid 2021"="2021-06-30",
+                                                                              "End 2021"="2021-12-31",
+                                                                              "Mid 2022"="2022-05-30",
+                                                                              "End 2022"="2022-12-31")
                                                                 ),
                                                                 selectInput(
                                                                   "vacStrat",
                                                                   label="Vaccination priorities",
                                                                   choices = c("Current priorities",
-                                                                              "No vaccination",
-                                                                              "No priority",
-                                                                              "Coverage goals 1",
                                                                               "Priority: older -> adults -> young",
                                                                               "Priority: older + adults -> young",
-                                                                              "Priority: adults -> older -> young")
+                                                                              "Priority: adults -> older -> young",
+                                                                              "No priorities")
                                                                   )
                                                                 ),
                                                          column(3,
-                                                                radioButtons("dist", "NPI strategy:",
+                                                                radioButtons("npiStrat", "NPI strategy:",
                                                                              c("Continued NPIs" = "cont",
                                                                                "Relaxation of NPIs" = "relax")),
+                                                                selectInput(
+                                                                  "relaxationDateGoal",
+                                                                  label="Relaxation date goal",
+                                                                  choices = c("Mid 2021"="2021-06-30",
+                                                                              "End 2021"="2021-12-31",
+                                                                              "Mid 2022"="2022-05-30",
+                                                                              "End 2022"="2022-12-31")
+                                                                ),
+                                                                sliderInput("relaxationFactor",
+                                                                            "NPI Relaxation factor",
+                                                                            min=0, #.3,
+                                                                            max=.5, #.5,
+                                                                            value=0, #.40,
+                                                                            step=.05),
                                                                 sliderInput("ajusta_beta",
-                                                                              "NPI strength modifier",
+                                                                              "Base NPI strength modifier",
                                                                               min=-1, #.3,
                                                                               max=1, #.5,
                                                                               value=0, #.40,
@@ -384,50 +398,36 @@ server <- function (input, output, session) {
     
     duracion_inmunidad = input$duracionInm
     
-    
-    if (input$vacStrat == "No vaccination") {
-      
-      AvArgParam <- lapply(AvArg, function(dia) {
-        return(dia * 0)  
-      })
-    } else if (input$vacStrat=="No priority") {
-      AvArgParam <- lapply(AvArg, function(dia) {
-        totalDia <- sum(dia)
-        for (i in 1:ncol(dia)) {
-          for (j in 3:length(immunityStates)) {
-            dia[j,i] <- totalDia * N[i]/sum(N)    
-          }
-        }
-        return(dia)
-      })
-    } else if (input$vacStrat=="Priority: older -> adults -> young") {
-      prioridad <- c(10,10,25,25,30)
-      AvArgParam <- lapply(AvArg, function(dia) {
-        totalDia <- sum(dia)
-        for (i in 1:ncol(dia)) {
-          for (j in 3:length(immunityStates)) {
-            dia[j,i] <- totalDia * prioridad[i]/sum(prioridad)    
-          }
-        }
-        return(dia)
-      })
-    } else if (input$vacStrat=="Coverage goals 1") {
-      metas <- c(0,.50,.65,.75,.85)
-      AvArgParam <- generaPlanVacunacion(metas, N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg)
+    # print(input$vacDateGoal)
+    # print(input$vacUptake)
+    # print(input$vacStrat)
+    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg
+    # browser()
+    if (input$vacUptake == "Current uptake" | input$vacUptake == "No vaccination") {
+      disable("vacDateGoal")
     } else {
-        AvArgParam <- AvArg
+      enable("vacDateGoal")
     }
     
-    AvArgParam <- lapply(AvArgParam, function (dia) {
-        
-      colnames(dia) <- ageGroups
-      return(dia)
-    })
+    AvArgParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                      AvArg, N, tVacunasCero, diaCeroVac)
     
     AvArgParam <<- AvArgParam 
     
     ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
     trans_prob_param <- transprob_edit * ajuste
+    
+    relaxNpi = FALSE
+    relaxGoal = NULL
+    if (input$npiStrat == "cont") {
+      disable("relaxationDateGoal")
+      disable("relaxationFactor")
+    } else {
+      enable("relaxationDateGoal")
+      enable("relaxationFactor")
+      relaxNpi = TRUE
+      relaxGoal = which(fechas_master == input$relaxationDateGoal)
+    }
     
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
@@ -450,7 +450,9 @@ server <- function (input, output, session) {
               ageGroups=ageGroups,
               paramVac=paramVac_edit,
               duracion_inmunidad=duracion_inmunidad,
-              tVacunasCero=tVacunasCero
+              tVacunasCero=tVacunasCero,
+              relaxNpi=relaxNpi,
+              relaxGoal=relaxGoal
     )
     
     proy$AvArg=AvArgParam
@@ -544,10 +546,10 @@ server <- function (input, output, session) {
             })
           
             if (input$compart_a_graficar == "i") {
-              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = 60000, name = paste(valx), line=list(color="#bdbdbd"))
+              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))
               plot %>% layout(xaxis = list(title = "Fecha"),
-                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar),
-                                           range = c(0,60000)))
+                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+              # , range = c(0,60000)
             } else if (input$compart_a_graficar == "Ic") {
               #browser()
               plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds", line=list(color="#fc9272", dash="dot"))
@@ -577,7 +579,6 @@ server <- function (input, output, session) {
     
   })
   output$resument_text <- renderText({
-
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
     
@@ -595,10 +596,10 @@ server <- function (input, output, session) {
                               data_text$Compart=="i"]
     
     vacunas_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
-                                data_text$Compart=="v"]
+                                data_text$Compart=="vA"]
     
     poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
-                                   data_text$Compart=="v"] / sum(N) * 100
+                                   data_text$Compart=="vA"] / sum(N) * 100
     
     
     
