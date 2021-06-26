@@ -11,6 +11,7 @@ library(reshape2)
 library(ggplot2)
 library(DT)
 library(EpiEstim)
+library(covoid)
 
 rm(list = ls())
 
@@ -36,7 +37,8 @@ primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta
 immunityStates = c("No immunity", "Recovered", "Vaccinated")
 ageGroups = c("0-17", "18-49", "50-59", "60-69", "70+")
 ageGroupsV = c("00","18","50","60","70")
-# crea matrices de contacto y efectividad
+# crea matrices de contacto y efectividad - set TRUE si queremos observada
+use_empirical_mc = TRUE
 contact_matrix = matrix(c(5,1,1,1,1,
                           2,4,4,4,4,
                           2,4,4,4,4,
@@ -48,6 +50,12 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,
                                     0.048,0.048,0.048,0.048,0.048,
                                     0.048,0.048,0.048,0.048,0.048,
                                     0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
+if(use_empirical_mc){
+  contact_matrix <- get_empirical_cm(ages=c(0,20,50,60,70))
+  colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
+  transmission_probability = transmission_probability * 4 # a ojo
+}
+
 # transmission_probability = transmission_probability * 0.43
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
