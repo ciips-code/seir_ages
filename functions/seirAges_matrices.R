@@ -22,7 +22,8 @@ seir_ages <- function(dias,
                       paramVac,
                       tVacunasCero,
                       relaxNpi,
-                      relaxGoal
+                      relaxGoal,
+                      relaxFactor
 ){
   # browser()
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
@@ -52,14 +53,14 @@ seir_ages <- function(dias,
   relaxValue = rep(1,dias)
   if (relaxNpi) {
     vectorRelajado = rep(1,relaxGoal-tHoy)
-    dailyRelax = 0.5 / (relaxGoal-tHoy)
+    dailyRelax = relaxFactor / (relaxGoal-tHoy)
     relaxSum = 0
     for(ri in c(1:length(vectorRelajado))) {
       relaxSum = relaxSum + dailyRelax
       vectorRelajado[ri] = vectorRelajado[ri]+relaxSum
     }
-    relaxValue[tHoy:relaxGoal] = vectorRelajado
-    relaxValue[relaxGoal:length(relaxValue)] = 1.5
+    relaxValue[tHoy:(relaxGoal-1)] = vectorRelajado
+    relaxValue[relaxGoal:length(relaxValue)] = 1 + relaxFactor
   }
   for(t in 2:dias){
     # print(t)

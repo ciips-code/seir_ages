@@ -452,7 +452,8 @@ server <- function (input, output, session) {
               duracion_inmunidad=duracion_inmunidad,
               tVacunasCero=tVacunasCero,
               relaxNpi=relaxNpi,
-              relaxGoal=relaxGoal
+              relaxGoal=relaxGoal,
+              relaxFactor=input$relaxationFactor
     )
     
     proy$AvArg=AvArgParam
