@@ -215,7 +215,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               max=1, #.5,
                                                                               value=0, #.40,
                                                                               step=.1)),
-                                                         column(3,p("Results:")),
+                                                         column(3,p("Results:"),
+                                                                uiOutput("resument_text")),
                                                          column(3,DT::dataTableOutput("paramVac"))
                                                          ),
                                                 fluidRow(
@@ -494,35 +495,41 @@ server <- function (input, output, session) {
     updateNumericInput(session,"t", value =  input$t + 1)
   })
   
+  data_graf <- reactive({
+    
+    proy <- proy()
+    data_graf <- bind_rows(
+      tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
+      tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
+      tibble(Compart = "v", do.call(rbind, lapply(proy$v,colSums)) %>% as_tibble()),
+      tibble(Compart = "vA", do.call(rbind, lapply(proy$vA,colSums)) %>% as_tibble()),
+      tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
+      tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
+      tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ii", do.call(rbind, lapply(proy$Ii,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ig", do.call(rbind, lapply(proy$Ig,colSums)) %>% as_tibble()),
+      tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
+      tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
+      tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
+      tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble()),
+      tibble(Compart = "U", do.call(rbind, lapply(proy$U,colSums)) %>% as_tibble()),
+      tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble()),
+      tibble(Compart = "tot", do.call(rbind, lapply(proy$tot,colSums)) %>% as_tibble()),
+      tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
+      dplyr::mutate(fecha = rep(1:length(proy$S),18)) %>%
+      # TODO: Arreglar
+      dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
+    data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
+    data_graf
+  })
+  
   output$graficoUnico <- renderPlotly({
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
-      
-      proy <- proy()
-      data_graf <- bind_rows(
-        tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
-        tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
-        tibble(Compart = "v", do.call(rbind, lapply(proy$v,colSums)) %>% as_tibble()),
-        tibble(Compart = "vA", do.call(rbind, lapply(proy$vA,colSums)) %>% as_tibble()),
-        tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
-        tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
-        tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
-        tibble(Compart = "Ii", do.call(rbind, lapply(proy$Ii,colSums)) %>% as_tibble()),
-        tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
-        tibble(Compart = "Ig", do.call(rbind, lapply(proy$Ig,colSums)) %>% as_tibble()),
-        tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
-        tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
-        tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
-        tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble()),
-        tibble(Compart = "U", do.call(rbind, lapply(proy$U,colSums)) %>% as_tibble()),
-        tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble()),
-        tibble(Compart = "tot", do.call(rbind, lapply(proy$tot,colSums)) %>% as_tibble()),
-        tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
-        dplyr::mutate(fecha = rep(1:length(proy$S),18)) %>%
-        # TODO: Arreglar
-        dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
-      data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
-      dataTemp = data_graf %>% dplyr::filter(Compart == input$compart_a_graficar)
+      dataTemp = data_graf() %>% dplyr::filter(Compart == input$compart_a_graficar)
       dataTemp$fechaDia = fechas_master
+      dataTemp <- dataTemp 
+      dataTemp  
       # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
@@ -567,6 +574,49 @@ server <- function (input, output, session) {
       }
       
     }
+    
+  })
+  output$resument_text <- renderText({
+
+    data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
+    colnames(data_text)[ncol(data_text)] <- "fechaDia"
+    
+    data_text <- data_text %>% dplyr::group_by(Compart) %>%
+                               dplyr::mutate(ac=cumsum(total))
+    
+    fechas <- c("2021-12-31",
+                "2022-06-30",
+                "2022-12-31")
+    
+    def_ac <- data_text$total[(as.character(data_text$fechaDia) %in% fechas) &
+                               data_text$Compart=="D"]  
+    
+    casos_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
+                              data_text$Compart=="i"]
+    
+    vacunas_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
+                                data_text$Compart=="v"]
+    
+    poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
+                                   data_text$Compart=="v"] / sum(N) * 100
+    
+    
+    
+    HTML("Defunciones acumuladas al ", "<b>",fechas[1],"</b>", ": ", format(round(def_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Defunciones acumuladas al ", fechas[2],": ", format(round(def_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Defunciones acumuladas al ", fechas[3],": ", format(round(def_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Casos acumulados al ", fechas[1],": ", format(round(casos_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Casos acumulados al ", fechas[2],": ", format(round(casos_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Casos acumulados al ", fechas[3],": ", format(round(casos_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Vacunas aplicadas al ", fechas[1],": ", format(round(vacunas_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Vacunas aplicadas al ", fechas[2],": ", format(round(vacunas_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Vacunas aplicadas al ", fechas[3],": ", format(round(vacunas_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+         "Población vacunada al ", fechas[1],": ", format(round(poblacion_vac[1],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
+         "Población vacunada al ", fechas[2],": ", format(round(poblacion_vac[2],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
+         "Población vacunada al ", fechas[3],": ", format(round(poblacion_vac[3],1), big.mark = ',', decimal.mark = '.'), "% <br/>"
+    )
+         
+
     
   })
 }
