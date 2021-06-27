@@ -86,6 +86,44 @@ getUptakeCoverage <- function(uptake) {
   return(coverage)
 }
 
+applyVaccineEfficacy <- function(selectedEfficacy) {
+  names <- list(immunityStates,
+                ageGroups)
+  efficacy = list()
+  if (selectedEfficacy == "A. 100% all") {
+    efficacy$modif_beta = matrix(rep(c(1,1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+  } else if (selectedEfficacy == "B1. 100%, 80%, 80%") {
+    efficacy$modif_beta = matrix(rep(c(1,1,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+  } else if (selectedEfficacy == "B2. 100%, 80%, 50%") {
+    efficacy$modif_beta = matrix(rep(c(1,1,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+  } else if (selectedEfficacy == "C1. 80%, 80%, 50%") {
+    efficacy$modif_beta = matrix(rep(c(1,1,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+  } else if (selectedEfficacy == "C2. 80%, 50%, 50%") {
+    efficacy$modif_beta = matrix(rep(c(1,1,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+  }
+  return(efficacy)
+}
+
+# choices = c("A. 100% all disease",
+#             "B1. 100% severe, 80% moderate, 80% mild",
+#             "B2. 100% severe, 80% moderate, 50% mild",
+#             "C1. 80% severe, 80% moderate, 50% mild",
+#             "C2. 80% severe, 50% moderate, 50% mild")
 
 # for (j in c(3:nrow(vacunasDelDia))) {
 #   for (i in seq_len(length(ageGroups))) {
