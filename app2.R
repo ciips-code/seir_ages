@@ -221,7 +221,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "Priority: adults -> older -> young",
                                                                               "No priorities")
                                                                 ),
-
+                                                ),
                                                          column(2,
 
                                                                 selectInput(
