@@ -14,7 +14,7 @@ library(EpiEstim)
 library(covoid)
 library(shinyjs)
 library(modelr)
-
+library(stringr)
 
 rm(list = ls())
 
@@ -187,13 +187,14 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                column(3,DT::dataTableOutput("mbeta")),
                                                column(3,DT::dataTableOutput("mgraves")),
                                                column(3,DT::dataTableOutput("mcriticos")),
-                                               column(3,DT::dataTableOutput("mifr"))
+                                               column(3,DT::dataTableOutput("mifr")),
+                                               column(3,DT::dataTableOutput("paramVac"))
                                              )
                                            )
                                          )
                                        ),
                                        tabPanel("Scenarios",
-                                                fluidRow(column(3,
+                                                fluidRow(column(4,
                                                                 selectInput(
                                                                   "vacUptake",
                                                                   label="Vaccination uptake",
@@ -221,9 +222,6 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "Priority: adults -> older -> young",
                                                                               "No priorities")
                                                                 ),
-                                                ),
-                                                         column(2,
-
                                                                 selectInput(
                                                                   "vacEfficacy",
                                                                   label="Vaccination efficacy (Severe, Moderate, Mild)",
@@ -242,7 +240,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "Lifelong"=2000)
                                                                 )
                                                             ),
-                                                         column(3,
+                                                         column(4,
 
                                                                 radioButtons("npiStrat", "NPI strategy:",
                                                                              c("Continued NPIs" = "cont",
@@ -267,8 +265,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               max=1, #.5,
                                                                               value=0, #.40,
                                                                               step=.1)),
-                                                         column(4,DTOutput("resumen_tabla")),
-                                                         column(3,DT::dataTableOutput("paramVac"))
+                                                         column(4,DTOutput("resumen_tabla"))
                                                          )
                                                 )
                                        
@@ -496,13 +493,12 @@ server <- function (input, output, session) {
               relaxFactor=input$relaxationFactor
     )
     
-    proy$AvArg=AvArgParam
     return(proy)
     
   })
   observe({
     if (primeraVez) {
-      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy()),"pV"), selected="i")
+      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy()),"pV: Vaccination plan"), selected="i: Daily infectious")
       updateNumericInput(session, inputId = "t", value = tHoy)
       primeraVez <<- FALSE
     }
@@ -541,26 +537,25 @@ server <- function (input, output, session) {
   data_graf <- reactive({
     
     proy <- proy()
+    
     data_graf <- bind_rows(
-      tibble(Compart = "S", do.call(rbind, lapply(proy$S,colSums)) %>% as_tibble()),
-      tibble(Compart = "V", do.call(rbind, lapply(proy$V,colSums)) %>% as_tibble()),
-      tibble(Compart = "v", do.call(rbind, lapply(proy$v,colSums)) %>% as_tibble()),
-      tibble(Compart = "vA", do.call(rbind, lapply(proy$vA,colSums)) %>% as_tibble()),
-      tibble(Compart = "E", do.call(rbind, lapply(proy$E,colSums)) %>% as_tibble()),
-      tibble(Compart = "e", do.call(rbind, lapply(proy$e,colSums)) %>% as_tibble()),
-      tibble(Compart = "I", do.call(rbind, lapply(proy$I,colSums)) %>% as_tibble()),
-      tibble(Compart = "Ii", do.call(rbind, lapply(proy$Ii,colSums)) %>% as_tibble()),
-      tibble(Compart = "Ic", do.call(rbind, lapply(proy$Ic,colSums)) %>% as_tibble()),
-      tibble(Compart = "Ig", do.call(rbind, lapply(proy$Ig,colSums)) %>% as_tibble()),
-      tibble(Compart = "i", do.call(rbind, lapply(proy$i,colSums)) %>% as_tibble()),
-      tibble(Compart = "D", do.call(rbind, lapply(proy$D,colSums)) %>% as_tibble()),
-      tibble(Compart = "d", do.call(rbind, lapply(proy$d,colSums)) %>% as_tibble()),
-      tibble(Compart = "R", do.call(rbind, lapply(proy$R,colSums)) %>% as_tibble()),
-      tibble(Compart = "U", do.call(rbind, lapply(proy$U,colSums)) %>% as_tibble()),
-      tibble(Compart = "u", do.call(rbind, lapply(proy$u,colSums)) %>% as_tibble()),
-      tibble(Compart = "tot", do.call(rbind, lapply(proy$tot,colSums)) %>% as_tibble()),
+      tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
+      tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
+      tibble(Compart = "vA", do.call(rbind, lapply(proy$`vA: Daily vaccinations`,colSums)) %>% as_tibble()),
+      tibble(Compart = "E", do.call(rbind, lapply(proy$`E: Exposed`,colSums)) %>% as_tibble()),
+      tibble(Compart = "e", do.call(rbind, lapply(proy$`e: Daily exposed`,colSums)) %>% as_tibble()),
+      tibble(Compart = "I", do.call(rbind, lapply(proy$`I: Infectious`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ii", do.call(rbind, lapply(proy$`Ii: Infectious (mild)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ic", do.call(rbind, lapply(proy$`Ic: Infectious (severe)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ig", do.call(rbind, lapply(proy$`Ig: Infectious (moderate)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "i", do.call(rbind, lapply(proy$`i: Daily infectious`,colSums)) %>% as_tibble()),
+      tibble(Compart = "D", do.call(rbind, lapply(proy$`D: Deaths`,colSums)) %>% as_tibble()),
+      tibble(Compart = "d", do.call(rbind, lapply(proy$`d: Daily deaths`,colSums)) %>% as_tibble()),
+      tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
+      tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
       tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
-      dplyr::mutate(fecha = rep(1:length(proy$S),18)) %>%
+      dplyr::mutate(fecha = rep(1:length(proy$S),16)) %>%
       # TODO: Arreglar
       dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
     data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
@@ -570,7 +565,8 @@ server <- function (input, output, session) {
   
   output$graficoUnico <- renderPlotly({
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
-      dataTemp = data_graf() %>% dplyr::filter(Compart == input$compart_a_graficar)
+      call_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+      dataTemp = data_graf() %>% dplyr::filter(Compart == call_id)
       dataTemp$fechaDia = fechas_master
       dataTemp <- dataTemp 
       dataTemp  
@@ -664,15 +660,15 @@ server <- function (input, output, session) {
            poblacion_vac[3])
     
     tabla <- cbind(var,
-                   round(C1,0),
-                   round(C2,0),
-                   round(C3,0))
+                   format(round(C1,0), big.mark = ','),
+                   format(round(C2,0), big.mark = ','),
+                   format(round(C3,0), big.mark = ','))
     
     colnames(tabla) <- c(" ",fechas)
     
     
     DT::datatable(tabla,
-                  caption = 'Resumen de resultados',
+                  caption = 'Results summary',
                   options = list(ordering=F, 
                                  searching=F, 
                                  paging=F, 

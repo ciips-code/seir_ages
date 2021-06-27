@@ -208,8 +208,22 @@ seir_ages <- function(dias,
     }
     tot[[t]] = S[[t]] + V[[t]] + E[[t]] + I[[t]] + R[[t]]
   }
-  salida <- list(S,V,E,e,I,Ii,i,Ig,Ic,U,u,D,d,R,defunciones_reales,v,vA,tot)
-  names(salida) <- c("S","V","E","e","I","Ii","i","Ig","Ic","U","u","D","d","R", "defunciones_reales","v","vA","tot")
+  salida <- list("S: Susceptible"=S,
+                 "V: Vaccinated"=V,
+                 "vA: Daily vaccinations"=vA,
+                 "E: Exposed"=E,
+                 "e: Daily exposed"=e,
+                 "I: Infectious"=I,
+                 "i: Daily infectious"=i,
+                 "Ii: Infectious (mild)"=Ii,
+                 "Ig: Infectious (moderate)"=Ig,
+                 "Ic: Infectious (severe)"=Ic,
+                 "R: Recovered (survivors + deaths)"=R,
+                 "U: Survivors"=U,
+                 "u: Daily survivors"=u,
+                 "D: Deaths"=D,
+                 "d: Daily deaths"=d)
+  #names(salida) <- c("S","V","E","e","I","Ii","i","Ig","Ic","U","u","D","d","R","v","vA")
   return(salida) 
 }
 
