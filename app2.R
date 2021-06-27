@@ -508,7 +508,7 @@ server <- function (input, output, session) {
     )
   })
   comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
-  newUis <- c()
+  # newUis <- c()
   for (c in comp) {
     insertUI("#content", "afterEnd",
              column(6,fluidRow(column(1,p(c), align="center"),
