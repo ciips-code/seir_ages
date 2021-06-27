@@ -37,11 +37,8 @@ source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
 ifr = c(0.003,0.0035,0.005,0.008,0.02)
 primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
-immunityStates = c("No immunity", "Recovered", "Vaccinated")
-ageGroups = c("0-17", "18-49", "50-59", "60-69", "70+")
-ageGroupsV = c("00","18","50","60","70")
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
-use_empirical_mc = TRUE
+use_empirical_mc = FALSE
 immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
 ageGroups <<- c("0-17", "18-49", "50-59", "60-69", "70+")
 ageGroupsV <<- c("00","18","50","60","70")
@@ -117,12 +114,12 @@ def_p <- dataPorEdad$FMTD$def[,loessCols]
 def_p <- def_p[1:(nrow(def_p)-15),]
 fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
-names = list(immunityStates,
+names <- list(immunityStates,
              ageGroups)
-modif_beta <- matrix(rep(c(1,1,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-modif_porc_gr <- matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-modif_porc_cr <- matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-modif_ifr <- matrix(rep(c(1,.05,.01),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_beta =  modif_beta_param = matrix(rep(c(1,1,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_ifr =  modif_ifr_param = matrix(rep(c(1,.05,.01),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 duracion_inmunidad = 180
 
 namesVac = list(immunityStates,
@@ -185,6 +182,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                               column(6,
                                                      DT::dataTableOutput("ifrt"),
                                                      )
+                                             ),
+                                             fluidRow(
+                                               column(3,DT::dataTableOutput("mbeta")),
+                                               column(3,DT::dataTableOutput("mgraves")),
+                                               column(3,DT::dataTableOutput("mcriticos")),
+                                               column(3,DT::dataTableOutput("mifr"))
                                              )
                                            )
                                          )
@@ -217,9 +220,30 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "Priority: older + adults -> young",
                                                                               "Priority: adults -> older -> young",
                                                                               "No priorities")
-                                                                  )
                                                                 ),
+
                                                          column(2,
+
+                                                                selectInput(
+                                                                  "vacEfficacy",
+                                                                  label="Vaccination efficacy (Severe, Moderate, Mild)",
+                                                                  choices = c("A. 100% all",
+                                                                              "B1. 100%, 80%, 80%",
+                                                                              "B2. 100%, 80%, 50%",
+                                                                              "C1. 80%, 80%, 50%",
+                                                                              "C2. 80%, 50%, 50%"),
+                                                                  selected = "B2. 100%, 80%, 50%"
+                                                                ),
+                                                                selectInput(
+                                                                  "immunityDuration",
+                                                                  label="Immunity duration",
+                                                                  choices = c("6 months"=180,
+                                                                              "1 year"=360,
+                                                                              "Lifelong"=2000)
+                                                                )
+                                                            ),
+                                                         column(3,
+
                                                                 radioButtons("npiStrat", "NPI strategy:",
                                                                              c("Continued NPIs" = "cont",
                                                                                "Relaxation of NPIs" = "relax")),
@@ -245,13 +269,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               step=.1)),
                                                          column(4,DTOutput("resumen_tabla")),
                                                          column(3,DT::dataTableOutput("paramVac"))
-                                                         ),
-                                                fluidRow(
-                                                  column(3,DT::dataTableOutput("mbeta")),
-                                                  column(3,DT::dataTableOutput("mgraves")),
-                                                  column(3,DT::dataTableOutput("mcriticos")),
-                                                  column(3,DT::dataTableOutput("mifr"))
-                                                )
+                                                         )
                                                 )
                                        
                                        
@@ -446,6 +464,11 @@ server <- function (input, output, session) {
       relaxGoal = which(fechas_master == input$relaxationDateGoal)
     }
     
+    efficacy = applyVaccineEfficacy(input$vacEfficacy)
+
+    paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    paramVac_edit[3,5] = as.numeric(input$immunityDuration)
+    
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
@@ -458,10 +481,10 @@ server <- function (input, output, session) {
               transmission_probability = trans_prob_param,
               N = N,
               defunciones_reales=def_p,
-              modif_beta=modif_beta,
-              modif_porc_gr=modif_porc_gr,
-              modif_porc_cr=modif_porc_cr,
-              modif_ifr=modif_ifr,
+              modif_beta=efficacy$modif_beta,
+              modif_porc_gr=efficacy$modif_porc_gr,
+              modif_porc_cr=efficacy$modif_porc_cr,
+              modif_ifr=efficacy$modif_ifr,
               Av=AvArgParam,
               immunityStates=immunityStates,
               ageGroups=ageGroups,
@@ -493,7 +516,7 @@ server <- function (input, output, session) {
     )
   })
   comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
-  newUis <- c()
+  # newUis <- c()
   for (c in comp) {
     insertUI("#content", "afterEnd",
              column(6,fluidRow(column(1,p(c), align="center"),
@@ -657,23 +680,6 @@ server <- function (input, output, session) {
                                               formatStyle(fechas[1], `text-align` = 'right') %>%
                                               formatStyle(fechas[2], `text-align` = 'right') %>%
                                               formatStyle(fechas[3], `text-align` = 'right')
-    
-    
-    # HTML("Defunciones acumuladas al ", "<b>",fechas[1],"</b>", ": ", format(round(def_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Defunciones acumuladas al ", fechas[2],": ", format(round(def_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Defunciones acumuladas al ", fechas[3],": ", format(round(def_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Casos acumulados al ", fechas[1],": ", format(round(casos_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Casos acumulados al ", fechas[2],": ", format(round(casos_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Casos acumulados al ", fechas[3],": ", format(round(casos_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Vacunas aplicadas al ", fechas[1],": ", format(round(vacunas_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Vacunas aplicadas al ", fechas[2],": ", format(round(vacunas_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Vacunas aplicadas al ", fechas[3],": ", format(round(vacunas_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-    #      "Población vacunada al ", fechas[1],": ", format(round(poblacion_vac[1],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
-    #      "Población vacunada al ", fechas[2],": ", format(round(poblacion_vac[2],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
-    #      "Población vacunada al ", fechas[3],": ", format(round(poblacion_vac[3],1), big.mark = ',', decimal.mark = '.'), "% <br/>"
-    # )
-         
-
     
   })
 }

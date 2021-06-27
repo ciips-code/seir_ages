@@ -187,7 +187,18 @@ seir_ages <- function(dias,
     protegidosAyer[2,] = 0 # borro recuperados
     S[[t]][1,]=S[[t]][1,] - colSums(protegidosAyer)
     S[[t]] =  S[[t]] + protegidosAyer
-    # Pendiente: Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
+    # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
+    # TODO: Esta hard coded para 3, y esta sacando todos los que entraron a P, sin considerar 
+    # que algunos se expusieron despues, pero no saca los volvieron de V a P (balance?)
+    porcProt = paramVac[vacuna,4]
+    tiempoP = paramVac[vacuna,5]
+    if (t>tiempoP) {
+      vencenPHoy = vA[[t-tiempoP]][3,] * porcProt
+      if (all(S[[t]][3,] >= vencenPHoy)) {
+        S[[t]][1,]=S[[t]][1,] + vencenPHoy
+        S[[t]][3,] =  S[[t]][3,] - vencenPHoy
+      }
+    }
     # Corrigiendo los negativos generados por la reasignación de renglones
     for (ixx in c(1:5)) {
       if (S[[t]][1,ixx] < 0) {
