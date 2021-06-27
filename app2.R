@@ -500,29 +500,41 @@ server <- function (input, output, session) {
     if (primeraVez) {
       updateSelectInput(session, "compart_a_graficar", choices = c(names(proy()),"pV: Vaccination plan"), selected="i: Daily infectious")
       updateNumericInput(session, inputId = "t", value = tHoy)
+      for (c in rev(str_trim(str_replace_all(substring(names(proy()),1,3),":","")))) {
+        insertUI("#content", "afterEnd",
+                 column(6,fluidRow(column(1,p(c), align="center"),
+                                   column(11,
+                                          DTOutput(c)
+                                          , align="center")
+                 )),
+                 immediate = TRUE
+        )
+      }
       primeraVez <<- FALSE
     }
     t = input$t
     # Actualiza tab pane de tablas de comapartimentos
+    
     lapply(
-      X = comp,
+      X = names(proy()),
       FUN = function(c){
-        output[[c]] <- renderDT(round(proy()[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+        ui_id=str_trim(str_replace_all(substring(c,1,3),":",""))
+        output[[ui_id]] <- renderDT(round(proy()[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
       }
     )
   })
   comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
   # newUis <- c()
-  for (c in comp) {
-    insertUI("#content", "afterEnd",
-             column(6,fluidRow(column(1,p(c), align="center"),
-                      column(11,
-                             DTOutput(c)
-                             , align="center")
-                      )),
-             immediate = TRUE
-    )
-  }
+  # for (c in comp) {
+  #   insertUI("#content", "afterEnd",
+  #            column(6,fluidRow(column(1,p(c), align="center"),
+  #                     column(11,
+  #                            DTOutput(c)
+  #                            , align="center")
+  #                     )),
+  #            immediate = TRUE
+  #   )
+  # }
   
   observeEvent(input$prev, {
     # updateTables(input$t - 1)
