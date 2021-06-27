@@ -63,6 +63,7 @@ if(use_empirical_mc){
   transmission_probability = transmission_probability * 4 # a ojo
 }
 
+
 # transmission_probability = transmission_probability * 0.43
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
@@ -218,7 +219,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "No priorities")
                                                                   )
                                                                 ),
-                                                         column(3,
+                                                         column(2,
                                                                 radioButtons("npiStrat", "NPI strategy:",
                                                                              c("Continued NPIs" = "cont",
                                                                                "Relaxation of NPIs" = "relax")),
@@ -242,8 +243,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               max=1, #.5,
                                                                               value=0, #.40,
                                                                               step=.1)),
-                                                         column(3,p("Results:"),
-                                                                uiOutput("resument_text")),
+                                                         column(4,DTOutput("resumen_tabla")),
                                                          column(3,DT::dataTableOutput("paramVac"))
                                                          ),
                                                 fluidRow(
@@ -421,9 +421,13 @@ server <- function (input, output, session) {
     } else {
       enable("vacDateGoal")
     }
-    
+
     AvArgParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
                                       AvArg, N, tVacunasCero, diaCeroVac)
+    
+    
+    AvArgParam <- lapply(AvArgParam, function(dia) {colnames(dia) <- ageGroups 
+    return(dia)})
     
     AvArgParam <<- AvArgParam 
     
@@ -537,6 +541,7 @@ server <- function (input, output, session) {
       # TODO: Arreglar
       dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
     data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
+    
     data_graf
   })
   
@@ -592,7 +597,7 @@ server <- function (input, output, session) {
     }
     
   })
-  output$resument_text <- renderText({
+  output$resumen_tabla <- renderDataTable({
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
     
@@ -615,21 +620,58 @@ server <- function (input, output, session) {
     poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
                                    data_text$Compart=="vA"] / sum(N) * 100
     
+    var=c("Defunciones acumuladas",
+          "Casos acumulados",
+          "Vacunas aplicadas",
+          "Población vacunada (%)")
+    
+    C1 = c(def_ac[1],
+           casos_ac[1],
+           vacunas_ac[1],
+           poblacion_vac[1])
+    
+    C2 = c(def_ac[2],
+           casos_ac[2],
+           vacunas_ac[2],
+           poblacion_vac[2])
+    
+    C3 = c(def_ac[3],
+           casos_ac[3],
+           vacunas_ac[3],
+           poblacion_vac[3])
+    
+    tabla <- cbind(var,
+                   round(C1,0),
+                   round(C2,0),
+                   round(C3,0))
+    
+    colnames(tabla) <- c(" ",fechas)
     
     
-    HTML("Defunciones acumuladas al ", "<b>",fechas[1],"</b>", ": ", format(round(def_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Defunciones acumuladas al ", fechas[2],": ", format(round(def_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Defunciones acumuladas al ", fechas[3],": ", format(round(def_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Casos acumulados al ", fechas[1],": ", format(round(casos_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Casos acumulados al ", fechas[2],": ", format(round(casos_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Casos acumulados al ", fechas[3],": ", format(round(casos_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Vacunas aplicadas al ", fechas[1],": ", format(round(vacunas_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Vacunas aplicadas al ", fechas[2],": ", format(round(vacunas_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Vacunas aplicadas al ", fechas[3],": ", format(round(vacunas_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
-         "Población vacunada al ", fechas[1],": ", format(round(poblacion_vac[1],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
-         "Población vacunada al ", fechas[2],": ", format(round(poblacion_vac[2],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
-         "Población vacunada al ", fechas[3],": ", format(round(poblacion_vac[3],1), big.mark = ',', decimal.mark = '.'), "% <br/>"
-    )
+    DT::datatable(tabla,
+                  caption = 'Resumen de resultados',
+                  options = list(ordering=F, 
+                                 searching=F, 
+                                 paging=F, 
+                                 info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
+                                              formatStyle(fechas[1], `text-align` = 'right') %>%
+                                              formatStyle(fechas[2], `text-align` = 'right') %>%
+                                              formatStyle(fechas[3], `text-align` = 'right')
+    
+    
+    # HTML("Defunciones acumuladas al ", "<b>",fechas[1],"</b>", ": ", format(round(def_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Defunciones acumuladas al ", fechas[2],": ", format(round(def_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Defunciones acumuladas al ", fechas[3],": ", format(round(def_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Casos acumulados al ", fechas[1],": ", format(round(casos_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Casos acumulados al ", fechas[2],": ", format(round(casos_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Casos acumulados al ", fechas[3],": ", format(round(casos_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Vacunas aplicadas al ", fechas[1],": ", format(round(vacunas_ac[1],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Vacunas aplicadas al ", fechas[2],": ", format(round(vacunas_ac[2],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Vacunas aplicadas al ", fechas[3],": ", format(round(vacunas_ac[3],0), big.mark = ',', decimal.mark = '.'), "<br/>",
+    #      "Población vacunada al ", fechas[1],": ", format(round(poblacion_vac[1],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
+    #      "Población vacunada al ", fechas[2],": ", format(round(poblacion_vac[2],1), big.mark = ',', decimal.mark = '.'), "% <br/>",
+    #      "Población vacunada al ", fechas[3],": ", format(round(poblacion_vac[3],1), big.mark = ',', decimal.mark = '.'), "% <br/>"
+    # )
          
 
     
