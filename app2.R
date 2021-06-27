@@ -229,6 +229,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "C1. 80%, 80%, 50%",
                                                                               "C2. 80%, 50%, 50%"),
                                                                   selected = "B2. 100%, 80%, 50%"
+                                                                ),
+                                                                selectInput(
+                                                                  "immunityDuration",
+                                                                  label="Immunity duration",
+                                                                  choices = c("6 months"=180,
+                                                                              "1 year"=360,
+                                                                              "Lifelong"=2000)
                                                                 )
                                                             ),
                                                          column(3,
@@ -450,6 +457,9 @@ server <- function (input, output, session) {
     }
     
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
+
+    paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    paramVac_edit[3,5] = as.numeric(input$immunityDuration)
     
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
