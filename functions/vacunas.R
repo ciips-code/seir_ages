@@ -32,7 +32,7 @@ generaPlanVacunacion <- function(metas, N, dias, tVacunasCero, AvArg) {
   })
   AvArg[tVacunasCero:(tVacunasCero+dias)] = planVac
   planCero = lapply(seq_len(length(AvArg) - (tVacunasCero+dias)+1), function(i) { 
-    return(matrix(0,3,5,byrow = T))
+    return(diaVac)
   })
   AvArg[(tVacunasCero+dias):length(AvArg)] = planCero
   return(AvArg)
