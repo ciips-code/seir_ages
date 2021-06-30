@@ -145,7 +145,6 @@ seir_ages <- function(dias,
         for (iAge in c(1:length(ageGroups))) {
           if (vacunasDelDia[vacuna,iAge] < S[[t-1]][1,iAge]) {
             vacunadosVacunaDia[vacuna,iAge] = vacunasDelDia[vacuna,iAge]
-            print(vacunadosVacunaDia[vacuna,iAge])
           } else {
             vacunadosVacunaDia[vacuna,iAge] = 0
           }

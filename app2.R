@@ -38,7 +38,7 @@ diasDeProyeccion = 1100
 ifr = c(0.003,0.0035,0.0035,0.0035,0.005,0.008,0.02)
 primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
-use_empirical_mc = FALSE
+use_empirical_mc = TRUE
 immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
 ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70+")
 ageGroupsV <<- c("00","18","30","40","50", "60", "70")
@@ -61,7 +61,7 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,
 if(use_empirical_mc){
   contact_matrix <- get_empirical_cm(ages=c(0,20,30,40,50,60,70))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-  transmission_probability = transmission_probability * 4 # a ojo
+  transmission_probability = transmission_probability * 2.2 # a ojo
 }
 
 
@@ -443,11 +443,7 @@ server <- function (input, output, session) {
     
     duracion_inmunidad = input$duracionInm
     
-    # print(input$vacDateGoal)
-    # print(input$vacUptake)
-    # print(input$vacStrat)
     # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg
-    # browser()
     enable("vacDateGoal")
     enable("vacStrat")
     enable("vacEfficacy")
@@ -706,7 +702,7 @@ server <- function (input, output, session) {
     tabla <- cbind(var,
                    format(round(C1,0), big.mark = ','),
                    format(round(C2,0), big.mark = ','),
-                   format(round(C3,0), big.mark = ','))[1:3,]
+                   format(round(C3,0), big.mark = ','))
     
     colnames(tabla) <- c(" ",fechas)
     
@@ -718,7 +714,8 @@ server <- function (input, output, session) {
                                  paging=F, 
                                  info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
                                               formatStyle(fechas[1], `text-align` = 'right') %>%
-                                              formatStyle(fechas[2], `text-align` = 'right') 
+                                              formatStyle(fechas[2], `text-align` = 'right') %>%
+                                              formatStyle(fechas[3], `text-align` = 'right') 
     
   })
   
