@@ -161,7 +161,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                               column(2,selectInput("edad","Age groups",
                                                                    choices=c("All ages"="total",ageGroups),
                                                                    multiple = T,
-                                                                   selected= c("total")))
+                                                                   selected= c("total"))),
+                                              column(2,br(),
+                                                       actionButton("save_comp", label="Guardar para comparación")),
+                                              column(2,textInput("save_comp_name", "Asignar nombre"))
                                               ),
                                      plotlyOutput("graficoUnico"),
                                      tabsetPanel(type = "tabs",
@@ -282,6 +285,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                        
                                        
                             )),
+                            tabPanel("Compara", 
+                                     selectInput("saved_series", "Saved series", choices=""),
+                                     selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
+                                     plotlyOutput("graficoComp")),
                             tabPanel("Compartments", fluidRow(id="content"))
                 ),
                 fluidRow(column(12,id="content")),
@@ -714,6 +721,43 @@ server <- function (input, output, session) {
                                               formatStyle(fechas[2], `text-align` = 'right') 
     
   })
-}
+  
+  data_comp <- reactive({
+    df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
+                          dplyr::mutate(Compart=input$save_comp_name)
+    df$fechaDia=fechas_master
+    df
+    
+  })
+  
+  
+  
+  data_comp_graf <- eventReactive(input$save_comp,{
+      
+      if (input$save_comp_name!="" & exists("compare")==T) {
+          compare <- union_all(compare,data_comp())} else if (input$save_comp_name!="" & exists("compare")==F) {
+          compare <<- data_comp() 
+      }
+    compare
+    })    
 
+  
+   
+  
+   observeEvent(input$save_comp,{
+     
+     updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart))
+     
+     
+   })
+   
+   output$graficoComp <- renderPlotly({
+     data_comp=data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
+     plot_comp = plot_ly(data=data_comp)
+     plot_comp <- add_trace(plot_comp,data=data_comp, x=~fechaDia, y=~total, type="scatter", mode="lines", name=unique(data_comp$Compart))
+     plot_comp
+   }) 
+
+}
+  
 shinyApp(ui = ui, server = server)
