@@ -25,7 +25,7 @@ seir_ages <- function(dias,
                       relaxGoal,
                       relaxFactor
 ){
-  # browser()
+  #browser()
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   names = list(immunityStates,
                ageGroups)
@@ -140,10 +140,12 @@ seir_ages <- function(dias,
       tiempoV = paramVac[vacuna,3]
       porcProt = paramVac[vacuna,4]
       # print(haySparaVacunar)
+      
       if (t > latencia) {
         for (iAge in c(1:length(ageGroups))) {
           if (vacunasDelDia[vacuna,iAge] < S[[t-1]][1,iAge]) {
             vacunadosVacunaDia[vacuna,iAge] = vacunasDelDia[vacuna,iAge]
+            print(vacunadosVacunaDia[vacuna,iAge])
           } else {
             vacunadosVacunaDia[vacuna,iAge] = 0
           }
@@ -200,7 +202,7 @@ seir_ages <- function(dias,
       }
     }
     # Corrigiendo los negativos generados por la reasignación de renglones
-    for (ixx in c(1:5)) {
+    for (ixx in c(1:7)) {
       if (S[[t]][1,ixx] < 0) {
         S[[t]][2,ixx] = S[[t]][2,ixx] + S[[t]][1,ixx]
         S[[t]][1,ixx] = 0

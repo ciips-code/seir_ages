@@ -35,27 +35,31 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
-ifr = c(0.003,0.0035,0.005,0.008,0.02)
+ifr = c(0.003,0.0035,0.0035,0.0035,0.005,0.008,0.02)
 primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
 use_empirical_mc = FALSE
 immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
-ageGroups <<- c("0-17", "18-49", "50-59", "60-69", "70+")
-ageGroupsV <<- c("00","18","50","60","70")
+ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70+")
+ageGroupsV <<- c("00","18","30","40","50", "60", "70")
 # crea matrices de contacto y efectividad
-contact_matrix = matrix(c(5,1,1,1,1,
-                          2,4,4,4,4,
-                          2,4,4,4,4,
-                          2,4,4,4,4,
-                          .5,1,1,1,5),5,byrow = T)
+contact_matrix = matrix(c(5,1,1,1,1,1,1,
+                          2,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,
+                         .5,1,1,1,1,1,5),7,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,
-                                    0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,
-                                    0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
+transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
 if(use_empirical_mc){
-  contact_matrix <- get_empirical_cm(ages=c(0,20,50,60,70))
+  contact_matrix <- get_empirical_cm(ages=c(0,20,30,40,50,60,70))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
   transmission_probability = transmission_probability * 4 # a ojo
 }
@@ -65,7 +69,13 @@ if(use_empirical_mc){
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
-N = c(13150705,20713779,4381897,3560538,3569844)
+N = c(13150705,
+      8487490,
+      6482663,
+      5743626,
+      4381897,
+      3560538,
+      3569844)
 
 # datos de recursos
 capacidadUTI <- 11517
@@ -462,7 +472,7 @@ server <- function (input, output, session) {
     }
     
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
-
+    
     paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
     paramVac_edit[3,5] = as.numeric(input$immunityDuration)
     
@@ -569,8 +579,8 @@ server <- function (input, output, session) {
       tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
       dplyr::mutate(fecha = rep(1:length(proy$S),16)) %>%
       # TODO: Arreglar
-      dplyr::rename("0-17"=2, "18-49"=3, "50-59"=4, "60-69"=5, "70+"=6)
-    data_graf$total=data_graf$`0-17`+data_graf$`18-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
+      dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70+"=8)
+    data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
     
     data_graf
   })

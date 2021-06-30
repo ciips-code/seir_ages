@@ -76,39 +76,9 @@ update <-  function(pais,diasDeProyeccion) {
                              pais,
                              ' <- list(def=data,vac=Vacunas)')))
 
-      #load("vacunasArg.RData")
-      
-      # diaCeroVac <- min(VacunasArg$fecha_aplicacion)
-      # 
-      # tVacunasCero <-  as.Date(diaCeroVac)-as.Date(min(data$fecha))
-      # 
-      # vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=c(0,0,0,
-      #                                                                0,0,0,
-      #                                                                0,0,0), 
-      #                                                         nrow=3, 
-      #                                                         ncol=ncol(VacunasArg)-1)
-      # 
-      # vacArg = lapply(1:nrow(VacunasArg), matrix, data=c(0,0,0,
-      #                                                    0,0,0,
-      #                                                    0,0,0), 
-      #                 nrow=3, 
-      #                 ncol=ncol(VacunasArg)-1)
-      # 
-      # for (t in 1:length(vacArg)) {
-      #   vacArg[[t]][3,]  = as.numeric(VacunasArg[t,2:4])
-      # }
-      # 
-      # promedio = round(Reduce(`+`, vacArg[(length(vacArg)-8):(length(vacArg)-1)])/7,0)
-      # vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio), 
-      #                  nrow=3, 
-      #                  ncol=3)
-      # 
-      # Av = c(vacPre,vacArg,vacPlan)
-      # return(result=list(Av=Av,
-      #                    diaPlan=length(vacPre)+length(vacArg)))
-      #           
       
   } # cierra if de ARG
+  
   print(paste('Actualizado:',pais, Sys.Date()))
   save(countryData,file=paste0('data/data',pais,'.RData'))
 }
