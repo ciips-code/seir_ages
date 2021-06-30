@@ -441,10 +441,17 @@ server <- function (input, output, session) {
     # print(input$vacStrat)
     # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg
     # browser()
-    if (input$vacUptake == "Current uptake" | input$vacUptake == "No vaccination") {
+    enable("vacDateGoal")
+    enable("vacStrat")
+    enable("vacEfficacy")
+    enable("immunityDuration")
+    if (input$vacUptake == "Current uptake") {
       disable("vacDateGoal")
-    } else {
-      enable("vacDateGoal")
+    } else if (input$vacUptake == "No vaccination") {
+      disable("vacDateGoal")
+      disable("vacStrat")
+      disable("vacEfficacy")
+      disable("immunityDuration")
     }
 
     AvArgParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
@@ -533,18 +540,6 @@ server <- function (input, output, session) {
       }
     )
   })
-  comp <- rev(c("S","V","E","e","I","i","Ig","Ic","U","u","D","d"))
-  # newUis <- c()
-  # for (c in comp) {
-  #   insertUI("#content", "afterEnd",
-  #            column(6,fluidRow(column(1,p(c), align="center"),
-  #                     column(11,
-  #                            DTOutput(c)
-  #                            , align="center")
-  #                     )),
-  #            immediate = TRUE
-  #   )
-  # }
   
   observeEvent(input$prev, {
     # updateTables(input$t - 1)
@@ -559,7 +554,6 @@ server <- function (input, output, session) {
   data_graf <- reactive({
     
     proy <- proy()
-    
     data_graf <- bind_rows(
       tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
       tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
@@ -605,14 +599,16 @@ server <- function (input, output, session) {
               plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
             })
           
-            if (input$compart_a_graficar == "i") {
-              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))
-              plot %>% layout(xaxis = list(title = "Fecha"),
+            if (input$compart_a_graficar == "Ig: Infectious (moderate) SKIP") {
+              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = camasGenerales*porcAsignadoCovid, yend = camasGenerales*porcAsignadoCovid, name = "General beds", line=list(color="#fc9272", dash="dot"))
+              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,camasGenerales*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
+              plot %>% layout(xaxis = list(title = "Fecha"), 
                               yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
               # , range = c(0,60000)
-            } else if (input$compart_a_graficar == "Ic") {
+            } else if (input$compart_a_graficar == "Ic: Infectious (severe)") {
               #browser()
-              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds", line=list(color="#fc9272", dash="dot"))
+              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
               plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
               plot %>% layout(xaxis = list(title = "Fecha"), 
                               yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
@@ -649,6 +645,10 @@ server <- function (input, output, session) {
                 "2022-06-30",
                 "2022-12-31")
     
+    tfechas <- c(which(fechas_master == "2021-12-31"),
+                 which(fechas_master == "2022-06-30"),
+                 which(fechas_master == "2022-12-31"))
+    
     def_ac <- data_text$total[(as.character(data_text$fechaDia) %in% fechas) &
                                data_text$Compart=="D"]  
     
@@ -661,11 +661,26 @@ server <- function (input, output, session) {
     poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
                                    data_text$Compart=="vA"] / sum(N) * 100
     
-    var=c("Defunciones acumuladas",
-          "Casos acumulados",
-          "Vacunas aplicadas",
-          "Población vacunada (%)")
+    sumt1 = proy()$`S: Susceptible`[[tfechas[1]]] + proy()$`V: Vaccinated`[[tfechas[1]]] +
+      proy()$`E: Exposed`[[tfechas[1]]] + proy()$`I: Infectious`[[tfechas[1]]] + 
+      proy()$`R: Recovered (survivors + deaths)`[[tfechas[1]]]
+    poblacion_vac[1] = sum(sumt1[3,]) / sum(N) * 100
     
+    sumt2 = proy()$`S: Susceptible`[[tfechas[2]]] + proy()$`V: Vaccinated`[[tfechas[2]]] +
+      proy()$`E: Exposed`[[tfechas[2]]] + proy()$`I: Infectious`[[tfechas[2]]] + 
+      proy()$`R: Recovered (survivors + deaths)`[[tfechas[2]]]
+    poblacion_vac[2] = sum(sumt2[3,]) / sum(N) * 100
+    
+    sumt3 = proy()$`S: Susceptible`[[tfechas[3]]] + proy()$`V: Vaccinated`[[tfechas[3]]] +
+      proy()$`E: Exposed`[[tfechas[3]]] + proy()$`I: Infectious`[[tfechas[3]]] + 
+      proy()$`R: Recovered (survivors + deaths)`[[tfechas[3]]]
+    poblacion_vac[3] = sum(sumt3[3,]) / sum(N) * 100
+    
+    
+    var=c("Cumulative deaths",
+          "Cumulative infections",
+          "Vaccines applied",
+          "Vaccination coverage (%)")
     C1 = c(def_ac[1],
            casos_ac[1],
            vacunas_ac[1],
@@ -684,7 +699,7 @@ server <- function (input, output, session) {
     tabla <- cbind(var,
                    format(round(C1,0), big.mark = ','),
                    format(round(C2,0), big.mark = ','),
-                   format(round(C3,0), big.mark = ','))
+                   format(round(C3,0), big.mark = ','))[1:3,]
     
     colnames(tabla) <- c(" ",fechas)
     
@@ -696,8 +711,7 @@ server <- function (input, output, session) {
                                  paging=F, 
                                  info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
                                               formatStyle(fechas[1], `text-align` = 'right') %>%
-                                              formatStyle(fechas[2], `text-align` = 'right') %>%
-                                              formatStyle(fechas[3], `text-align` = 'right')
+                                              formatStyle(fechas[2], `text-align` = 'right') 
     
   })
 }
