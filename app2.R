@@ -695,7 +695,7 @@ server <- function (input, output, session) {
     tabla <- cbind(var,
                    format(round(C1,0), big.mark = ','),
                    format(round(C2,0), big.mark = ','),
-                   format(round(C3,0), big.mark = ','))[1:3,]
+                   format(round(C3,0), big.mark = ','))
     
     colnames(tabla) <- c(" ",fechas)
     
@@ -707,7 +707,8 @@ server <- function (input, output, session) {
                                  paging=F, 
                                  info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
                                               formatStyle(fechas[1], `text-align` = 'right') %>%
-                                              formatStyle(fechas[2], `text-align` = 'right') 
+                                              formatStyle(fechas[2], `text-align` = 'right') %>%
+                                              formatStyle(fechas[3], `text-align` = 'right') 
     
   })
 }
