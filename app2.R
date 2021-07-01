@@ -286,7 +286,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                        
                             )),
                             tabPanel("Compara", 
-                                     selectInput("saved_series", "Saved series", choices=""),
+                                     selectInput("saved_series", "Saved series", choices="", multiple = T),
                                      selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp")),
                             tabPanel("Compartments", fluidRow(id="content"))
@@ -732,9 +732,10 @@ server <- function (input, output, session) {
   data_comp_graf <- eventReactive(input$save_comp,{
       
       if (input$save_comp_name!="" & exists("compare")==T) {
-          compare <- union_all(compare,data_comp())} else if (input$save_comp_name!="" & exists("compare")==F) {
+          compare <<- union_all(compare,data_comp())} else if (input$save_comp_name!="" & exists("compare")==F) {
           compare <<- data_comp() 
-      }
+          }
+    print(unique(compare$Compart))
     compare
     })    
 
@@ -743,18 +744,46 @@ server <- function (input, output, session) {
   
    observeEvent(input$save_comp,{
      
-     updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart))
+     updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart), selected = unique(data_comp_graf()$Compart)[1])
      
      
    })
    
    output$graficoComp <- renderPlotly({
-     data_comp=data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
-     plot_comp = plot_ly(data=data_comp)
-     plot_comp <- add_trace(plot_comp,data=data_comp, x=~fechaDia, y=~total, type="scatter", mode="lines", name=unique(data_comp$Compart))
+     
+     data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
+     
+     if (length(input$saved_series)==1) {
+       plot_comp <- plot_ly()
+       plot_comp <- add_trace(plot_comp,
+                              data_comp[data_comp$Compart==input$saved_series[1],],
+                              x=~data_comp$fechaDia,y=~data_comp$total, 
+                              mode = "lines", 
+                              type="scatter",
+                              name=input$saved_series[1])
+       
+     } else if (length(input$saved_series)>1) {
+       
+       plot_comp <- plot_ly()
+       lapply(unique(data_comp$Compart), function(k) {
+         browser()
+         plot_comp <<- add_trace(plot_comp,
+                                 data_comp[data_comp$Compart==k,],
+                                 x=~data_comp$fechaDia[data_comp$Compart==k],
+                                 y=~data_comp$total[data_comp$Compart==k], 
+                                 mode = "lines", 
+                                 type="scatter",
+                                 name=k)
+       })
+       
+     }
+     
      plot_comp
+     
    }) 
 
 }
   
 shinyApp(ui = ui, server = server)
+
+  
