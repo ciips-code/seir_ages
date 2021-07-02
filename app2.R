@@ -59,7 +59,7 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,
                                     0.048,0.048,0.048,0.048,0.048,0.048,0.048,
                                     0.034,0.034,0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
 if(use_empirical_mc){
-  contact_matrix <- get_empirical_cm(ages=c(0,20,30,40,50,60,70))
+  contact_matrix <- get_empirical_cm(country = "Argentina", ages=c(0,20,30,40,50,60,70))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
   transmission_probability = transmission_probability * 2.2 # a ojo
 }

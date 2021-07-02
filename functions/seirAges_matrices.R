@@ -263,10 +263,11 @@ get_factor_given_rt = function(contact_matrix, transmission_probability, duracio
               factor = factor))
 }
 
-get_empirical_cm <- function(ages){
+
+get_empirical_cm <- function(country, ages){
   # get matrix from covoid package
-  mc_arg  <- as.data.frame(t(import_contact_matrix("Argentina","general")))
-  pop_arg <- data.frame(pop = as.numeric(import_age_distribution("Argentina")), group = rownames(mc_arg))
+  mc_arg  <- as.data.frame(t(import_contact_matrix(country,"general")))
+  pop_arg <- data.frame(pop = as.numeric(import_age_distribution(country)), group = rownames(mc_arg))
   # some inconsistencies in covoid package for Argentina
   # plot(mc_arg[,"5"]*pop_arg[pop_arg$group=="5","pop"],mc_arg[,"80"]*pop_arg[pop_arg$group=="80","pop"])
 
@@ -284,5 +285,6 @@ get_empirical_cm <- function(ages){
     summarise(new_contacts = sum(pop*value)/sum(pop)) %>%
     pivot_wider(names_from = "new_group", values_from = "new_contacts") %>% ungroup() %>%
     select(-1) %>% as.matrix()
+  rownames(contact_matrix) <-  colnames(contact_matrix) <- age_il
   contact_matrix
 }
