@@ -162,9 +162,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                    choices=c("All ages"="total",ageGroups),
                                                                    multiple = T,
                                                                    selected= c("total"))),
-                                              column(2,br(),
-                                                       actionButton("save_comp", label="Guardar para comparación")),
-                                              column(2,textInput("save_comp_name", "Asignar nombre"))
+                                              
+                                                       
+                                              column(4,fluidRow(column(4,textInput("save_comp_name", "Save to scenario", placeholder = "Enter name")),
+                                                                column(8,br(),
+                                                                         actionButton("save_comp", icon("chevron-right")))))
                                               ),
                                      plotlyOutput("graficoUnico"),
                                      tabsetPanel(type = "tabs",
@@ -285,9 +287,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                        
                                        
                             )),
-                            tabPanel("Compara", 
+                            tabPanel("Scenarios", 
                                      selectInput("saved_series", "Saved series", choices="", multiple = T),
-                                     selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
+                                     #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp")),
                             tabPanel("Compartments", fluidRow(id="content"))
                 ),
@@ -719,6 +721,15 @@ server <- function (input, output, session) {
     
   })
   
+  observe({
+    if (str_trim(input$save_comp_name)=="") {
+      disable("save_comp")
+    } else {
+      enable("save_comp")
+    }
+    
+  })
+  
   data_comp <- reactive({
     df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
                           dplyr::mutate(Compart=input$save_comp_name)
@@ -735,7 +746,7 @@ server <- function (input, output, session) {
           compare <<- union_all(compare,data_comp())} else if (input$save_comp_name!="" & exists("compare")==F) {
           compare <<- data_comp() 
           }
-    print(unique(compare$Compart))
+    showNotification("Escenario guardado") 
     compare
     })    
 
@@ -744,41 +755,26 @@ server <- function (input, output, session) {
   
    observeEvent(input$save_comp,{
      
-     updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart), selected = unique(data_comp_graf()$Compart)[1])
+     updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart), selected = unique(data_comp_graf()$Compart))
      
      
    })
    
    output$graficoComp <- renderPlotly({
-     
      data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
-     
-     if (length(input$saved_series)==1) {
-       plot_comp <- plot_ly()
-       plot_comp <- add_trace(plot_comp,
-                              data_comp[data_comp$Compart==input$saved_series[1],],
-                              x=~data_comp$fechaDia,y=~data_comp$total, 
-                              mode = "lines", 
-                              type="scatter",
-                              name=input$saved_series[1])
+     plot_comp <- plot_ly() 
+     lapply(unique(data_comp$Compart), function(k) {
+        plot_comp <<- add_trace(plot_comp,
+                               data_comp[data_comp$Compart==k,],
+                               x=~data_comp$fechaDia[data_comp$Compart==k],
+                               y=~data_comp$total[data_comp$Compart==k], 
+                               mode = "lines", 
+                               type="scatter",
+                               name=k)
        
-     } else if (length(input$saved_series)>1) {
-       
-       plot_comp <- plot_ly()
-       lapply(unique(data_comp$Compart), function(k) {
-         browser()
-         plot_comp <<- add_trace(plot_comp,
-                                 data_comp[data_comp$Compart==k,],
-                                 x=~data_comp$fechaDia[data_comp$Compart==k],
-                                 y=~data_comp$total[data_comp$Compart==k], 
-                                 mode = "lines", 
-                                 type="scatter",
-                                 name=k)
-       })
-       
-     }
-     
-     plot_comp
+     })
+     plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
+        
      
    }) 
 
