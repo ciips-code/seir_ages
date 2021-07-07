@@ -30,7 +30,6 @@ rm(list=setdiff(ls(), c("modeloSimulado",
                         "porcentajeCasosGraves",
                         "porcentajeCasosCriticos")))
 
-
 # lee funciones
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
@@ -42,6 +41,8 @@ use_empirical_mc = TRUE
 immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
 ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70+")
 ageGroupsV <<- c("00","18","30","40","50", "60", "70")
+names <- list(immunityStates,
+              ageGroups)
 # crea matrices de contacto y efectividad
 contact_matrix = matrix(c(5,1,1,1,1,1,1,
                           2,4,4,4,4,4,4,
@@ -61,7 +62,7 @@ transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,
 if(use_empirical_mc){
   contact_matrix <- get_empirical_cm(country = "Argentina", ages=c(0,20,30,40,50,60,70))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-  transmission_probability = transmission_probability * 2.2 # a ojo
+  transmission_probability = transmission_probability * 2.1 # a ojo
 }
 
 
@@ -76,6 +77,19 @@ N = c(13150705,
       4381897,
       3560538,
       3569844)
+
+# datos de gravedad
+
+# porcentajeCasosGravesRow = c(.00001, .00005, .0001, .0005,.001, .05, .1)
+# porcentajeCasosGravesRow = porcentajeCasosGravesRow * 3
+# porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+# 
+# porcentajeCasosCriticosRow = c(.000001, .000005, .00001, .00005, .0001, .005, .01)
+# porcentajeCasosCriticosRow = porcentajeCasosCriticosRow * 3
+# porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+
+porcentajeCasosGraves = 0.0328
+porcentajeCasosCriticos = 0.0108
 
 # datos de recursos
 capacidadUTI <- 11517
@@ -124,8 +138,6 @@ def_p <- dataPorEdad$FMTD$def[,loessCols]
 def_p <- def_p[1:(nrow(def_p)-15),]
 fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
-names <- list(immunityStates,
-             ageGroups)
 modif_beta =  modif_beta_param = matrix(rep(c(1,1,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
@@ -278,7 +290,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "Base NPI strength modifier",
                                                                               min=-1, #.3,
                                                                               max=1, #.5,
-                                                                              value=0, #.40,
+                                                                              value=.8, #.40,
                                                                               step=.1)),
                                                          column(4,DTOutput("resumen_tabla"))
                                                          )
