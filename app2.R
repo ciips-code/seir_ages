@@ -35,7 +35,7 @@ source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
 ifr = c(0.003,0.0035,0.0035,0.0035,0.005,0.008,0.02)
-primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
+primeraVez = porc_gr_primeraVez = porc_cr_primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
 use_empirical_mc = TRUE
 immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
@@ -208,6 +208,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                ),
                                               column(6,
                                                      DT::dataTableOutput("ifrt"),
+                                                     DT::dataTableOutput("porc_gr"),
+                                                     DT::dataTableOutput("porc_cr")
                                                      )
                                              ),
                                              fluidRow(
@@ -436,13 +438,62 @@ server <- function (input, output, session) {
     }
   })
   
+
+  observe({
+    input$porc_cr_cell_edit
+    
+    if (porc_cr_primeraVez==T) {
+      porc_cr_edit <- matrix(porcentajeCasosCriticos, 1, length(ageGroups))
+      colnames(porc_cr_edit) = ageGroups
+      porc_cr_edit <<- porc_cr_edit
+      porc_cr_primeraVez<<-F
+    } else {
+      porc_cr_edit[as.numeric(input$porc_cr_cell_edit[1]),
+               as.numeric(input$porc_cr_cell_edit[2])+1] <- as.numeric(input$porc_cr_cell_edit[3])
+      porc_cr_edit <<- porc_cr_edit
+    }
+  })
+  
+  output$porc_cr <- renderDT({
+    DT::datatable(porc_cr_edit, editable = T,
+                  caption = 'Critic case probability',
+                  options = list(ordering=F, 
+                                 searching=F, 
+                                 paging=F, 
+                                 info=F))
+  })
+  
+  observe({
+    input$porc_gr_cell_edit
+    
+    if (porc_gr_primeraVez==T) {
+      porc_gr_edit <- matrix(porcentajeCasosGraves, 1, length(ageGroups))
+      colnames(porc_gr_edit) = ageGroups
+      porc_gr_edit <<- porc_gr_edit
+      porc_gr_primeraVez<<-F
+    } else {
+      porc_gr_edit[as.numeric(input$porc_gr_cell_edit[1]),
+                   as.numeric(input$porc_gr_cell_edit[2])+1] <- as.numeric(input$porc_gr_cell_edit[3])
+      porc_gr_edit <<- porc_gr_edit
+    }
+  })
+  
+  output$porc_gr <- renderDT({
+    DT::datatable(porc_gr_edit, editable = T,
+                  caption = 'Severe case probability',
+                  options = list(ordering=F, 
+                                 searching=F, 
+                                 paging=F, 
+                                 info=F))
+  })
+  
   output$paramVac <- renderDT({
     DT::datatable(paramVac_edit, editable = T,
                   caption = 'Vaccines parameters',
                   options = list(ordering=F, 
-                                searching=F, 
-                                paging=F, 
-                                info=F))
+                                 searching=F, 
+                                 paging=F, 
+                                 info=F))
   })
 
   proy <- reactive({
@@ -454,8 +505,11 @@ server <- function (input, output, session) {
     paste(input$mgraves_cell_edit)
     paste(input$mcriticos_cell_edit)
     paste(input$mifr_cell_edit)
+    paste(input$porc_cr_cell_edit)
+    paste(input$porc_gr_cell_edit)
     
     duracion_inmunidad = input$duracionInm
+
     
     # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg
     enable("vacDateGoal")
@@ -500,11 +554,14 @@ server <- function (input, output, session) {
     paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
     paramVac_edit[3,5] = as.numeric(input$immunityDuration)
     
+    print(porc_gr_edit[1,])
+    print(porc_cr_edit[1,])
+    
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
-              porc_gr = porcentajeCasosGraves,
-              porc_cr = porcentajeCasosCriticos,
+              porc_gr = porc_gr_edit[1,],
+              porc_cr = porc_cr_edit[1,],
               duracionIg = diasHospCasosGraves,
               duracionIc = diasHospCasosCriticos,
               ifr = ifr_edit[1,],
