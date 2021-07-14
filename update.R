@@ -104,10 +104,10 @@ formatData <- function(pais, ageGroups) {
       vector <- c(vector,rowSums(countryData$FMTD$def[,ageSelCol[i]:(ageSelCol[(i+1)]-1)]))
     } else
     {
-      vector <- c(vector,rowSums(countryData$FMTD$def[,ageSelCol[i]:(ncol(countryData$FMTD$def))]))
+      vector <- c(vector,rowSums(data.frame(countryData$FMTD$def[,ageSelCol[i]:(ncol(countryData$FMTD$def))])))
     }
   }
- 
+  
   countryData$FMTD$def <- data.frame((matrix(vector, ncol=length(ageSelCol))))
   countryData$FMTD$def <- cbind(fechasDef,countryData$FMTD$def)
   substring(ageGSel[length(ageGSel)],4,5) <- "99"
@@ -122,11 +122,14 @@ formatData <- function(pais, ageGroups) {
   vector <- c()
   
   for (i in 1:length(ageSelCol)) {
+    
     if (i!=length(ageSelCol)) {
+      
       vector <- c(vector,rowSums(data.frame(countryData$FMTD$vac[,ageSelCol[i]:(ageSelCol[(i+1)]-1)])))
     } else
     {
-      vector <- c(vector,rowSums(countryData$FMTD$vac[,ageSelCol[i]:(ncol(countryData$FMTD$vac))]))
+      
+      vector <- c(vector,rowSums(data.frame(countryData$FMTD$vac[,ageSelCol[i]:(ncol(countryData$FMTD$vac))])))
     }
   }
   
@@ -143,7 +146,7 @@ formatData <- function(pais, ageGroups) {
 #        diasDeProyeccion = 900)
 
 # agrupa edades
-# datosArg <- formatData("ARG")
+# datosArg <- formatData("ARG", ageGroups = ageGroupsV)
 
 
 
