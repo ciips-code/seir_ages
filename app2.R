@@ -55,18 +55,19 @@ contact_matrix = matrix(c(5,1,1,1,1,1,1,1,
                          .5,1,1,1,1,1,5,5,
                          .5,1,1,1,1,1,5,5),8,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,
-                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
+
+transmission_probability = matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.3097, 0.3211, 0.3211,
+                                    0.47795, 0.50165, 0.52535, 0.553, 0.58855, 0.64385, 0.66755, 0.66755,
+                                    0.5203, 0.5461, 0.5719, 0.602, 0.6407, 0.7009, 0.7267, 0.7267,
+                                    0.484, 0.508, 0.532, 0.56, 0.596, 0.652, 0.676, 0.676,
+                                    0.4961, 0.5207, 0.5453, 0.574, 0.6109, 0.6683, 0.6929, 0.6929,
+                                    0.5324, 0.5588, 0.5852, 0.616, 0.6556, 0.7172, 0.7436, 0.7436,
+                                    0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253,
+                                    0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253),length(ageGroups),length(ageGroups),byrow = T)
 if(use_empirical_mc){
   contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-  transmission_probability = transmission_probability * 2.1 # a ojo
+  transmission_probability = transmission_probability * 0.28 # a ojo
 }
 
 
@@ -129,7 +130,7 @@ vacPlanDia <- length(vacPre)+length(vacArg)
 # t <- seq(1:nrow(dataEcdc))
 temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
   loessCol = paste0(loopCol,'_loess')
-  dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.2))
+  dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
 })
 rm(temp)
 
@@ -139,18 +140,19 @@ def_p <- dataPorEdad$FMTD$def[,loessCols]
 def_p <- def_p[1:(nrow(def_p)-15),]
 fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
-modif_beta =  modif_beta_param = matrix(rep(c(1,1,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_beta =  modif_beta_param = matrix(rep(c(1,0.15,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_ifr =  modif_ifr_param = matrix(rep(c(1,.05,.01),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-duracion_inmunidad = 180
+duracion_inmunidad = 60
+duracion_proteccion = 360 # TODO: Implementar, Cuanto?
 
 namesVac = list(immunityStates,
                 c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
 
 paramVac <- matrix(data=c(0,0,0,0,0,
                           0,0,0,0,0,
-                          20,.2,180,.6,180), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
+                          20,.2,0,.6,360), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 useShinyjs(),
@@ -199,7 +201,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                            "Immunity duration",
                                                            min=1,
                                                            max=360,
-                                                           value = 180))
+                                                           value = 60))
                                                   ),
                                                   fluidRow(
                                                     column(12,
