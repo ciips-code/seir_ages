@@ -5,9 +5,9 @@ account: iecs
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4281684
-bundleId: 4764589
+bundleId: 4799949
 url: https://iecs.shinyapps.io/seir_ages/
-when: 1624887853.95778
+when: 1625758532.5477
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .Covid19Casos.csv.icloud|.Covid19Casos.zip.icloud|.datos_nomivac_covid19.csv.icloud|.datos_nomivac_covid19.zip.icloud

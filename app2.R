@@ -34,37 +34,35 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
-ifr = c(0.003,0.0035,0.0035,0.0035,0.005,0.008,0.02,0.02,0.02)
+ifr = c(0.003,0.0035,0.0035,0.0035,0.005,0.008,0.02,0.02)
 primeraVez = porc_gr_primeraVez = porc_cr_primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
-use_empirical_mc = F
+use_empirical_mc = T
 immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
-ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80-89", "90+")
-ageGroupsV <<- c("00","18","30","40","50", "60", "70", "80", "90")
+ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+")
+ageGroupsV <<- c("00","18","30","40","50", "60", "70", "80")
 names <- list(immunityStates,
               ageGroups)
 # crea matrices de contacto y efectividad
-contact_matrix = matrix(c(5,1,1,1,1,1,1,1,1,
-                          2,4,4,4,4,4,4,4,4,
-                          2,4,4,4,4,4,4,4,4,
-                          2,4,4,4,4,4,4,4,4,
-                          2,4,4,4,4,4,4,4,4,
-                          2,4,4,4,4,4,4,4,4,
-                         .5,1,1,1,1,1,5,1,5,
-                         .5,1,1,1,1,1,5,1,5,
-                         .5,1,1,1,1,1,5,1,5),9,byrow = T)
+contact_matrix = matrix(c(5,1,1,1,1,1,1,1,
+                          2,4,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,4,
+                          2,4,4,4,4,4,4,4,
+                         .5,1,1,1,1,1,5,5,
+                         .5,1,1,1,1,1,5,5),8,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
-                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,
-                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,
-                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
+transmission_probability = matrix(c(0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,
+                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034,
+                                    0.034,0.034,0.034,0.034,0.034,0.034,0.034,0.034),length(ageGroups),length(ageGroups),byrow = T)
 if(use_empirical_mc){
-  contact_matrix <- get_empirical_cm(country = "Argentina", ages=c(0,20,30,40,50,60,70,80,90))
+  contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
   transmission_probability = transmission_probability * 2.1 # a ojo
 }
@@ -81,21 +79,16 @@ N = c(13150705,
       4381897,
       3560538,
       2323393,
-      1013276,
-      233175)
+      1246451)
 
 # datos de gravedad
 
-# porcentajeCasosGravesRow = c(.00001, .00005, .0001, .0005,.001, .05, .1)
-# porcentajeCasosGravesRow = porcentajeCasosGravesRow * 3
-# porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
-# 
-# porcentajeCasosCriticosRow = c(.000001, .000005, .00001, .00005, .0001, .005, .01)
-# porcentajeCasosCriticosRow = porcentajeCasosCriticosRow * 3
-# porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
-
-porcentajeCasosGraves = 0.0328
-porcentajeCasosCriticos = 0.0108
+# porcentajeCasosGraves = 0.0328
+porcentajeCasosGravesRow = c(0.0328,0.0328,0.0328,0.0328,0.0328,0.0328,0.0328,0.0328)
+porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+# porcentajeCasosCriticos = 0.0108
+porcentajeCasosCriticosRow = c(0.0108,0.0109,0.0108,0.0108,0.0108,0.0108,0.0108,0.0108)
+porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
 
 # datos de recursos
 capacidadUTI <- 11517
@@ -449,7 +442,7 @@ server <- function (input, output, session) {
     input$porc_cr_cell_edit
     
     if (porc_cr_primeraVez==T) {
-      porc_cr_edit <- matrix(porcentajeCasosCriticos, 1, length(ageGroups))
+      porc_cr_edit <- matrix(porcentajeCasosCriticos[1,], 1, length(ageGroups))
       colnames(porc_cr_edit) = ageGroups
       porc_cr_edit <<- porc_cr_edit
       porc_cr_primeraVez<<-F
@@ -457,6 +450,7 @@ server <- function (input, output, session) {
       porc_cr_edit[as.numeric(input$porc_cr_cell_edit[1]),
                as.numeric(input$porc_cr_cell_edit[2])+1] <- as.numeric(input$porc_cr_cell_edit[3])
       porc_cr_edit <<- porc_cr_edit
+      porcentajeCasosCriticos <<- matrix(rep(porc_cr_edit,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
     }
   })
   
@@ -473,7 +467,7 @@ server <- function (input, output, session) {
     input$porc_gr_cell_edit
     
     if (porc_gr_primeraVez==T) {
-      porc_gr_edit <- matrix(porcentajeCasosGraves, 1, length(ageGroups))
+      porc_gr_edit <- matrix(porcentajeCasosGraves[1,], 1, length(ageGroups))
       colnames(porc_gr_edit) = ageGroups
       porc_gr_edit <<- porc_gr_edit
       porc_gr_primeraVez<<-F
@@ -481,6 +475,7 @@ server <- function (input, output, session) {
       porc_gr_edit[as.numeric(input$porc_gr_cell_edit[1]),
                    as.numeric(input$porc_gr_cell_edit[2])+1] <- as.numeric(input$porc_gr_cell_edit[3])
       porc_gr_edit <<- porc_gr_edit
+      porcentajeCasosGraves <<- matrix(rep(porc_gr_edit,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
     }
   })
   
@@ -560,14 +555,14 @@ server <- function (input, output, session) {
     paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
     paramVac_edit[3,5] = as.numeric(input$immunityDuration)
     
-    print(porc_gr_edit[1,])
-    print(porc_cr_edit[1,])
+    print(porcentajeCasosGraves)
+    print(porcentajeCasosCriticos)
     
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
-              porc_gr = porc_gr_edit[1,],
-              porc_cr = porc_cr_edit[1,],
+              porc_gr = porcentajeCasosGraves,
+              porc_cr = porcentajeCasosCriticos,
               duracionIg = diasHospCasosGraves,
               duracionIc = diasHospCasosCriticos,
               ifr = ifr_edit[1,],
