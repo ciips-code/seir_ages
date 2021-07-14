@@ -629,6 +629,7 @@ server <- function (input, output, session) {
   data_graf <- reactive({
     
     proy <- proy()
+    
     data_graf <- bind_rows(
       tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
       tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
@@ -648,8 +649,8 @@ server <- function (input, output, session) {
       tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
       dplyr::mutate(fecha = rep(1:length(proy$S),16)) %>%
       # TODO: Arreglar
-      dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70+"=8)
-    data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70+`
+      dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
+    data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
     
     data_graf
   })
@@ -661,7 +662,7 @@ server <- function (input, output, session) {
       dataTemp = data_graf() %>% dplyr::filter(Compart == call_id)
       dataTemp$fechaDia = fechas_master
       dataTemp <- dataTemp 
-      colnames(dataTemp)[8] <- "70-79"
+      #colnames(dataTemp)[8] <- "70-79"
       dataTemp  
       # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]

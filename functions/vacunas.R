@@ -58,28 +58,28 @@ applyPriority <- function(priorities, AvArg) {
 
 getPriorityDetails <- function(priorities) {
   if (priorities == "Priority: older -> adults -> young") {
-    return(c(.05,.05,.05,.05,.10,.10,.15,.20,.25))
+    return(c(.05,.05,.05,.05,.10,.10,.30,.30))
   } else if (priorities == "Priority: older + adults -> young") {
-    return(c(.05,.05,.05,.05,.15,.15,.15,.15,.20))
+    return(c(.05,.05,.05,.05,.15,.15,.25,.25,))
   } else if (priorities == "Priority: adults -> older -> young") {
-    return(c(.05,.05,.05,.05,.35,.15,.20,.05,.05))
+    return(c(.05,.05,.05,.05,.35,.15,.20,1))
   } else if (priorities == "No priorities") {
-    return(c(.11,.11,.11,.11,.11,.11,.11,.11,.12))
-  }
+    return(c(.12,.12,.12,.12,.13,.13,.13,.13))
+  } 
 }
 
 getUptakeCoverage <- function(uptake) {
   coverage = NULL
   if (uptake == "High uptake: 95%") {
-    coverage = c(.95,.95,.95,.95,.95,.95,.95,.95,.95)
+    coverage = c(.95,.95,.95,.95,.95,.95,.95,.95)
   } else if (uptake == "High uptake: 80%") {
-    coverage = c(.80,.80,.80,.80,.80,.80,.80,.80,.80)
+    coverage = c(.80,.80,.80,.80,.80,.80,.80,.80)
   }  else if (uptake == "Mid-range uptake: 50%") {
-    coverage = c(.50,.50,.50,.50,.50,.50,.50,.50,.50)
+    coverage = c(.50,.50,.50,.50,.50,.50,.50,.50)
   }  else if (uptake == "Low uptake: 20%") {
-    coverage = c(.20,.20,.20,.20,.20,.20,.20,.20,.20)
+    coverage = c(.20,.20,.20,.20,.20,.20,.20,.20)
   }  else if (uptake == "No vaccination") {
-    coverage = c(0,0,0,0,0,0,0,0,0)
+    coverage = c(0,0,0,0,0,0,0,0)
   }  else if (uptake == "Current uptake") {
     coverage = NULL
   }
