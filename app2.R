@@ -34,7 +34,9 @@ rm(list=setdiff(ls(), c("modeloSimulado",
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
-ifr = c(0.003,0.0035,0.0035,0.0035,0.005,0.008,0.02,0.02)
+
+# Age specific IFR
+ifr = c(0.00015, 0.000301, 0.000745, 0.00187, 0.0046, 0.01123, 0.0268, 0.08)
 primeraVez = porc_gr_primeraVez = porc_cr_primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
 use_empirical_mc = T
