@@ -655,11 +655,13 @@ server <- function (input, output, session) {
   })
   
   output$graficoUnico <- renderPlotly({
+    
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       call_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
       dataTemp = data_graf() %>% dplyr::filter(Compart == call_id)
       dataTemp$fechaDia = fechas_master
       dataTemp <- dataTemp 
+      colnames(dataTemp)[8] <- "70-79"
       dataTemp  
       # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
