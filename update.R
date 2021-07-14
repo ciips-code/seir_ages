@@ -142,8 +142,8 @@ formatData <- function(pais, ageGroups) {
 
 
 # actualiza argentina y guarda RData
-# update(pais = "ARG",
-#        diasDeProyeccion = 900)
+ # update(pais = "ARG",
+ #        diasDeProyeccion = 900)
 
 # agrupa edades
 # datosArg <- formatData("ARG", ageGroups = ageGroupsV)
