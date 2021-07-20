@@ -63,6 +63,7 @@ seir_ages <- function(dias,
     relaxValue[relaxGoal:length(relaxValue)] = 1 + relaxFactor
   }
   for(t in 2:dias){
+    # if(t==448){browser()}
     # print(t)
     # contagiados según matriz de contacto
     beta       = contact_matrix * transmission_probability
@@ -201,7 +202,8 @@ seir_ages <- function(dias,
       }
     }
     # Corrigiendo los negativos generados por la reasignación de renglones
-    for (ixx in c(1:7)) {
+    # if(any(S[[t]]<0)){browser()}
+    for (ixx in seq_along(ageGroups)) {
       if (S[[t]][1,ixx] < 0) {
         S[[t]][2,ixx] = S[[t]][2,ixx] + S[[t]][1,ixx]
         S[[t]][1,ixx] = 0
