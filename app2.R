@@ -673,8 +673,9 @@ server <- function (input, output, session) {
     casos=cbind(Compart,casos,fecha,total) 
     colnames(casos)=colnames(data_graf)
     casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos)
-    casos[is.na(casos)] <- 0
-    casos$Compart[casos$Compart=="0"] <- "casos_registrados"
+    
+    #casos[is.na(casos)] <- 0
+    casos$Compart <- "casos_registrados"
     
     data_graf=union_all(data_graf,casos)
     
@@ -687,8 +688,8 @@ server <- function (input, output, session) {
     muertes=cbind(Compart,muertes,fecha,total) 
     colnames(muertes)=colnames(data_graf)
     muertes <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(muertes)
-    muertes[is.na(muertes)] <- 0
-    muertes$Compart[muertes$Compart=="0"] <- "muertes_registradas"
+    #muertes[is.na(muertes)] <- 0
+    muertes$Compart <- "muertes_registradas"
     
     data_graf=union_all(data_graf,muertes)
     data_graf
