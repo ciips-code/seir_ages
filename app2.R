@@ -67,7 +67,7 @@ transmission_probability = matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.309
 if(use_empirical_mc){
   contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV))
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-  transmission_probability = transmission_probability * 0.28 # a ojo
+  transmission_probability = transmission_probability * 0.23 # a ojo
 }
 
 
@@ -144,7 +144,7 @@ modif_beta =  modif_beta_param = matrix(rep(c(1,0.15,.6),length(ageGroups)),3,le
 modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
 modif_ifr =  modif_ifr_param = matrix(rep(c(1,.05,.01),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-duracion_inmunidad = 60
+duracion_inmunidad = 180
 duracion_proteccion = 360 # TODO: Implementar, Cuanto?
 
 namesVac = list(immunityStates,
@@ -201,7 +201,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                            "Immunity duration",
                                                            min=1,
                                                            max=360,
-                                                           value = 60))
+                                                           value = duracion_inmunidad))
                                                   ),
                                                   fluidRow(
                                                     column(12,

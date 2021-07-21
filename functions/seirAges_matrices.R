@@ -201,7 +201,7 @@ seir_ages <- function(dias,
       }
     }
     # Corrigiendo los negativos generados por la reasignación de renglones
-    for (ixx in c(1:7)) {
+    for (ixx in c(1:length(ageGroups))) {
       if (S[[t]][1,ixx] < 0) {
         S[[t]][2,ixx] = S[[t]][2,ixx] + S[[t]][1,ixx]
         S[[t]][1,ixx] = 0
