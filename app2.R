@@ -36,8 +36,6 @@ source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 diasDeProyeccion = 1100
 
-# Age specific IFR
-ifr = c(0.00015, 0.000301, 0.000745, 0.00187, 0.0046, 0.01123, 0.0268, 0.08)
 primeraVez = porc_gr_primeraVez = porc_cr_primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
 use_empirical_mc = T
@@ -87,11 +85,14 @@ N = c(13150705,
 
 # datos de gravedad
 
+
+# Age specific IFR
+ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) * 1.4
 # porcentajeCasosGraves = 0.0328
-porcentajeCasosGravesRow = c(0.0328,0.0328,0.0328,0.0328,0.0328,0.0328,0.0328,0.0328)
+porcentajeCasosGravesRow = c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628) * 0.7
 porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
 # porcentajeCasosCriticos = 0.0108
-porcentajeCasosCriticosRow = c(0.0108,0.0109,0.0108,0.0108,0.0108,0.0108,0.0108,0.0108)
+porcentajeCasosCriticosRow = c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372) * 0.7
 porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
 
 # datos de recursos
@@ -303,7 +304,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                               "Base NPI strength modifier",
                                                                               min=-1, #.3,
                                                                               max=1, #.5,
-                                                                              value=.8, #.40,
+                                                                              value=.6, #.40,
                                                                               step=.1)),
                                                          column(4,DTOutput("resumen_tabla"))
                                                          )
