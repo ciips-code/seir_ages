@@ -15,6 +15,7 @@ library(covoid)
 library(shinyjs)
 library(modelr)
 library(stringr)
+library(shinyWidgets)
 
 rm(list = ls())
 
@@ -132,12 +133,17 @@ temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
   loessCol = paste0(loopCol,'_loess')
   dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
 })
+
+
 rm(temp)
 
 # muertes
 loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
 def_p <- dataPorEdad$FMTD$def[,loessCols]
 def_p <- def_p[1:(nrow(def_p)-15),]
+
+rowSums(def_p[206,])
+
 fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
 modif_beta =  modif_beta_param = matrix(rep(c(1,0.15,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
@@ -180,9 +186,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                               
                                                        
                                               column(4,fluidRow(column(4,textInput("save_comp_name", "Save to scenario", placeholder = "Enter name")),
-                                                                column(8,br(),
-                                                                         actionButton("save_comp", icon("chevron-right")))))
-                                              ),
+                                                                column(2,br(),actionButton("save_comp", icon("chevron-right"))),
+                                                                column(2,prettyCheckbox(inputId = "check_cases",label = "Show reported cases",value = FALSE),
+                                                                         prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE)))
+                                              )
+                                      ),
                                      plotlyOutput("graficoUnico"),
                                      tabsetPanel(type = "tabs",
                                        tabPanel("Model",
@@ -656,18 +664,50 @@ server <- function (input, output, session) {
       dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
     data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
     
+    #casos reales
+    
+    Compart=rep("casos_registrados",nrow(dataPorEdad$FMTD$casos))
+    fecha=seq(1,nrow(dataPorEdad$FMTD$casos),by=1)
+    casos=dataPorEdad$FMTD$casos[-1]
+    total=rowSums(casos)
+    casos=cbind(Compart,casos,fecha,total) 
+    colnames(casos)=colnames(data_graf)
+    casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos)
+    casos[is.na(casos)] <- 0
+    casos$Compart[casos$Compart=="0"] <- "casos_registrados"
+    
+    data_graf=union_all(data_graf,casos)
+    
+    #muertes reales
+    
+    Compart=rep("muertes_registradas",nrow(dataPorEdad$FMTD$def))
+    fecha=seq(1,nrow(dataPorEdad$FMTD$def),by=1)
+    muertes=dataPorEdad$FMTD$def[2:(length(ageGroups)+1)]
+    total=rowSums(muertes)
+    muertes=cbind(Compart,muertes,fecha,total) 
+    colnames(muertes)=colnames(data_graf)
+    muertes <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(muertes)
+    muertes[is.na(muertes)] <- 0
+    muertes$Compart[muertes$Compart=="0"] <- "muertes_registradas"
+    
+    data_graf=union_all(data_graf,muertes)
     data_graf
+    
   })
   
   output$graficoUnico <- renderPlotly({
     
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
-      call_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
-      dataTemp = data_graf() %>% dplyr::filter(Compart == call_id)
-      dataTemp$fechaDia = fechas_master
-      dataTemp <- dataTemp 
+      col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+      dataTemp = data_graf() %>% dplyr::filter(Compart == col_id)
+      dataTemp$fechaDia = fechas_master 
+      dataRep_cases = data_graf() %>% dplyr::filter(Compart == "casos_registrados")
+      dataRep_cases$fechaDia = fechas_master
+      dataRep_deaths = data_graf() %>% dplyr::filter(Compart == "muertes_registradas")
+      dataRep_deaths$fechaDia = fechas_master
+      
       #colnames(dataTemp)[8] <- "70-79"
-      dataTemp  
+        
       # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
@@ -678,7 +718,17 @@ server <- function (input, output, session) {
           
           if (length(input$edad)>0) {
             lapply(X=input$edad, FUN = function(edad) {
+              
               plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
+              if (input$check_cases==T) {
+                plot <<- add_trace(p=plot, data=dataRep_cases, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
+              }
+
+              if (input$check_deaths==T) {
+                plot <<- add_trace(p=plot, data=dataRep_deaths, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
+              }
+
+
             })
           
             if (input$compart_a_graficar == "Ig: Infectious (moderate) SKIP") {
@@ -708,8 +758,7 @@ server <- function (input, output, session) {
           #         type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
           #         add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
           # 
-          
-          
+        
           
       }
       
@@ -845,8 +894,8 @@ server <- function (input, output, session) {
                                data_comp[data_comp$Compart==k,],
                                x=~data_comp$fechaDia[data_comp$Compart==k],
                                y=~data_comp$total[data_comp$Compart==k], 
-                               mode = "lines", 
-                               type="scatter",
+                                
+                               type="scatter", mode="lines",
                                name=k)
        
      })
