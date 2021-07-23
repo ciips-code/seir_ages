@@ -102,7 +102,7 @@ seir_ages <- function(dias,
     # resto seir
     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
     i[[t]]      = E[[t-1]]/duracionE
-    Ii[[t]]     = Ii[[t-1]] + i[[t]] - Ii[[t-1]]/duracionIi
+    Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
     Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr
     
@@ -113,13 +113,19 @@ seir_ages <- function(dias,
     } else {
       d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
-    D[[t]]      = D[[t-1]] + d[[t]]
+    D[[t]]      = D[[t-1]] + d[[t-1]]
     u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +
                   Ig[[t-1]]/duracionIg +
                   Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
-    U[[t]]      = U[[t-1]] + u[[t]]
+    U[[t]]      = U[[t-1]] + u[[t-1]]
+    # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
+    losQueHoyPierdenImunidad = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
+                                      dimnames = names)
+    if (t>duracion_inmunidad+1) {
+      losQueHoyPierdenImunidad = u[[t-duracion_inmunidad]]
+      U[[t]] = U[[t]] - losQueHoyPierdenImunidad
+    }
     R[[t]]      = U[[t]] + D[[t]]
-    
     
     # Pasajes S-V-S y U-S
     Vin = VquedaEnS =  Vout = vacunasDelDia = vacunadosVacunaDia = Vsum = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
@@ -132,6 +138,7 @@ seir_ages <- function(dias,
         vacunasDelDia[vacuna,]=Av[[t-latencia]][vacuna,]
       }
     }
+    
     # TODO: No esta vacunando recuperados
     haySparaVacunar = S[[t-1]][1,] > colSums(vacunasDelDia)
     haySparaVacunar[is.na(haySparaVacunar)] <- FALSE
@@ -141,6 +148,7 @@ seir_ages <- function(dias,
       tiempoV = paramVac[vacuna,3]
       porcProt = paramVac[vacuna,4]
       # print(haySparaVacunar)
+
       
       if (t > latencia) {
         for (iAge in c(1:length(ageGroups))) {
@@ -166,50 +174,42 @@ seir_ages <- function(dias,
     # Vsum tiene todos los V agrupados en la primera linea para hacer la resta de todos los compartimentos
     Vsum[1,] <- colSums(V[[t]])
     # Empiezo a armar el S con el resto de todos los que estan en otros compartimentos
-    S[[t]][1,] = colSums(N) - colSums(E[[t]]) - colSums(I[[t]]) - colSums(R[[t]]) - colSums(V[[t]])
-    # los recuperados de hoy son los recuperados de ayer menos los que se expusieron hoy
-    S[[t]][2,] = S[[t-1]][2,] - e[[t]][2,]
-    S[[t]][1,] = S[[t]][1,] - S[[t-1]][2,]
-    # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
-    if (t>duracion_inmunidad+1) {
-      losQueHoyPierdenImunidad = u[[t-duracion_inmunidad]]
-      U[[t]] = U[[t]] - losQueHoyPierdenImunidad
-      R[[t]] = U[[t]] + D[[t]]
-      S[[t]][2,]  = S[[t]][2,] + colSums(losQueHoyPierdenImunidad)
-    }
-    # sacamos los que salienron de V y tienen que pasar a los S[3:n,]    
-    S[[t]][1,] = S[[t]][1,] - colSums(Vout)
-    S[[t]]=S[[t]]+Vout
-    # Reasigno de renglon los que quedaron hoy en S luego de vacunarse
+    
+    # if(t==100)browser()
+    S[[t]] = S[[t-1]] - e[[t-1]]  + Vout
+    S[[t]][1,] = S[[t]][1,] - colSums(Vin)
+    S[[t]][2,] = S[[t]][2,] + colSums(losQueHoyPierdenImunidad)
+    # 
+    # # Reasigno de renglon los que quedaron hoy en S luego de vacunarse
     S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
     S[[t]] =  S[[t]] + VquedaEnS
-    # busco los que ayer estaban protegidos (en s[3:n,]) y los reasigno de s[1,]
-    protegidosAyer = S[[t-1]]
-    protegidosAyer[1,] = 0 # borro no inmunes
-    protegidosAyer[2,] = 0 # borro recuperados
-    S[[t]][1,]=S[[t]][1,] - colSums(protegidosAyer)
-    S[[t]] =  S[[t]] + protegidosAyer
+    
+    # S[[t]][1,] = colSums(E[[t]]) - colSums(I[[t]]) - colSums(R[[t]]) - colSums(V[[t]])
+    # los recuperados de hoy son los recuperados de ayer menos los que se expusieron hoy
+   
     # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
     # TODO: Esta hard coded para 3, y esta sacando todos los que entraron a P, sin considerar 
     # que algunos se expusieron despues, pero no saca los volvieron de V a P (balance?)
-    porcProt = paramVac[vacuna,4]
-    tiempoP = paramVac[vacuna,5]
-    if (t>tiempoP) {
-      vencenPHoy = vA[[t-tiempoP]][3,] * porcProt
-      if (all(S[[t]][3,] >= vencenPHoy)) {
-        S[[t]][1,]=S[[t]][1,] + vencenPHoy
-        S[[t]][3,] =  S[[t]][3,] - vencenPHoy
-      }
+    
+    # Arma la lista de vacunas
+    for (vacuna in c(3:nrow(paramVac))) {
+      tiempoP = paramVac[vacuna,5]
+      S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[t]][vacuna,]/tiempoP
+      S[[t]][1,]=S[[t]][1,] + S[[t]][vacuna,]/tiempoP
     }
+    
     # Corrigiendo los negativos generados por la reasignación de renglones
     # if(any(S[[t]]<0)){browser()}
-    for (ixx in seq_along(ageGroups)) {
-      if (S[[t]][1,ixx] < 0) {
-        S[[t]][2,ixx] = S[[t]][2,ixx] + S[[t]][1,ixx]
-        S[[t]][1,ixx] = 0
-      }
-    }
+    # for (ixx in seq_along(ageGroups)) {
+    #   if (S[[t]][1,ixx] < 0) {
+    #     S[[t]][2,ixx] = S[[t]][2,ixx] + S[[t]][1,ixx]
+    #     S[[t]][1,ixx] = 0
+    #   }
+    # }
+    
     tot[[t]] = S[[t]] + V[[t]] + E[[t]] + I[[t]] + R[[t]]
+    # browser()
+    print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
   salida <- list("S: Susceptible"=S,
                  "V: Vaccinated"=V,
