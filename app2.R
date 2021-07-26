@@ -540,13 +540,19 @@ server <- function (input, output, session) {
     }
 
     AvArgParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
-                                      AvArg, N, tVacunasCero, diaCeroVac)
+                                      AvArg, N, tVacunasCero, diaCeroVac, 1)
+    AvArgParam <<- lapply(AvArgParam, function(dia) {
+        colnames(dia) <- ageGroups 
+        return(dia)
+      })
     
+    AvArgParam2 <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                      AvArg, N, tVacunasCero, diaCeroVac, 1)
+    AvArgParam2 <<- lapply(AvArgParam2, function(dia) {
+      colnames(dia) <- ageGroups 
+      return(dia)
+    })
     
-    AvArgParam <- lapply(AvArgParam, function(dia) {colnames(dia) <- ageGroups 
-    return(dia)})
-    
-    AvArgParam <<- AvArgParam 
     
     ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
     trans_prob_param <- transprob_edit * ajuste

@@ -1,5 +1,10 @@
-generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac) {
+generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac, dosis) {
   # browser()
+  intervaloInterDosis = 0
+  # TODO: Obtener intervalo inter dosis de paramvac
+  if (dosis == 2) {
+    intervaloInterDosis = 30
+  }
   coverage = getUptakeCoverage(uptake)
   if (!is.null(coverage)) {
     if (sum(coverage) == 0) {
@@ -9,7 +14,7 @@ generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero
       return(AvArgParam)
     } else {
       dias = as.numeric(as.Date(goal) - diaCeroVac)
-      AvArgParam <- generaPlanVacunacion(coverage, N, dias, tVacunasCero, AvArg)
+      AvArgParam <- generaPlanVacunacion(coverage, N, dias, tVacunasCero, AvArg, intervaloInterDosis)
       AvArgParam <- applyPriority(priorities, AvArgParam)
       return(AvArgParam)
     }
@@ -23,18 +28,18 @@ generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero
   }
 }
 
-generaPlanVacunacion <- function(metas, N, dias, tVacunasCero, AvArg) {
+generaPlanVacunacion <- function(metas, N, dias, tVacunasCero, AvArg, intervaloInterDosis) {
   cantidadVacunasMeta = metas * N
   ritmo = cantidadVacunasMeta / dias
   diaVac = matrix(c(rep(0,(length(ritmo)*2)),ritmo),3,length(ritmo),byrow = T)
   planVac = lapply(seq_len(dias+1), function(i) { 
     return(diaVac)
   })
-  AvArg[tVacunasCero:(tVacunasCero+dias)] = planVac
-  planCero = lapply(seq_len(length(AvArg) - (tVacunasCero+dias)+1), function(i) { 
+  AvArg[(tVacunasCero+intervaloInterDosis):(tVacunasCero+dias+intervaloInterDosis)] = planVac
+  planCero = lapply(seq_len(length(AvArg) - (tVacunasCero+dias+intervaloInterDosis)+1), function(i) { 
     return(diaVac)
   })
-  AvArg[(tVacunasCero+dias):length(AvArg)] = planCero
+  AvArg[(tVacunasCero+dias+intervaloInterDosis):length(AvArg)] = planCero
   return(AvArg)
 }
 
