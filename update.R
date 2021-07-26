@@ -107,10 +107,11 @@ update <-  function(pais,diasDeProyeccion) {
       
       # download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
       # unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
-      Vacunas = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
+      dataVacunas = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
       # file.remove('datos_nomivac_covid19.csv')
       # file.remove('datos_nomivac_covid19.zip')
-
+      
+      Vacunas = dataVacunas
       Vacunas = Vacunas %>% dplyr::filter(orden_dosis==1 &
                                           fecha_aplicacion!="S.I.") %>%
                             dplyr::mutate(edad = case_when(grupo_etario %in% c(">=100") ~ "90-99",
@@ -130,9 +131,32 @@ update <-  function(pais,diasDeProyeccion) {
       
       Vacunas[is.na(Vacunas)] <- 0
       
+      Vacunas2 = dataVacunas
+      Vacunas2 = Vacunas2 %>% dplyr::filter(orden_dosis==2 &
+                                            fecha_aplicacion!="S.I.") %>%
+        dplyr::mutate(edad = case_when(grupo_etario %in% c(">=100") ~ "90-99",
+                                       TRUE ~ grupo_etario)) %>%
+        dplyr::filter(edad!="S.I.") %>%
+        dplyr::group_by(fecha_aplicacion, edad) %>%
+        dplyr::summarise(n=n()) %>%
+        reshape::cast(fecha_aplicacion~edad, mean) %>%
+        dplyr::mutate(`00-17`= 0) %>%
+        dplyr::select(fecha_aplicacion,`00-17`,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`) %>%
+        dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+      
+      
+      Vacunas2 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas2$fecha)),
+                                                  as.Date(max(Vacunas2$fecha)),
+                                                  by=1)) %>% left_join(Vacunas2) 
+      
+      Vacunas2[is.na(Vacunas2)] <- 0
+      
+      
+      
+      
       eval(parse(text=paste0('countryData$',
                              pais,
-                             ' <- list(def=def,vac=Vacunas, casos=casos)')))
+                             ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, casos=casos)')))
 
       
   } # cierra if de ARG
@@ -152,6 +176,7 @@ formatData <- function(pais, ageGroups) {
   
   fechasDef <- countryData$ARG$def$fecha
   fechasVac <- countryData$ARG$vac$fecha
+  fechasVac2 <- countryData$ARG$vac2$fecha
   fechasCasos <- countryData$ARG$casos$fecha
   ageGSel <- colnames(countryData$FMTD$def)[substring(colnames(countryData$FMTD$def),1,2) %in% ageGroups]
   ageSelCol <- which(colnames(countryData$FMTD$def) %in% ageGSel)
@@ -194,6 +219,7 @@ formatData <- function(pais, ageGroups) {
   substring(ageGSel[length(ageGSel)],4,5) <- "99"
   colnames(countryData$FMTD$def) <- c("fecha",ageGSel)
   countryData$FMTD$def$fecha <- as.Date(as.character(countryData$FMTD$def$fecha))
+  
   # vacunas
   ageGSel <- colnames(countryData$FMTD$vac)[substring(colnames(countryData$FMTD$vac),1,2) %in% ageGroups]
   ageSelCol <- which(colnames(countryData$FMTD$vac) %in% ageGSel)
@@ -218,6 +244,33 @@ formatData <- function(pais, ageGroups) {
   countryData$FMTD$vac <-  cbind(fechasVac,countryData$FMTD$vac)
   substring(ageGSel[length(ageGSel)],4,5) <- "99"
   colnames(countryData$FMTD$vac) <- c("fecha",ageGSel)
+  
+  
+  # vacunas2
+  ageGSel <- colnames(countryData$FMTD$vac2)[substring(colnames(countryData$FMTD$vac2),1,2) %in% ageGroups]
+  ageSelCol <- which(colnames(countryData$FMTD$vac2) %in% ageGSel)
+  
+  label <- c()
+  group <- c()
+  vector <- c()
+  
+  for (i in 1:length(ageSelCol)) {
+    
+    if (i!=length(ageSelCol)) {
+      
+      vector <- c(vector,rowSums(data.frame(countryData$FMTD$vac2[,ageSelCol[i]:(ageSelCol[(i+1)]-1)])))
+    } else
+    {
+      
+      vector <- c(vector,rowSums(data.frame(countryData$FMTD$vac2[,ageSelCol[i]:(ncol(countryData$FMTD$vac2))])))
+    }
+  }
+  
+  countryData$FMTD$vac2 <-  data.frame(matrix(vector, ncol=length(ageSelCol)))
+  countryData$FMTD$vac2 <-  cbind(fechasVac2,countryData$FMTD$vac2)
+  substring(ageGSel[length(ageGSel)],4,5) <- "99"
+  colnames(countryData$FMTD$vac2) <- c("fecha",ageGSel)
+  
   return(countryData)
 }
 
