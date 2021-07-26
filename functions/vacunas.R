@@ -35,6 +35,7 @@ generaPlanVacunacion <- function(metas, N, dias, tVacunasCero, AvArg, intervaloI
   planVac = lapply(seq_len(dias+1), function(i) { 
     return(diaVac)
   })
+  # TODO: Si intervaloInterDosis > 0, el lapso tVacunasCero+intervaloInterDosis se tiene que poner en 0
   AvArg[(tVacunasCero+intervaloInterDosis):(tVacunasCero+dias+intervaloInterDosis)] = planVac
   planCero = lapply(seq_len(length(AvArg) - (tVacunasCero+dias+intervaloInterDosis)+1), function(i) { 
     return(diaVac)

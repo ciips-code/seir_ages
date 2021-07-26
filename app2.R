@@ -176,11 +176,11 @@ duracion_inmunidad = 180
 duracion_proteccion = 360 # TODO: Implementar, Cuanto?
 
 namesVac = list(immunityStates,
-                c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP"))
+                c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP", "intervaloInterDosis"))
 
-paramVac <- matrix(data=c(0,0,0,0,0,
-                          0,0,0,0,0,
-                          20,.2,0,.6,360), nrow=length(immunityStates), ncol=5, byrow=T, dimnames = namesVac)
+paramVac <<- matrix(data=c(0,0,0,0,0,0,
+                          0,0,0,0,0,0,
+                          20,.2,0,.6,360,30), nrow=length(immunityStates), ncol=6, byrow=T, dimnames = namesVac)
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 useShinyjs(),
@@ -577,7 +577,7 @@ server <- function (input, output, session) {
     return(dia)})
     
     planVacDosis2Param <<- planVacDosis2Param 
-    browser()
+    # browser()
     ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
     trans_prob_param <- transprob_edit * ajuste
     

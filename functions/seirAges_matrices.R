@@ -129,7 +129,7 @@ seir_ages <- function(dias,
     R[[t]]      = U[[t]] + D[[t]]
     
     # Pasajes S-V-S y U-S
-    Vin = VquedaEnS =  Vout = vacunasDelDia = vacunadosVacunaDia = Vsum = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
+    Vin = VquedaEnS =  Vout = vacunasDelDia = vacunasDelDia2 = vacunadosVacunaDia = vacunadosVacunaDia2 = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
     
     # Arma la lista de vacunas 1ra dosis
@@ -140,6 +140,15 @@ seir_ages <- function(dias,
       }
     }
     
+    # Arma la lista de vacunas 2da dosis
+    for (vacuna in c(3:nrow(paramVac))) {
+      latencia = paramVac[vacuna,1]
+      if (t>latencia) {
+        vacunasDelDia2[vacuna,]=planVacDosis2[[t-latencia]][vacuna,]
+      }
+    }
+    
+    # Primera dosis
     # TODO: No esta vacunando recuperados
     haySparaVacunar = S[[t-1]][1,] > colSums(vacunasDelDia)
     haySparaVacunar[is.na(haySparaVacunar)] <- FALSE
@@ -148,9 +157,6 @@ seir_ages <- function(dias,
       porcV = paramVac[vacuna,2]
       tiempoV = paramVac[vacuna,3]
       porcProt = paramVac[vacuna,4]
-      # print(haySparaVacunar)
-
-      
       if (t > latencia) {
         for (iAge in c(1:length(ageGroups))) {
           if (vacunasDelDia[vacuna,iAge] < S[[t-1]][1,iAge]) {
@@ -172,11 +178,8 @@ seir_ages <- function(dias,
       V[[t]][vacuna,] = V[[t-1]][vacuna,] + Vin[vacuna,] - Vout[vacuna,]
     }
     v[[t]] = Vin
-    # Vsum tiene todos los V agrupados en la primera linea para hacer la resta de todos los compartimentos
-    Vsum[1,] <- colSums(V[[t]])
-    # Empiezo a armar el S con el resto de todos los que estan en otros compartimentos
     
-    # if(t==100)browser()
+    # Empiezo a armar el S a partir de las transiciones
     S[[t]] = S[[t-1]] - e[[t-1]]  + Vout
     S[[t]][1,] = S[[t]][1,] - colSums(Vin)
     S[[t]][2,] = S[[t]][2,] + colSums(losQueHoyPierdenImunidad)
@@ -192,12 +195,30 @@ seir_ages <- function(dias,
     # TODO: Esta hard coded para 3, y esta sacando todos los que entraron a P, sin considerar 
     # que algunos se expusieron despues, pero no saca los volvieron de V a P (balance?)
     
-    # Arma la lista de vacunas
+    # Aplica Segunda dosis
+    # for (vacuna in c(3:nrow(paramVac))) {
+    #   latencia = paramVac[vacuna,1]
+    #   porcV = paramVac[vacuna,2]
+    #   porcProt = paramVac[vacuna,4]
+    #   if (t > latencia) {
+    #     for (iAge in c(1:length(ageGroups))) {
+    #       if (vacunasDelDia2[vacuna,iAge] < S[[t-1]][1,iAge]) {
+    #         vacunadosVacunaDia2[vacuna,iAge] = vacunasDelDia2[vacuna,iAge]
+    #       } else {
+    #         vacunadosVacunaDia2[vacuna,iAge] = 0
+    #       }
+    #     }
+    #   }
+    # }
+    
+    # Vuelve a No inmunes los que terminan su tiempo de proteccion
     for (vacuna in c(3:nrow(paramVac))) {
       tiempoP = paramVac[vacuna,5]
       S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[t]][vacuna,]/tiempoP
       S[[t]][1,]=S[[t]][1,] + S[[t]][vacuna,]/tiempoP
     }
+    
+    
     
     # Corrigiendo los negativos generados por la reasignación de renglones
     # if(any(S[[t]]<0)){browser()}
