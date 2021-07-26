@@ -16,8 +16,8 @@ seir_ages <- function(dias,
                       modif_ifr,
                       duracion_inmunidad,
                       defunciones_reales,
-                      PlanVacDosis1,
-                      PlanVacDosis2,
+                      planVacDosis1,
+                      planVacDosis2,
                       immunityStates,
                       ageGroups,
                       paramVac,
@@ -136,7 +136,7 @@ seir_ages <- function(dias,
     for (vacuna in c(3:nrow(paramVac))) {
       latencia = paramVac[vacuna,1]
       if (t>latencia) {
-        vacunasDelDia[vacuna,]=PlanVacDosis1[[t-latencia]][vacuna,]
+        vacunasDelDia[vacuna,]=planVacDosis1[[t-latencia]][vacuna,]
       }
     }
     
