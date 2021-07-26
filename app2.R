@@ -115,19 +115,40 @@ vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
                                              nrow=length(immunityStates),
                                              ncol=length(ageGroups))
 
+vacArg2 = lapply(1:nrow(dataPorEdad$FMTD$vac2), matrix,  data=0,
+                 nrow=length(immunityStates),
+                 ncol=length(ageGroups))
+
+
+
 for (t in 1:length(vacArg)) {
   # TODO: Expandir a otras vacunas
   vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
 }
 
+for (t in 1:length(vacArg2)) {
+  # TODO: Expandir a otras vacunas
+  vacArg2[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
+}
+
+
+
 promedio = round(Reduce("+", vacArg) / length(vacArg),0)
+promedio2 = round(Reduce("+", vacArg2) / length(vacArg2),0)
 vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
                  nrow=length(immunityStates),
                  ncol=length(ageGroups))
 
-Av = c(vacPre,vacArg,vacPlan)
-AvArg <<- Av
-vacPlanDia <- length(vacPre)+length(vacArg)
+vacPlan2 = lapply(1:(diasDeProyeccion-length(vacArg2)-length(vacPre)), matrix, data=t(promedio2),
+                  nrow=length(immunityStates),
+                  ncol=length(ageGroups))
+
+
+
+planVacDosis1 <<- c(vacPre,vacArg,vacPlan)
+planVacDosis2 <<- c(vacPre,vacArg2,vacPlan2)
+
+# vacPlanDia <- length(vacPre)+length(vacArg)
 
 # t <- seq(1:nrow(dataEcdc))
 temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
@@ -525,7 +546,7 @@ server <- function (input, output, session) {
     duracion_inmunidad = input$duracionInm
 
     
-    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, AvArg
+    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, planVacDosis1
     enable("vacDateGoal")
     enable("vacStrat")
     enable("vacEfficacy")
@@ -539,14 +560,25 @@ server <- function (input, output, session) {
       disable("immunityDuration")
     }
 
-    AvArgParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
-                                      AvArg, N, tVacunasCero, diaCeroVac)
+    planVacDosis1Param <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                              planVacDosis1, N, tVacunasCero, diaCeroVac)
     
     
-    AvArgParam <- lapply(AvArgParam, function(dia) {colnames(dia) <- ageGroups 
+    planVacDosis1Param <- lapply(planVacDosis1Param, function(dia) {colnames(dia) <- ageGroups 
     return(dia)})
     
-    AvArgParam <<- AvArgParam 
+    planVacDosis1Param <<- planVacDosis1Param 
+    
+    
+    planVacDosis2Param <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                              planVacDosis2, N, tVacunasCero, diaCeroVac)
+    
+    
+    planVacDosis2Param <- lapply(planVacDosis2Param, function(dia) {colnames(dia) <- ageGroups 
+    return(dia)})
+    
+    planVacDosis2Param <<- planVacDosis2Param 
+    
     
     ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
     trans_prob_param <- transprob_edit * ajuste
@@ -587,7 +619,7 @@ server <- function (input, output, session) {
               modif_porc_gr=efficacy$modif_porc_gr,
               modif_porc_cr=efficacy$modif_porc_cr,
               modif_ifr=efficacy$modif_ifr,
-              Av=AvArgParam,
+              Av=planVacDosis1Param,
               immunityStates=immunityStates,
               ageGroups=ageGroups,
               paramVac=paramVac_edit,
@@ -659,7 +691,7 @@ server <- function (input, output, session) {
       tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
       tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
       tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
-      tibble(Compart = "pV", do.call(rbind, lapply(AvArgParam,colSums)) %>% as_tibble())) %>%
+      tibble(Compart = "pV", do.call(rbind, lapply(planVacDosis1Param,colSums)) %>% as_tibble())) %>%
       dplyr::mutate(fecha = rep(1:length(proy$S),16)) %>%
       # TODO: Arreglar
       dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
