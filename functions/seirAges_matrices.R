@@ -185,13 +185,14 @@ seir_ages <- function(dias,
       porc3 = V[[t-1]][3,] / (V[[t-1]][3,] + V[[t-1]][4,])
       porc3[is.na(porc3)] <- 0
       totSalidaVHoy3 = totSalidaVHoy * porc3
-      porc4 = V[[t-1]][4,] / (V[[t-1]][4,] + V[[t-1]][4,])
+      porc4 = V[[t-1]][4,] / (V[[t-1]][3,] + V[[t-1]][4,])
       porc4[is.na(porc4)] <- 0
       totSalidaVHoy4 = totSalidaVHoy * porc4
       Vout[3,] <- totSalidaVHoy3
       Vout[4,] <- totSalidaVHoy4
     }
-    V[[t]][vacuna,] = V[[t-1]][vacuna,] + Vin[vacuna,] - Vout[vacuna,]
+    V[[t]][3,] = V[[t-1]][3,] + Vin[3,] - Vout[3,]
+    V[[t]][4,] = V[[t-1]][4,] - Vout[4,]
     # browser(expr = {t > 322})
     for (iAge in c(1:length(ageGroups))) {
       if (segundasDosisHoyV3[iAge] < V[[t]][3,iAge]) {
