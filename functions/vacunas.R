@@ -1,4 +1,4 @@
-generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac, dosis) {
+generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac) {
   # browser()
   intervaloInterDosis = 0
   # TODO: Obtener intervalo inter dosis de paramvac
@@ -31,16 +31,20 @@ generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero
 generaPlanVacunacion <- function(metas, N, dias, tVacunasCero, AvArg, intervaloInterDosis) {
   cantidadVacunasMeta = metas * N
   ritmo = cantidadVacunasMeta / dias
-  diaVac = matrix(c(rep(0,(length(ritmo)*2)),ritmo),3,length(ritmo),byrow = T)
+  # TODO: hardcodeado para 4 
+  diaVac1Dosis = matrix(c(rep(0,(length(ritmo)*2)),ritmo,rep(0,(length(ritmo)))),4,length(ritmo),byrow = T)
+  diaVac2Dosis = matrix(c(rep(0,(length(ritmo)*2)),ritmo,ritmo),4,length(ritmo),byrow = T)
   planVac = lapply(seq_len(dias+1), function(i) { 
-    return(diaVac)
+    return(diaVac2Dosis)
   })
-  # TODO: Si intervaloInterDosis > 0, el lapso tVacunasCero+intervaloInterDosis se tiene que poner en 0
-  AvArg[(tVacunasCero+intervaloInterDosis):(tVacunasCero+dias+intervaloInterDosis)] = planVac
-  planCero = lapply(seq_len(length(AvArg) - (tVacunasCero+dias+intervaloInterDosis)+1), function(i) { 
-    return(diaVac)
+  planVac[1:intervaloInterDosis] = lapply(seq_len(intervaloInterDosis), function(i) { 
+    return(diaVac1Dosis)
   })
-  AvArg[(tVacunasCero+dias+intervaloInterDosis):length(AvArg)] = planCero
+  AvArg[(tVacunasCero):(tVacunasCero+dias)] = planVac
+  planContinuacion = lapply(seq_len(length(AvArg) - (tVacunasCero+dias)+1), function(i) { 
+    return(diaVac2Dosis)
+  })
+  AvArg[(tVacunasCero+dias):length(AvArg)] = planContinuacion
   return(AvArg)
 }
 
@@ -97,30 +101,30 @@ applyVaccineEfficacy <- function(selectedEfficacy) {
                 ageGroups)
   efficacy = list()
   if (selectedEfficacy == "A. 100% all") {
-    efficacy$modif_beta = matrix(rep(c(1,1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_gr = matrix(rep(c(1,.3,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_cr = matrix(rep(c(1,.1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_beta = matrix(rep(c(1,1,.8,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.3,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.1,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
   } else if (selectedEfficacy == "B1. 100%, 80%, 80%") {
-    efficacy$modif_beta = matrix(rep(c(1,1,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_cr = matrix(rep(c(1,.1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_beta = matrix(rep(c(1,1,.3,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.3,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.1,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,.05,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
   } else if (selectedEfficacy == "B2. 100%, 80%, 50%") {
-    efficacy$modif_beta = matrix(rep(c(1,1,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_cr = matrix(rep(c(1,.1,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_beta = matrix(rep(c(1,1,.7,.5),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.3,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,1,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
   } else if (selectedEfficacy == "C1. 80%, 80%, 50%") {
-    efficacy$modif_beta = matrix(rep(c(1,1,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_ifr = matrix(rep(c(1,.05,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_beta = matrix(rep(c(1,1,.7,.5),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.3,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.1,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,.05,.1),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
   } else if (selectedEfficacy == "C2. 80%, 50%, 50%") {
-    efficacy$modif_beta = matrix(rep(c(1,1,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.5),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.2),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-    efficacy$modif_ifr = matrix(rep(c(1,.05,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_beta = matrix(rep(c(1,1,.7,.5),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_gr = matrix(rep(c(1,.3,.7,.5),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_porc_cr = matrix(rep(c(1,.1,.4,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+    efficacy$modif_ifr = matrix(rep(c(1,.05,.3,.1),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
   }
   return(efficacy)
 }
