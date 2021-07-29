@@ -22,8 +22,7 @@ rm(list = ls())
 # carga RData
 
 load("DatosIniciales_ARG.RData", envir = .GlobalEnv)
-rm(list=setdiff(ls(), c("modeloSimulado",
-                        "duracionMediaInf",
+rm(list=setdiff(ls(), c("duracionMediaInf",
                         "diasHospCasosCriticos",
                         "diasHospCasosGraves",
                         "periodoPreinfPromedio",
@@ -39,7 +38,7 @@ diasDeProyeccion = 1100
 primeraVez = porc_gr_primeraVez = porc_cr_primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
 use_empirical_mc = T
-immunityStates <<- c("No immunity", "Recovered", "Vaccinated")
+immunityStates <<- c("No immunity", "Recovered", "Sputnik_1d", "Sputnik_2d")
 ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+")
 ageGroupsV <<- c("00","18","30","40","50", "60", "70", "80")
 names <- list(immunityStates,
@@ -90,10 +89,10 @@ N = c(13150705,
 ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) * 1.4
 # porcentajeCasosGraves = 0.0328
 porcentajeCasosGravesRow = c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628) * 0.7
-porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = names)
 # porcentajeCasosCriticos = 0.0108
 porcentajeCasosCriticosRow = c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372) * 0.7
-porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = names)
 
 # datos de recursos
 capacidadUTI <- 11517
@@ -115,25 +114,31 @@ vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
                                              nrow=length(immunityStates),
                                              ncol=length(ageGroups))
 
-vacArg2 = lapply(1:nrow(dataPorEdad$FMTD$vac2), matrix,  data=0,
-                 nrow=length(immunityStates),
-                 ncol=length(ageGroups))
+# vacArg2 = lapply(1:nrow(dataPorEdad$FMTD$vac2), matrix,  data=0,
+#                  nrow=length(immunityStates),
+#                 ncol=length(ageGroups))
 
 
 
 for (t in 1:length(vacArg)) {
   # TODO: Expandir a otras vacunas
   vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
+
+  vacArg[[t]][4,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
 }
 
-for (t in 1:length(vacArg2)) {
-  # TODO: Expandir a otras vacunas
-  vacArg2[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
-}
+# for (t in 1:length(vacArg2)) {
+#   # TODO: Expandir a otras vacunas
+#   vacArg2[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
+# }
+
+# pone cero si hay na en 2da dosis
+vacArg <- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
+
+lapply(vacArg, function(x) x[3,])
 
 
-
-promedio = round(Reduce("+", vacArg) / length(vacArg),0)
+promedio = round(Reduce("+", lapply(vacArg, function(x) x[3,])) / length(vacArg),0)
 promedio2 = round(Reduce("+", vacArg2) / length(vacArg2),0)
 vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
                  nrow=length(immunityStates),
