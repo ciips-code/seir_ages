@@ -176,11 +176,15 @@ duracion_inmunidad = 180
 duracion_proteccion = 360 # TODO: Implementar, Cuanto?
 
 namesVac = list(immunityStates,
-                c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP", "intervaloInterDosis"))
+                c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP", "intervaloInterDosis", "idVacuna", "dosis"))
 
-paramVac <<- matrix(data=c(0,0,0,0,0,0,
-                          0,0,0,0,0,0,
-                          20,.2,0,.6,360,30), nrow=length(immunityStates), ncol=6, byrow=T, dimnames = namesVac)
+paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
+                          0,0,0,0,0,0,0,0,
+                          20,.2,0,.6,360,30,"SPTNK",1
+                          # ,20,.4,0,.5,360,30,"SPTNK",2
+                          # ,20,.4,0,.5,360,30,"SINOPH",1
+                          # ,20,.4,0,.5,360,30,"SINOPH",2
+                          ), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                 useShinyjs(),

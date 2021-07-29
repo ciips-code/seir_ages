@@ -191,11 +191,12 @@ seir_ages <- function(dias,
     # S[[t]][1,] = colSums(E[[t]]) - colSums(I[[t]]) - colSums(R[[t]]) - colSums(V[[t]])
     # los recuperados de hoy son los recuperados de ayer menos los que se expusieron hoy
    
-    # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
-    # TODO: Esta hard coded para 3, y esta sacando todos los que entraron a P, sin considerar 
-    # que algunos se expusieron despues, pero no saca los volvieron de V a P (balance?)
-    
     # Aplica Segunda dosis
+    # - Calcula las cantidades de segundas dosis que se hacen efectivas hoy
+    # - La matriz de segundas dosis tiene que venir en la fila correcta (ej. 4)
+    # - Suma la matriz
+    # - Resta las segundas de las primeras, segun una tabla de equivalencias, y comprobando si no da negativo
+    #
     # for (vacuna in c(3:nrow(paramVac))) {
     #   latencia = paramVac[vacuna,1]
     #   porcV = paramVac[vacuna,2]
@@ -211,6 +212,7 @@ seir_ages <- function(dias,
     #   }
     # }
     
+    # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
     # Vuelve a No inmunes los que terminan su tiempo de proteccion
     for (vacuna in c(3:nrow(paramVac))) {
       tiempoP = paramVac[vacuna,5]
