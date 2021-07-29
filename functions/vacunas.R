@@ -1,10 +1,7 @@
 generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac) {
   # browser()
-  intervaloInterDosis = 0
+  intervaloInterDosis = 30
   # TODO: Obtener intervalo inter dosis de paramvac
-  if (dosis == 2) {
-    intervaloInterDosis = 30
-  }
   coverage = getUptakeCoverage(uptake)
   if (!is.null(coverage)) {
     if (sum(coverage) == 0) {

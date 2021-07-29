@@ -16,8 +16,7 @@ seir_ages <- function(dias,
                       modif_ifr,
                       duracion_inmunidad,
                       defunciones_reales,
-                      planVacDosis1,
-                      planVacDosis2,
+                      planVacunacionFinal,
                       immunityStates,
                       ageGroups,
                       paramVac,
@@ -132,53 +131,76 @@ seir_ages <- function(dias,
     Vin = VquedaEnS =  Vout = vacunasDelDia = vacunasDelDia2 = vacunadosVacunaDia = vacunadosVacunaDia2 = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = names)
     
-    # Arma la lista de vacunas 1ra dosis
+    # Arma la lista de vacunas
     for (vacuna in c(3:nrow(paramVac))) {
-      latencia = paramVac[vacuna,1]
+      latencia = as.numeric(paramVac[vacuna,1])
       if (t>latencia) {
-        vacunasDelDia[vacuna,]=planVacDosis1[[t-latencia]][vacuna,]
+        vacunasDelDia[vacuna,]=planVacunacionFinal[[t-latencia]][vacuna,]
       }
     }
-    
-    # Arma la lista de vacunas 2da dosis
-    for (vacuna in c(3:nrow(paramVac))) {
-      latencia = paramVac[vacuna,1]
-      if (t>latencia) {
-        vacunasDelDia2[vacuna,]=planVacDosis2[[t-latencia]][vacuna,]
-      }
-    }
-    
+
     # Primera dosis
-    # TODO: No esta vacunando recuperados
-    haySparaVacunar = S[[t-1]][1,] > colSums(vacunasDelDia)
+    # TODO: No esta vacunando recuperados / Hard Coded para solo 3,4
+    haySparaVacunar = S[[t-1]][1,] > vacunasDelDia[3,]
     haySparaVacunar[is.na(haySparaVacunar)] <- FALSE
-    for (vacuna in c(3:nrow(paramVac))) {
-      latencia = paramVac[vacuna,1]
-      porcV = paramVac[vacuna,2]
-      tiempoV = paramVac[vacuna,3]
-      porcProt = paramVac[vacuna,4]
-      if (t > latencia) {
-        for (iAge in c(1:length(ageGroups))) {
-          if (vacunasDelDia[vacuna,iAge] < S[[t-1]][1,iAge]) {
-            vacunadosVacunaDia[vacuna,iAge] = vacunasDelDia[vacuna,iAge]
-          } else {
-            vacunadosVacunaDia[vacuna,iAge] = 0
-          }
+    # for (vacuna in c(3:nrow(paramVac))) {
+    # Aplica primera dosis
+    vacuna = 3
+    latencia = as.numeric(paramVac[vacuna,1])
+    porcV = as.numeric(paramVac[vacuna,2])
+    tiempoV = as.numeric(paramVac[vacuna,3])
+    porcProt = as.numeric(paramVac[vacuna,4])
+    if (t > latencia) {
+      for (iAge in c(1:length(ageGroups))) {
+        if (vacunasDelDia[vacuna,iAge] < S[[t-1]][1,iAge]) {
+          vacunadosVacunaDia[vacuna,iAge] = vacunasDelDia[vacuna,iAge]
+        } else {
+          vacunadosVacunaDia[vacuna,iAge] = 0
         }
-        vA[[t]][vacuna,] = vacunadosVacunaDia[vacuna,]
-        # Los que pasan a V
-        Vin[vacuna,] =  vacunadosVacunaDia[vacuna,] * porcV
-        # Los que se quedan en S pero protegidos (deben cambiar de renglon)
-        VquedaEnS[vacuna,] =  vacunadosVacunaDia[vacuna,] * porcProt
-        # Los que no les hace ningun efecto y quedan en S como no inmunes, no hay que hacer nada
       }
-      if (t>tiempoV+1) {
-        Vout[vacuna,] <- v[[t-tiempoV]][vacuna,]
-      }
-      V[[t]][vacuna,] = V[[t-1]][vacuna,] + Vin[vacuna,] - Vout[vacuna,]
+      vA[[t]][vacuna,] = vacunadosVacunaDia[vacuna,]
+      # Los que pasan a V
+      Vin[vacuna,] =  vacunadosVacunaDia[vacuna,] * porcV
+      # Los que se quedan en S pero protegidos (deben cambiar de renglon)
+      VquedaEnS[vacuna,] =  vacunadosVacunaDia[vacuna,] * porcProt
+      # Los que no les hace ningun efecto y quedan en S como no inmunes, no hay que hacer nada
     }
+    # TODO: Segunda dosis
+    #  - La segunda dosis se aplica a la linea 3 en S y en V, y la 1 en V
+    #  - Dosis para V3 =  CantDia * porcV
+    #  - Dosis para S3 =  CantDia * porcProt
+    #  - Dosis para S1 =  CantDia * 1-porcV-porcProt
+    #  - Dosis para V3: Se pasan de 3 a 4
+    #  - Dosis para S3: Se pasan de 3 a 4
+    #  - Dosis para S1: Se quedan en S1
+    #  - Con esto no estamos prolongando los tiempos
+    #  - Se mantienen los efectos de la primera dosis, el que paso a V se queda, el que tuvo proteccion se queda, etc
+    segundasDosisHoyV3 = vacunasDelDia[4,] * porcV
+    segundasDosisHoyS3 = vacunasDelDia[4,] * porcProt
+    # segundasDosisHoyS1 no se calcula
+    # Salida de V
+    if (t>tiempoV+1) {
+      totSalidaVHoy = v[[t-tiempoV]][vacuna,]
+      # reasignar entre 3 y 4 de acuerdo a proporciones
+      porc3 = V[[t-1]][3,] / (V[[t-1]][3,] + V[[t-1]][4,])
+      porc3[is.na(porc3)] <- 0
+      totSalidaVHoy3 = totSalidaVHoy * porc3
+      porc4 = V[[t-1]][4,] / (V[[t-1]][4,] + V[[t-1]][4,])
+      porc4[is.na(porc4)] <- 0
+      totSalidaVHoy4 = totSalidaVHoy * porc4
+      Vout[3,] <- totSalidaVHoy3
+      Vout[4,] <- totSalidaVHoy4
+    }
+    V[[t]][vacuna,] = V[[t-1]][vacuna,] + Vin[vacuna,] - Vout[vacuna,]
+    # browser(expr = {t > 322})
+    for (iAge in c(1:length(ageGroups))) {
+      if (segundasDosisHoyV3[iAge] < V[[t]][3,iAge]) {
+        V[[t]][3,iAge] = V[[t]][3,iAge] - segundasDosisHoyV3[iAge]
+        V[[t]][4,iAge] = V[[t]][4,iAge] + segundasDosisHoyV3[iAge]
+      }
+    }
+    # browser(expr = {t > 322})
     v[[t]] = Vin
-    
     # Empiezo a armar el S a partir de las transiciones
     S[[t]] = S[[t-1]] - e[[t-1]]  + Vout
     S[[t]][1,] = S[[t]][1,] - colSums(Vin)
@@ -187,6 +209,12 @@ seir_ages <- function(dias,
     # # Reasigno de renglon los que quedaron hoy en S luego de vacunarse
     S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
     S[[t]] =  S[[t]] + VquedaEnS
+    for (iAge in c(1:length(ageGroups))) {
+      if (segundasDosisHoyS3[iAge] < S[[t]][3,iAge]) {
+        S[[t]][3,iAge] = S[[t]][3,iAge] - segundasDosisHoyS3[iAge]
+        S[[t]][4,iAge] = S[[t]][4,iAge] + segundasDosisHoyS3[iAge]
+      }
+    }
     
     # S[[t]][1,] = colSums(E[[t]]) - colSums(I[[t]]) - colSums(R[[t]]) - colSums(V[[t]])
     # los recuperados de hoy son los recuperados de ayer menos los que se expusieron hoy
@@ -215,7 +243,7 @@ seir_ages <- function(dias,
     # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
     # Vuelve a No inmunes los que terminan su tiempo de proteccion
     for (vacuna in c(3:nrow(paramVac))) {
-      tiempoP = paramVac[vacuna,5]
+      tiempoP = as.numeric(paramVac[vacuna,5])
       S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[t]][vacuna,]/tiempoP
       S[[t]][1,]=S[[t]][1,] + S[[t]][vacuna,]/tiempoP
     }

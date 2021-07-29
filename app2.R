@@ -182,8 +182,8 @@ namesVac = list(immunityStates,
 
 paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
                           0,0,0,0,0,0,0,0,
-                          20,.2,0,.6,360,30,"SPTNK",1
-                          ,20,.4,0,.5,360,30,"SPTNK",2
+                          20,.2,30,.6,360,30,"SPTNK",1
+                          ,20,.4,30,.5,360,30,"SPTNK",2
                           # ,20,.4,0,.5,360,30,"SINOPH",1
                           # ,20,.4,0,.5,360,30,"SINOPH",2
                           ), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
@@ -472,7 +472,7 @@ server <- function (input, output, session) {
         paramVac_primeraVez<<-F
     } else {
         paramVac_edit[as.numeric(input$paramVac_cell_edit[1]),
-                      as.numeric(input$paramVac_cell_edit[2])] <- as.numeric(input$paramVac_cell_edit[3])
+                      as.numeric(input$paramVac_cell_edit[2])] <<- as.numeric(input$paramVac_cell_edit[3])
         paramVac_edit <<- paramVac_edit  
     }
   })
@@ -566,24 +566,14 @@ server <- function (input, output, session) {
       disable("immunityDuration")
     }
 
-    planVacDosis1Param <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
-                                              planVacDosis1, N, tVacunasCero, diaCeroVac,1)
+    planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                              planVacunacionFinal, N, tVacunasCero, diaCeroVac)
     
-    
-    planVacDosis1Param <- lapply(planVacDosis1Param, function(dia) {colnames(dia) <- ageGroups 
+    planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
     return(dia)})
     
-    planVacDosis1Param <<- planVacDosis1Param 
+    planVacunacionFinalParam <<- planVacunacionFinalParam 
     
-    
-    planVacDosis2Param <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
-                                              planVacDosis2, N, tVacunasCero, diaCeroVac,2)
-    
-    planVacDosis2Param <- lapply(planVacDosis2Param, function(dia) {colnames(dia) <- ageGroups 
-    return(dia)})
-    
-    planVacDosis2Param <<- planVacDosis2Param 
-    # browser()
     ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
     trans_prob_param <- transprob_edit * ajuste
     
@@ -601,8 +591,8 @@ server <- function (input, output, session) {
     
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
     
-    paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
-    paramVac_edit[3,5] = as.numeric(input$immunityDuration)
+    # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
     
     print(porcentajeCasosGraves)
     print(porcentajeCasosCriticos)
@@ -623,8 +613,7 @@ server <- function (input, output, session) {
               modif_porc_gr=efficacy$modif_porc_gr,
               modif_porc_cr=efficacy$modif_porc_cr,
               modif_ifr=efficacy$modif_ifr,
-              planVacDosis1=planVacDosis1Param,
-              planVacDosis2=planVacDosis2Param,
+              planVacunacionFinal=planVacunacionFinalParam,
               immunityStates=immunityStates,
               ageGroups=ageGroups,
               paramVac=paramVac_edit,
@@ -696,7 +685,7 @@ server <- function (input, output, session) {
       tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
       tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
       tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
-      tibble(Compart = "pV", do.call(rbind, lapply(planVacDosis1Param,colSums)) %>% as_tibble())) %>%
+      tibble(Compart = "pV", do.call(rbind, lapply(planVacunacionFinalParam,colSums)) %>% as_tibble())) %>%
       dplyr::mutate(fecha = rep(1:length(proy$S),16)) %>%
       # TODO: Arreglar
       dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
