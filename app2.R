@@ -123,7 +123,6 @@ vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
 for (t in 1:length(vacArg)) {
   # TODO: Expandir a otras vacunas
   vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
-
   vacArg[[t]][4,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
 }
 
@@ -135,23 +134,21 @@ for (t in 1:length(vacArg)) {
 # pone cero si hay na en 2da dosis
 vacArg <- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
 
-lapply(vacArg, function(x) x[3,])
+# promedio de aplicacion de cada dosis 
+promedio =  round(Reduce("+", vacArg) / length(vacArg),0)
 
-
-promedio = round(Reduce("+", lapply(vacArg, function(x) x[3,])) / length(vacArg),0)
-promedio2 = round(Reduce("+", vacArg2) / length(vacArg2),0)
 vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
                  nrow=length(immunityStates),
                  ncol=length(ageGroups))
 
-vacPlan2 = lapply(1:(diasDeProyeccion-length(vacArg2)-length(vacPre)), matrix, data=t(promedio2),
-                  nrow=length(immunityStates),
-                  ncol=length(ageGroups))
+# vacPlan2 = lapply(1:(diasDeProyeccion-length(vacArg2)-length(vacPre)), matrix, data=t(promedio2),
+#                   nrow=length(immunityStates),
+#                   ncol=length(ageGroups))
 
 
 
-planVacDosis1 <<- c(vacPre,vacArg,vacPlan)
-planVacDosis2 <<- c(vacPre,vacArg2,vacPlan2)
+planVacunacionFinal <<- c(vacPre,vacArg,vacPlan)
+
 
 # vacPlanDia <- length(vacPre)+length(vacArg)
 
@@ -173,10 +170,10 @@ rowSums(def_p[206,])
 
 fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
-modif_beta =  modif_beta_param = matrix(rep(c(1,0.15,.6),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
-modif_ifr =  modif_ifr_param = matrix(rep(c(1,.05,.01),length(ageGroups)),3,length(ageGroups),byrow=F,dimnames = names)
+modif_beta =  modif_beta_param = matrix(rep(c(1,0.15,.6,.5),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1,.05),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03,.02),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
+modif_ifr =  modif_ifr_param = matrix(rep(c(1,.05,.01,.005),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
 duracion_inmunidad = 180
 duracion_proteccion = 360 # TODO: Implementar, Cuanto?
 
@@ -186,7 +183,7 @@ namesVac = list(immunityStates,
 paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
                           0,0,0,0,0,0,0,0,
                           20,.2,0,.6,360,30,"SPTNK",1
-                          # ,20,.4,0,.5,360,30,"SPTNK",2
+                          ,20,.4,0,.5,360,30,"SPTNK",2
                           # ,20,.4,0,.5,360,30,"SINOPH",1
                           # ,20,.4,0,.5,360,30,"SINOPH",2
                           ), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
