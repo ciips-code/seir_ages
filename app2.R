@@ -599,7 +599,7 @@ server <- function (input, output, session) {
       relaxGoal = which(fechas_master == input$relaxationDateGoal)
     }
     
-    # Apply Selected NPI Scenario
+    # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
     
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
     
