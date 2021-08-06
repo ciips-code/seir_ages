@@ -38,7 +38,7 @@ diasDeProyeccion = 1100
 primeraVez = porc_gr_primeraVez = porc_cr_primeraVez = paramVac_primeraVez = ifr_primeraVez = transprob_primeraVez = mbeta_primeraVez = mgraves_primeraVez = mcriticos_primeraVez = mifr_primeraVez = TRUE
 # crea matrices de contacto y efectividad - set TRUE si queremos observada
 use_empirical_mc = T
-immunityStates <<- c("No immunity", "Recovered", "Sputnik_1d", "Sputnik_2d")
+immunityStates <<- c("No immunity", "Recovered", "1Dosis", "2Dosis")
 ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+")
 ageGroupsV <<- c("00","18","30","40","50", "60", "70", "80")
 names <- list(immunityStates,
@@ -83,8 +83,6 @@ N = c(13150705,
       1246451)
 
 # datos de gravedad
-
-
 # Age specific IFR
 ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) * 1.4
 # porcentajeCasosGraves = 0.0328
@@ -309,7 +307,19 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                 )
                                                             ),
                                                          column(4,
-
+                                                                selectInput(
+                                                                  "npiScenario",
+                                                                  label="Starting NPI Scenario",
+                                                                  choices = c("Baseline",
+                                                                              "School closures",
+                                                                              "Physical distancing",
+                                                                              "Shielding of older people",
+                                                                              "Self-isolation",
+                                                                              "Combined",
+                                                                              "Intensive interventions with schools closed",
+                                                                              "Intensive interventions with schools open",
+                                                                              "Lockdown")
+                                                                ),
                                                                 radioButtons("npiStrat", "NPI strategy:",
                                                                              c("Continued NPIs" = "cont",
                                                                                "Relaxation of NPIs" = "relax")),
@@ -588,6 +598,8 @@ server <- function (input, output, session) {
       relaxNpi = TRUE
       relaxGoal = which(fechas_master == input$relaxationDateGoal)
     }
+    
+    # Apply Selected NPI Scenario
     
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
     
