@@ -318,10 +318,10 @@ get_factor_given_rt = function(contact_matrix, transmission_probability, duracio
               factor = factor))
 }
 
-
-get_empirical_cm <- function(country, ages){
+# get contact matrix from covoid study: library(covoid) 
+get_empirical_cm <- function(country, ages, type = "general"){
   # get matrix from covoid package
-  mc_arg  <- as.data.frame(t(import_contact_matrix(country,"general")))
+  mc_arg  <- as.data.frame(t(import_contact_matrix(country = country,setting = type)))
   pop_arg <- data.frame(pop = as.numeric(import_age_distribution(country)), group = rownames(mc_arg))
   # some inconsistencies in covoid package for Argentina
   # plot(mc_arg[,"5"]*pop_arg[pop_arg$group=="5","pop"],mc_arg[,"80"]*pop_arg[pop_arg$group=="80","pop"])
@@ -342,4 +342,52 @@ get_empirical_cm <- function(country, ages){
     select(-1) %>% as.matrix()
   rownames(contact_matrix) <-  colnames(contact_matrix) <- age_il
   contact_matrix
+}
+
+# weight contact matrix by place of contact, given Davis matrix scenario. https://www.thelancet.com/journals/lanpub/article/PIIS2468-2667(20)30133-X/fulltext
+# Shortcut here: infectiouness modifications (65%) are applied directly to contact matrix because will multiply after the transmission parameter to do beta
+get_npi_cm_scenario <- function(scenario = "Baseline", 
+                             matrix_list = NULL,
+                             ages= c(0, 18, 30, 40, 50, 60, 70, 80)){
+  
+  list2env(matrix_list, .GlobalEnv)
+  # columns of olders 
+  cols_70_older <- which((ages)>=70)
+  # scenarios
+  if(scenario == "Baseline"){
+    out <- contact_matrix
+  }
+  if(scenario == "School closures"){
+    out <- 1 * contact_matrix_home + 1 * contact_matrix_work + 0 * contact_matrix_school + 1 * contact_matrix_other
+  }
+  if(scenario == "Physical distancing"){
+    out <- 1 * contact_matrix_home + .5 * contact_matrix_work + 1 * contact_matrix_school + .5 * contact_matrix_other
+  }
+  if(scenario == "Shielding of older people"){
+    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + contact_matrix_work [,-cols_70_older]) +
+           1 * contact_matrix_school + .25 * cbind(contact_matrix_other[,cols_70_older] + contact_matrix_other[,-cols_70_older])
+  }
+  if(scenario == "Self-isolation"){
+    out <- contact_matrix * .65
+  }
+  if(scenario == "Combined"){
+    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + .5 * contact_matrix_work [,-cols_70_older]) +
+           0 * contact_matrix_school + .25 * cbind(contact_matrix_other[,cols_70_older] + .5 * contact_matrix_other[,-cols_70_older])
+    out <- out * .65 
+  }
+  if(scenario == "Intensive interventions with schools closed"){
+    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + .65 * contact_matrix_work [,-cols_70_older]) +
+           0 * contact_matrix_school + .16 * cbind(contact_matrix_other[,cols_70_older] + .59 * contact_matrix_other[,-cols_70_older])
+    out <- out * .65 
+  }
+  if(scenario == "Intensive interventions with schools open"){
+    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + .65 * contact_matrix_work [,-cols_70_older]) +
+           1 * contact_matrix_school + .16 * cbind(contact_matrix_other[,cols_70_older] + .59 * contact_matrix_other[,-cols_70_older])
+    out <- out * .65 
+  }
+  if(scenario == "Lockdown"){
+    out <- 1 * contact_matrix_home + .1 * contact_matrix_work + 0 * contact_matrix_school + .1 * contact_matrix_other
+    out <- out * .65 
+  }
+  return(out)
 }

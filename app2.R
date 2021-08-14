@@ -63,8 +63,16 @@ transmission_probability = matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.309
                                     0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253,
                                     0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253),length(ageGroups),length(ageGroups),byrow = T)
 if(use_empirical_mc){
-  contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV))
+  contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "general")
+  contact_matrix_home <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "home")
+  contact_matrix_school <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "school")
+  contact_matrix_work <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "work")
+  contact_matrix_other <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "other")
   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
+  colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
+  colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
+  colnames(contact_matrix_work) = rownames(contact_matrix_work) = ageGroups
+  colnames(contact_matrix_other) = rownames(contact_matrix_other) = ageGroups
   transmission_probability = transmission_probability * 0.23 # a ojo
 }
 
@@ -600,7 +608,14 @@ server <- function (input, output, session) {
     }
     
     # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
-    
+    contact_matrix_scenario <- get_npi_cm_scenario(scenario = input$npiScenario,
+                                                   matrix_list = list(
+                                                                 contact_matrix = contact_matrix,
+                                                                 contact_matrix_work = contact_matrix_work,
+                                                                 contact_matrix_home = contact_matrix_home,
+                                                                 contact_matrix_school = contact_matrix_school,
+                                                                 contact_matrix_other = contact_matrix_other),
+                                                   ages= as.numeric(ageGroupsV))
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
     
     # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
@@ -617,7 +632,7 @@ server <- function (input, output, session) {
               duracionIg = diasHospCasosGraves,
               duracionIc = diasHospCasosCriticos,
               ifr = ifr_edit[1,],
-              contact_matrix = contact_matrix,
+              contact_matrix = contact_matrix_scenario,
               transmission_probability = trans_prob_param,
               N = N,
               defunciones_reales=def_p,
