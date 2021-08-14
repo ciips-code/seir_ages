@@ -606,8 +606,8 @@ server <- function (input, output, session) {
     # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
     # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
     
-    print(porcentajeCasosGraves)
-    print(porcentajeCasosCriticos)
+    # print(porcentajeCasosGraves)
+    # print(porcentajeCasosCriticos)
     
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,

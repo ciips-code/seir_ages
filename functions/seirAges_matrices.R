@@ -262,7 +262,7 @@ seir_ages <- function(dias,
     
     tot[[t]] = S[[t]] + V[[t]] + E[[t]] + I[[t]] + R[[t]]
     # browser()
-    print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
+    # Diferencias: print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
   salida <- list("S: Susceptible"=S,
                  "V: Vaccinated"=V,
