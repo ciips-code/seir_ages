@@ -189,27 +189,28 @@ namesVac = list(immunityStates,
 
 paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
                           0,0,0,0,0,0,0,0,
-                          20,.2,30,.6,360,30,"SPTNK",1
-                          ,20,.4,30,.5,360,30,"SPTNK",2
+                          20,.2,30,.6,360,30,"SchemeIncomplete",1
+                          ,20,.4,30,.5,360,30,"SchemeComplete",2
                           # ,20,.4,0,.5,360,30,"SINOPH",1
                           # ,20,.4,0,.5,360,30,"SINOPH",2
                           ), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
 
-ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
+ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 useShinyjs(),
                 fluidRow(id="inputs", 
-                         column(width = 4, offset = 2,
-                                numericInput("t", label = NULL, value = 1, step = 1)
+                         column(width = 6,
+                                h2("IECS - CIIPS: Vaccines Impact Modeling")
+                                , align="left"),
+                         column(width = 4,
+                                numericInput("t", label = "Day of projection", value = 1, step = 1)
                                 , align="right"),
-                         column(width = 1,
-                                actionButton("submit", label = NULL, icon = icon("refresh"))
-                                , align="center"),
-                         column(width = 1,
-                                actionButton("prev", label = NULL, icon = icon("chevron-left"))
-                                , align="center"),
-                         column(width = 1,
+                         column(width = 2,
+                                br(),
+                                # actionButton("submit", label = NULL, icon = icon("refresh")),
+                                actionButton("prev", label = NULL, icon = icon("chevron-left")),
                                 actionButton("prox", label = NULL, icon = icon("chevron-right"))
-                                , align="center")),
+                                , align="left")
+                         ),
                 tabsetPanel(type = "tabs",
                             tabPanel("Graphs",
                                      br(),
@@ -220,7 +221,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                                                    selected= c("total"))),
                                               
                                                        
-                                              column(4,fluidRow(column(4,textInput("save_comp_name", "Save to scenario", placeholder = "Enter name")),
+                                              column(4,fluidRow(column(4,textInput("save_comp_name", "Save scenario", placeholder = "Enter name")),
                                                                 column(2,br(),actionButton("save_comp", icon("chevron-right"))),
                                                                 column(2,prettyCheckbox(inputId = "check_cases",label = "Show reported cases",value = FALSE),
                                                                          prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE)))
@@ -228,7 +229,94 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                       ),
                                      plotlyOutput("graficoUnico"),
                                      tabsetPanel(type = "tabs",
-                                       tabPanel("Model",
+                                                 tabPanel("Scenario configuration",
+                                                          fluidRow(column(4,
+                                                                          selectInput(
+                                                                            "vacUptake",
+                                                                            label="Vaccination uptake",
+                                                                            choices = c("Current uptake",
+                                                                                        "High uptake: 95%",
+                                                                                        "High uptake: 80%",
+                                                                                        "Mid-range uptake: 50%",
+                                                                                        "Low uptake: 20%",
+                                                                                        "No vaccination")
+                                                                          ),
+                                                                          selectInput(
+                                                                            "vacDateGoal",
+                                                                            label="Vaccination date goal",
+                                                                            choices = c("Mid 2021"="2021-06-30",
+                                                                                        "End 2021"="2021-12-31",
+                                                                                        "Mid 2022"="2022-05-30",
+                                                                                        "End 2022"="2022-12-31")
+                                                                          ),
+                                                                          selectInput(
+                                                                            "vacStrat",
+                                                                            label="Vaccination priorities",
+                                                                            choices = c("Current priorities",
+                                                                                        "Priority: older -> adults -> young",
+                                                                                        "Priority: older + adults -> young",
+                                                                                        "Priority: adults -> older -> young",
+                                                                                        "No priorities")
+                                                                          ),
+                                                                          selectInput(
+                                                                            "vacEfficacy",
+                                                                            label="Vaccination efficacy (Severe, Moderate, Mild)",
+                                                                            choices = c("A. 100% all",
+                                                                                        "B1. 100%, 80%, 80%",
+                                                                                        "B2. 100%, 80%, 50%",
+                                                                                        "C1. 80%, 80%, 50%",
+                                                                                        "C2. 80%, 50%, 50%"),
+                                                                            selected = "B2. 100%, 80%, 50%"
+                                                                          ),
+                                                                          selectInput(
+                                                                            "immunityDuration",
+                                                                            label="Immunity duration",
+                                                                            choices = c("6 months"=180,
+                                                                                        "1 year"=360,
+                                                                                        "Lifelong"=2000)
+                                                                          )
+                                                          ),
+                                                          column(4,
+                                                                 selectInput(
+                                                                   "npiScenario",
+                                                                   label="Starting NPI Scenario",
+                                                                   choices = c("Baseline",
+                                                                               "School closures",
+                                                                               "Physical distancing",
+                                                                               "Shielding of older people",
+                                                                               "Self-isolation",
+                                                                               "Combined",
+                                                                               "Intensive interventions with schools closed",
+                                                                               "Intensive interventions with schools open",
+                                                                               "Lockdown")
+                                                                 ),
+                                                                 radioButtons("npiStrat", "NPI strategy:",
+                                                                              c("Continued NPIs" = "cont",
+                                                                                "Relaxation of NPIs" = "relax")),
+                                                                 selectInput(
+                                                                   "relaxationDateGoal",
+                                                                   label="Relaxation date goal",
+                                                                   choices = c("Mid 2021"="2021-06-30",
+                                                                               "End 2021"="2021-12-31",
+                                                                               "Mid 2022"="2022-05-30",
+                                                                               "End 2022"="2022-12-31")
+                                                                 ),
+                                                                 sliderInput("relaxationFactor",
+                                                                             "NPI Relaxation factor",
+                                                                             min=0, #.3,
+                                                                             max=.5, #.5,
+                                                                             value=0, #.40,
+                                                                             step=.05),
+                                                                 sliderInput("ajusta_beta",
+                                                                             "Base NPI strength modifier",
+                                                                             min=-1, #.3,
+                                                                             max=1, #.5,
+                                                                             value=.6, #.40,
+                                                                             step=.1)),
+                                                          column(4,DTOutput("resumen_tabla"))
+                                                          )
+                                                 ),
+                                       tabPanel("Other parameters",
                                          fluidRow(
                                            column(12,
                                              fluidRow(
@@ -267,99 +355,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "sandstone"),
                                              )
                                            )
                                          )
-                                       ),
-                                       tabPanel("Scenarios",
-                                                fluidRow(column(4,
-                                                                selectInput(
-                                                                  "vacUptake",
-                                                                  label="Vaccination uptake",
-                                                                  choices = c("Current uptake",
-                                                                              "High uptake: 95%",
-                                                                              "High uptake: 80%",
-                                                                              "Mid-range uptake: 50%",
-                                                                              "Low uptake: 20%",
-                                                                              "No vaccination")
-                                                                ),
-                                                                selectInput(
-                                                                  "vacDateGoal",
-                                                                  label="Vaccination date goal",
-                                                                  choices = c("Mid 2021"="2021-06-30",
-                                                                              "End 2021"="2021-12-31",
-                                                                              "Mid 2022"="2022-05-30",
-                                                                              "End 2022"="2022-12-31")
-                                                                ),
-                                                                selectInput(
-                                                                  "vacStrat",
-                                                                  label="Vaccination priorities",
-                                                                  choices = c("Current priorities",
-                                                                              "Priority: older -> adults -> young",
-                                                                              "Priority: older + adults -> young",
-                                                                              "Priority: adults -> older -> young",
-                                                                              "No priorities")
-                                                                ),
-                                                                selectInput(
-                                                                  "vacEfficacy",
-                                                                  label="Vaccination efficacy (Severe, Moderate, Mild)",
-                                                                  choices = c("A. 100% all",
-                                                                              "B1. 100%, 80%, 80%",
-                                                                              "B2. 100%, 80%, 50%",
-                                                                              "C1. 80%, 80%, 50%",
-                                                                              "C2. 80%, 50%, 50%"),
-                                                                  selected = "B2. 100%, 80%, 50%"
-                                                                ),
-                                                                selectInput(
-                                                                  "immunityDuration",
-                                                                  label="Immunity duration",
-                                                                  choices = c("6 months"=180,
-                                                                              "1 year"=360,
-                                                                              "Lifelong"=2000)
-                                                                )
-                                                            ),
-                                                         column(4,
-                                                                selectInput(
-                                                                  "npiScenario",
-                                                                  label="Starting NPI Scenario",
-                                                                  choices = c("Baseline",
-                                                                              "School closures",
-                                                                              "Physical distancing",
-                                                                              "Shielding of older people",
-                                                                              "Self-isolation",
-                                                                              "Combined",
-                                                                              "Intensive interventions with schools closed",
-                                                                              "Intensive interventions with schools open",
-                                                                              "Lockdown")
-                                                                ),
-                                                                radioButtons("npiStrat", "NPI strategy:",
-                                                                             c("Continued NPIs" = "cont",
-                                                                               "Relaxation of NPIs" = "relax")),
-                                                                selectInput(
-                                                                  "relaxationDateGoal",
-                                                                  label="Relaxation date goal",
-                                                                  choices = c("Mid 2021"="2021-06-30",
-                                                                              "End 2021"="2021-12-31",
-                                                                              "Mid 2022"="2022-05-30",
-                                                                              "End 2022"="2022-12-31")
-                                                                ),
-                                                                sliderInput("relaxationFactor",
-                                                                            "NPI Relaxation factor",
-                                                                            min=0, #.3,
-                                                                            max=.5, #.5,
-                                                                            value=0, #.40,
-                                                                            step=.05),
-                                                                sliderInput("ajusta_beta",
-                                                                              "Base NPI strength modifier",
-                                                                              min=-1, #.3,
-                                                                              max=1, #.5,
-                                                                              value=.6, #.40,
-                                                                              step=.1)),
-                                                         column(4,DTOutput("resumen_tabla"))
-                                                         )
-                                                )
-                                       
-                                       
-                                       
+                                       )  
                             )),
-                            tabPanel("Scenarios", 
+                            tabPanel("Saved scenarios", 
                                      selectInput("saved_series", "Saved series", choices="", multiple = T),
                                      #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp")),
