@@ -1,6 +1,6 @@
 library(tidyr)
 library(shiny)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 library(plotly)
 library(bslib)
@@ -17,6 +17,7 @@ library(modelr)
 library(stringr)
 library(shinyWidgets)
 
+options(dplyr.summarise.inform = FALSE)
 rm(list = ls())
 
 # carga RData
@@ -726,7 +727,7 @@ server <- function (input, output, session) {
     total=rowSums(casos)
     casos=cbind(Compart,casos,fecha,total) 
     colnames(casos)=colnames(data_graf)
-    casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos)
+    casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos, by = "fecha")
     
     #casos[is.na(casos)] <- 0
     casos$Compart <- "casos_registrados"
@@ -741,7 +742,7 @@ server <- function (input, output, session) {
     total=rowSums(muertes)
     muertes=cbind(Compart,muertes,fecha,total) 
     colnames(muertes)=colnames(data_graf)
-    muertes <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(muertes)
+    muertes <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(muertes, by = "fecha")
     #muertes[is.na(muertes)] <- 0
     muertes$Compart <- "muertes_registradas"
     

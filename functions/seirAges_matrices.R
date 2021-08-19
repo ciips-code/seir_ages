@@ -332,7 +332,7 @@ get_empirical_cm <- function(country, ages, type = "general"){
     pivot_longer(mc_arg %>%
                    mutate(to_group = rownames(mc_arg)),
                  cols=1:ncol(mc_arg),names_to = "group") %>%
-    left_join(pop_arg) %>%
+    left_join(pop_arg, by = "group") %>%
     mutate(group = as.integer(group), to_group = as.integer(to_group),
            new_group = cut(group, breaks = c(age_il-1,100)),
            new_to_group = cut(to_group, breaks = c(age_il-1,100))) %>%
