@@ -364,26 +364,26 @@ get_npi_cm_scenario <- function(scenario = "Baseline",
     out <- 1 * contact_matrix_home + .5 * contact_matrix_work + 1 * contact_matrix_school + .5 * contact_matrix_other
   }
   if(scenario == "Shielding of older people"){
-    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + contact_matrix_work [,-cols_70_older]) +
-           1 * contact_matrix_school + .25 * cbind(contact_matrix_other[,cols_70_older] + contact_matrix_other[,-cols_70_older])
+    out <- 1 * contact_matrix_home   + cbind(contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+           1 * contact_matrix_school + cbind(contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
   }
   if(scenario == "Self-isolation"){
     out <- contact_matrix * .65
   }
   if(scenario == "Combined"){
-    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + .5 * contact_matrix_work [,-cols_70_older]) +
-           0 * contact_matrix_school + .25 * cbind(contact_matrix_other[,cols_70_older] + .5 * contact_matrix_other[,-cols_70_older])
+    out <- 1 * contact_matrix_home   + cbind(.5 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+           0 * contact_matrix_school + cbind(.5 * contact_matrix_other[,-cols_70_older], .25 * contact_matrix_other[,cols_70_older])
     out <- out * .65 
   }
   if(scenario == "Intensive interventions with schools closed"){
-    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + .65 * contact_matrix_work [,-cols_70_older]) +
-           0 * contact_matrix_school + .16 * cbind(contact_matrix_other[,cols_70_older] + .59 * contact_matrix_other[,-cols_70_older])
+    out <- 1 * contact_matrix_home   + cbind(.65 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+           0 * contact_matrix_school + cbind(.59 * contact_matrix_other[,-cols_70_older], .16 * contact_matrix_other[,cols_70_older])
     out <- out * .65 
   }
   if(scenario == "Intensive interventions with schools open"){
-    out <- 1 * contact_matrix_home   + .25 * cbind(contact_matrix_work [,cols_70_older] + .65 * contact_matrix_work [,-cols_70_older]) +
-           1 * contact_matrix_school + .16 * cbind(contact_matrix_other[,cols_70_older] + .59 * contact_matrix_other[,-cols_70_older])
-    out <- out * .65 
+    out <- 1 * contact_matrix_home   + cbind(.65 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+           1 * contact_matrix_school + cbind(.59 * contact_matrix_other[,-cols_70_older], .16 * contact_matrix_other[,cols_70_older])
+    out <- out * .65
   }
   if(scenario == "Lockdown"){
     out <- 1 * contact_matrix_home + .1 * contact_matrix_work + 0 * contact_matrix_school + .1 * contact_matrix_other
