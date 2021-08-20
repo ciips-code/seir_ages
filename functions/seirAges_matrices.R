@@ -83,7 +83,7 @@ seir_ages <- function(dias,
       # e[[t-1]][1,] = expuestosTotalesHoy
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
-      # if (is.null(factorModificadorBeta)) {
+      # if (is.null(factorModificadorBeta)) { 1.12
       #   ten_days_incidents = sapply((t-10):(t-1), function(s) {sum(i[[s]])})
       #   porc_S = sum(S[[t-1]])/sum(N)
       #   factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents,
@@ -96,7 +96,7 @@ seir_ages <- function(dias,
       #                              nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       # e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
       beta       = contact_matrix * transmission_probability * relaxValue[t]
-      e[[t-1]] = S[[t-1]] * matrix((1.12 * beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
     }
     
     # resto seir
@@ -111,6 +111,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
+      # browser(expr={t==305})
       d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
     }
     D[[t]]      = D[[t-1]] + d[[t-1]]

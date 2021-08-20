@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Topic II: Vaccination strategies to keep health system use below maximum capacity
 
 #### Question 1. 
-In which order should the following groups be prioritized for COVID-19 vaccination as vaccine supply increases so as to keep hospitalizations, and intensive care unit use (where available), due to COVID-19 and other background causes below maximum hospital capacity in the setting(s) modelled?
+In which order should the following groups be prioritized for COVID-19 vaccination as vaccine supply increases so as to keep hospitalizations, and intensive care unit use (where available), due to COVID-19 and other background causes below maximum hospital capacity in the setting(s) modeled?
 
   a. older adults (50+, 60+, 65+ or 75+ years)
   b. younger adults (18-49 years)
