@@ -1,9 +1,13 @@
 library(dplyr)
 library(reshape)
+library(archive)
+library(RSocrata)
+
 
 ##### funcion update #####
 update <-  function(pais,diasDeProyeccion) {
   countryData <- list()
+  ##### ARGENTINA #####
   if (pais=="ARG") {
     
     # url <- 'https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.zip'
@@ -25,10 +29,9 @@ update <-  function(pais,diasDeProyeccion) {
                                     fecha_apertura,
                                     fecha_inicio_sintomas,
                                     clasificacion_resumen) %>%
-                      dplyr::mutate(fecha=dplyr::coalesce(na_if(fecha_fallecimiento,""),
+                      dplyr::mutate(fecha=dplyr::coalesce(na_if(fecha_inicio_sintomas,""),
                                                           na_if(fecha_diagnostico,""),
-                                                          na_if(fecha_apertura,""),
-                                                          na_if(fecha_inicio_sintomas,""))) %>%
+                                                          na_if(fecha_apertura,""))) %>%
                       dplyr::mutate(gredad=case_when(edad_años_meses=="Meses" | edad_años_meses=="Años" & edad>=1 & edad <=4 ~ "00-04",
                                                      edad_años_meses=="Años" & edad>=5 & edad <=9 ~ "05-09",
                                                      edad_años_meses=="Años" & edad>=10 & edad <=14 ~ "10-14",
@@ -161,8 +164,281 @@ update <-  function(pais,diasDeProyeccion) {
       
   } # cierra if de ARG
   
+  ##### PERU #####
+  
+  if (pais=="PER") {
+    url <- 'https://cloud.minsa.gob.pe/s/AC2adyLkHCKjmfm/download'
+    download.file(url, "covidPeru.csv")
+    casos <- read.csv2("covidPeru.csv", encoding = "UTF-8")
+    
+    casos <- casos %>% dplyr::mutate(gredad=case_when(EDAD>=1 & EDAD <=4 ~ "00-04",
+                                                      EDAD>=5 & EDAD <=9 ~ "05-09",
+                                                      EDAD>=10 & EDAD <=14 ~ "10-14",
+                                                      EDAD>=15 & EDAD <=17 ~ "15-17",
+                                                      EDAD>=18 & EDAD <=24 ~ "18-24",
+                                                      EDAD>=25 & EDAD <=29 ~ "25-29",
+                                                      EDAD>=30 & EDAD <=34 ~ "30-34",
+                                                      EDAD>=35 & EDAD <=39 ~ "35-39",
+                                                      EDAD>=40 & EDAD <=44 ~ "40-44",
+                                                      EDAD>=45 & EDAD <=49 ~ "45-49",
+                                                      EDAD>=50 & EDAD <=54 ~ "50-54",
+                                                      EDAD>=55 & EDAD <=59 ~ "55-59",
+                                                      EDAD>=60 & EDAD <=64 ~ "60-64",
+                                                      EDAD>=65 & EDAD <=69 ~ "65-69",
+                                                      EDAD>=70 & EDAD <=74 ~ "70-74",
+                                                      EDAD>=75 & EDAD <=79 ~ "75-79",
+                                                      EDAD>=80 & EDAD <=84 ~ "80-84",
+                                                      EDAD>=85 & EDAD <=89 ~ "85-89",
+                                                      EDAD>=90 & EDAD <=110 ~ "90-99",
+                                                      TRUE ~ "S.I."), 
+                                     fecha=as.Date(paste(substring(FECHA_RESULTADO,1,4),
+                                                         substring(FECHA_RESULTADO,5,6),
+                                                         substring(FECHA_RESULTADO,7,8), 
+                                                         sep = '-'))) %>%
+                                     dplyr::mutate(cuenta=1) %>% 
+                                     reshape::cast(fecha~gredad, sum) %>%
+                                     dplyr::select(-`S.I.`) %>%
+                                     dplyr::filter(is.na(fecha)==F)
+    
+    casos <- data.frame(fecha=seq(min(casos$fecha),
+                                  max(casos$fecha),
+                                  by=1)) %>% left_join(casos)
+    
+    casos[is.na(casos)] <- 0
+    
+    
+    url <- 'https://www.datosabiertos.gob.pe/node/6460/download'
+    download.file(url, "covidPeru_DEF.csv")
+    def <- read.csv2("covidPeru_DEF.csv", encoding = "UTF-8")
+    
+    
+    def <- def %>% dplyr::mutate(grupedad=case_when(EDAD_DECLARADA>=1 & EDAD_DECLARADA <=4 ~ "00-04",
+                                                    EDAD_DECLARADA>=5 & EDAD_DECLARADA <=9 ~ "05-09",
+                                                    EDAD_DECLARADA>=10 & EDAD_DECLARADA <=14 ~ "10-14",
+                                                    EDAD_DECLARADA>=15 & EDAD_DECLARADA <=17 ~ "15-17",
+                                                    EDAD_DECLARADA>=18 & EDAD_DECLARADA <=24 ~ "18-24",
+                                                    EDAD_DECLARADA>=25 & EDAD_DECLARADA <=29 ~ "25-29",
+                                                    EDAD_DECLARADA>=30 & EDAD_DECLARADA <=34 ~ "30-34",
+                                                    EDAD_DECLARADA>=35 & EDAD_DECLARADA <=39 ~ "35-39",
+                                                    EDAD_DECLARADA>=40 & EDAD_DECLARADA <=44 ~ "40-44",
+                                                    EDAD_DECLARADA>=45 & EDAD_DECLARADA <=49 ~ "45-49",
+                                                    EDAD_DECLARADA>=50 & EDAD_DECLARADA <=54 ~ "50-54",
+                                                    EDAD_DECLARADA>=55 & EDAD_DECLARADA <=59 ~ "55-59",
+                                                    EDAD_DECLARADA>=60 & EDAD_DECLARADA <=64 ~ "60-64",
+                                                    EDAD_DECLARADA>=65 & EDAD_DECLARADA <=69 ~ "65-69",
+                                                    EDAD_DECLARADA>=70 & EDAD_DECLARADA <=74 ~ "70-74",
+                                                    EDAD_DECLARADA>=75 & EDAD_DECLARADA <=79 ~ "75-79",
+                                                    EDAD_DECLARADA>=80 & EDAD_DECLARADA <=84 ~ "80-84",
+                                                    EDAD_DECLARADA>=85 & EDAD_DECLARADA <=89 ~ "85-89",
+                                                    EDAD_DECLARADA>=90 & EDAD_DECLARADA <=110 ~ "90-99",
+                                                    TRUE ~ "S.I."), 
+                                 fecha=as.Date(paste(substring(FECHA_FALLECIMIENTO,1,4),
+                                                     substring(FECHA_FALLECIMIENTO,5,6),
+                                                     substring(FECHA_FALLECIMIENTO,7,8), 
+                                                     sep = '-'))) %>%
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~grupedad, sum) %>%
+      dplyr::select(-`S.I.`) %>%
+      dplyr::filter(is.na(fecha)==F)
+    
+    def <- data.frame(fecha=seq(min(casos$fecha),
+                                max(casos$fecha),
+                                by=1)) %>% left_join(def)
+    
+    def[is.na(def)] <- 0
+    
+    tf <- tempfile()
+    td <- tempdir()
+    file.path <- 'https://cloud.minsa.gob.pe/s/To2QtqoNjKqobfw/download'
+    download.file( file.path , tf , mode = "wb" )
+    file <- archive(tf)
+    dataVacunas <- read.csv(archive_read(file, "vacunas_covid.csv"), encoding="UTF-8")
+    
+    Vacunas = dataVacunas
+    
+    Vacunas <- Vacunas %>% dplyr::filter(DOSIS==1) %>%
+                           dplyr::mutate(grupedad=case_when(EDAD>=1 & EDAD <=4 ~ "00-04",
+                                                            EDAD>=5 & EDAD <=9 ~ "05-09",
+                                                            EDAD>=10 & EDAD <=14 ~ "10-14",
+                                                            EDAD>=15 & EDAD <=17 ~ "15-17",
+                                                            EDAD>=18 & EDAD <=24 ~ "18-24",
+                                                            EDAD>=25 & EDAD <=29 ~ "25-29",
+                                                            EDAD>=30 & EDAD <=34 ~ "30-34",
+                                                            EDAD>=35 & EDAD <=39 ~ "35-39",
+                                                            EDAD>=40 & EDAD <=44 ~ "40-44",
+                                                            EDAD>=45 & EDAD <=49 ~ "45-49",
+                                                            EDAD>=50 & EDAD <=54 ~ "50-54",
+                                                            EDAD>=55 & EDAD <=59 ~ "55-59",
+                                                            EDAD>=60 & EDAD <=64 ~ "60-64",
+                                                            EDAD>=65 & EDAD <=69 ~ "65-69",
+                                                            EDAD>=70 & EDAD <=74 ~ "70-74",
+                                                            EDAD>=75 & EDAD <=79 ~ "75-79",
+                                                            EDAD>=80 & EDAD <=84 ~ "80-84",
+                                                            EDAD>=85 & EDAD <=89 ~ "85-89",
+                                                            EDAD>=90 & EDAD <=110 ~ "90-99",
+                                                            TRUE ~ "S.I."), 
+                                 fecha=as.Date(paste(substring(FECHA_VACUNACION,1,4),
+                                                     substring(FECHA_VACUNACION,5,6),
+                                                     substring(FECHA_VACUNACION,7,8), 
+                                                     sep = '-'))) %>%
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~grupedad, sum) %>%
+      dplyr::select(-`S.I.`) %>%
+      dplyr::filter(is.na(fecha)==F)
+    
+    Vacunas <- data.frame(fecha=seq(min(Vacunas$fecha),
+                                    max(Vacunas$fecha),
+                                    by=1)) %>% left_join(Vacunas)
+    
+    Vacunas[is.na(Vacunas)] <- 0
+    
+    Vacunas2 <- dataVacunas
+    Vacunas2 <- Vacunas2 %>% dplyr::filter(DOSIS==1) %>%
+      dplyr::mutate(grupedad=case_when(EDAD>=1 & EDAD <=4 ~ "00-04",
+                                       EDAD>=5 & EDAD <=9 ~ "05-09",
+                                       EDAD>=10 & EDAD <=14 ~ "10-14",
+                                       EDAD>=15 & EDAD <=17 ~ "15-17",
+                                       EDAD>=18 & EDAD <=24 ~ "18-24",
+                                       EDAD>=25 & EDAD <=29 ~ "25-29",
+                                       EDAD>=30 & EDAD <=34 ~ "30-34",
+                                       EDAD>=35 & EDAD <=39 ~ "35-39",
+                                       EDAD>=40 & EDAD <=44 ~ "40-44",
+                                       EDAD>=45 & EDAD <=49 ~ "45-49",
+                                       EDAD>=50 & EDAD <=54 ~ "50-54",
+                                       EDAD>=55 & EDAD <=59 ~ "55-59",
+                                       EDAD>=60 & EDAD <=64 ~ "60-64",
+                                       EDAD>=65 & EDAD <=69 ~ "65-69",
+                                       EDAD>=70 & EDAD <=74 ~ "70-74",
+                                       EDAD>=75 & EDAD <=79 ~ "75-79",
+                                       EDAD>=80 & EDAD <=84 ~ "80-84",
+                                       EDAD>=85 & EDAD <=89 ~ "85-89",
+                                       EDAD>=90 & EDAD <=110 ~ "90-99",
+                                       TRUE ~ "S.I."), 
+                    fecha=as.Date(paste(substring(FECHA_VACUNACION,1,4),
+                                        substring(FECHA_VACUNACION,5,6),
+                                        substring(FECHA_VACUNACION,7,8), 
+                                        sep = '-'))) %>%
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~grupedad, sum) %>%
+      dplyr::select(-`S.I.`) %>%
+      dplyr::filter(is.na(fecha)==F)
+    
+    Vacunas2 <- data.frame(fecha=seq(min(Vacunas$fecha),
+                                     max(Vacunas$fecha),
+                                     by=1)) %>% left_join(Vacunas2)
+    
+    Vacunas2[is.na(Vacunas2)] <- 0
+    
+    eval(parse(text=paste0('countryData$',
+                           pais,
+                           ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, casos=casos)')))
+    
+    
+    
+    }
+  
+  ##### COLOMBIA (FALTA VACUNAS) #####
+    if (pais=="COL") {
+    # download data
+    data <-
+      read.socrata(
+        "https://www.datos.gov.co/resource/gt2j-8ykr.csv?$select=edad,unidad_medida,recuperado,fecha_inicio_sintomas,fecha_diagnostico,fecha_muerte",
+        app_token = "aipnpw1291SWIUyehIACm2hUz",
+        email     = "adrian.santoro@gmail.com",
+        password  = "Es.LoQueHay2021"
+      )
+    
+    # format age column
+    data$edad[data$unidad_medida %in% c(2,3)] <- 0
+    data$unidad_medida <- NULL
+    
+    # format date columns
+    data$fecha_inicio_sintomas <- as.Date(data$fecha_inicio_sintomas, format='%d/%m/%Y')
+    data$fecha_diagnostico <- as.Date(data$fecha_diagnostico, format='%d/%m/%Y')
+    data$fecha_muerte <- as.Date(data$fecha_muerte, format='%d/%m/%Y')
+    
+    # cases
+    casos <- data %>% dplyr::mutate(fecha=dplyr::coalesce(fecha_inicio_sintomas,
+                                                          fecha_diagnostico,
+                                                          fecha_muerte)) %>%
+      dplyr::mutate(gredad=case_when(edad>=0 & edad <=4 ~ "00-04",
+                                     edad>=5 & edad <=9 ~ "05-09",
+                                     edad>=10 & edad <=14 ~ "10-14",
+                                     edad>=15 & edad <=17 ~ "15-17",
+                                     edad>=18 & edad <=24 ~ "18-24",
+                                     edad>=25 & edad <=29 ~ "25-29",
+                                     edad>=30 & edad <=34 ~ "30-34",
+                                     edad>=35 & edad <=39 ~ "35-39",
+                                     edad>=40 & edad <=44 ~ "40-44",
+                                     edad>=45 & edad <=49 ~ "45-49",
+                                     edad>=50 & edad <=54 ~ "50-54",
+                                     edad>=55 & edad <=59 ~ "55-59",
+                                     edad>=60 & edad <=64 ~ "60-64",
+                                     edad>=65 & edad <=69 ~ "65-69",
+                                     edad>=70 & edad <=74 ~ "70-74",
+                                     edad>=75 & edad <=79 ~ "75-79",
+                                     edad>=80 & edad <=84 ~ "80-84",
+                                     edad>=85 & edad <=89 ~ "85-89",
+                                     edad>=90 & edad <=110 ~ "90-99",
+                                     TRUE ~ "S.I.")) %>%
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~gredad, sum) %>%
+      dplyr::select(-`S.I.`)
+    
+    casos <- data.frame(fecha=seq(min(casos$fecha[is.na(casos$fecha)==F]),
+                                  max(casos$fecha[is.na(casos$fecha)==F]),
+                                  by=1)) %>% left_join(casos) 
+    
+    casos[is.na(casos)] <- 0
+    
+    
+    # deaths
+    def <- data %>% dplyr::filter(recuperado %in% c("Fallecido","fallecido")) %>%
+      dplyr::mutate(fecha=dplyr::coalesce(fecha_muerte,
+                                          fecha_inicio_sintomas,
+                                          fecha_diagnostico)) %>%
+      dplyr::mutate(gredad=case_when(edad>=0 & edad <=4 ~ "00-04",
+                                     edad>=5 & edad <=9 ~ "05-09",
+                                     edad>=10 & edad <=14 ~ "10-14",
+                                     edad>=15 & edad <=17 ~ "15-17",
+                                     edad>=18 & edad <=24 ~ "18-24",
+                                     edad>=25 & edad <=29 ~ "25-29",
+                                     edad>=30 & edad <=34 ~ "30-34",
+                                     edad>=35 & edad <=39 ~ "35-39",
+                                     edad>=40 & edad <=44 ~ "40-44",
+                                     edad>=45 & edad <=49 ~ "45-49",
+                                     edad>=50 & edad <=54 ~ "50-54",
+                                     edad>=55 & edad <=59 ~ "55-59",
+                                     edad>=60 & edad <=64 ~ "60-64",
+                                     edad>=65 & edad <=69 ~ "65-69",
+                                     edad>=70 & edad <=74 ~ "70-74",
+                                     edad>=75 & edad <=79 ~ "75-79",
+                                     edad>=80 & edad <=84 ~ "80-84",
+                                     edad>=85 & edad <=89 ~ "85-89",
+                                     edad>=90 & edad <=110 ~ "90-99",
+                                     TRUE ~ "S.I.")) %>%
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~gredad, sum)
+    
+    def <- data.frame(fecha=seq(min(casos$fecha[is.na(casos$fecha)==F]),
+                                max(casos$fecha[is.na(casos$fecha)==F]),
+                                by=1)) %>% left_join(def) 
+    
+    def[is.na(def)] <- 0
+    
+    # vacunas
+    
+    
+    eval(parse(text=paste0('countryData$',
+                           pais,
+                           ' <- list(def=def, casos=casos)')))
+    
+    
+    }
+  
   print(paste('Actualizado:',pais, Sys.Date()))
   save(countryData,file=paste0('data/data',pais,'.RData'))
+  
 }
 
 
@@ -275,8 +551,9 @@ formatData <- function(pais, ageGroups) {
 }
 
 
+
 # actualiza argentina y guarda RData
-# update(pais = "ARG", diasDeProyeccion = 1100)
+# update(pais = "COL", diasDeProyeccion = 1100)
 
 # agrupa edades
 # datosArg <- formatData("ARG", ageGroups = ageGroupsV)

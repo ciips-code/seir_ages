@@ -393,7 +393,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                             tabPanel("Saved scenarios", 
                                      selectInput("saved_series", "Saved series", choices="", multiple = T),
                                      #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
-                                     plotlyOutput("graficoComp")),
+                                     plotlyOutput("graficoComp"),
+                                     br(),
+                                     br(),
+                                     column(2,actionButton("del_scenarios","Delete all scenarios"))),
                             tabPanel("Compartments", fluidRow(id="content"))
                 ),
                 fluidRow(column(12,id="content")),
@@ -407,8 +410,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 
 
 server <- function (input, output, session) {
-  
-  
+  delete<<-F
   observe({
     input$mbeta_cell_edit
     if (mbeta_primeraVez==T) {
@@ -944,6 +946,7 @@ server <- function (input, output, session) {
   })
   
   data_comp <- reactive({
+   
     df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
                           dplyr::mutate(Compart=input$save_comp_name)
     df$fechaDia=fechas_master
@@ -953,18 +956,49 @@ server <- function (input, output, session) {
   
   
   
-  data_comp_graf <- eventReactive(input$save_comp,{
+  data_comp_graf <- eventReactive({input$save_comp
+                                   input$del_scenarios
+                                   1},{
     saveScenario()
   })
   
+  observeEvent(input$save_comp,{delete<<-F
+                                show("graficoComp")
+  })
+  observeEvent(input$del_scenarios,{delete<<-T})
+
   saveScenario <- function() {
-    if (input$save_comp_name!="" & exists("compare")==T) {
+    repe = F
+    if (input$save_comp_name!="" &
+        exists("compare")==T) {
+      if (input$save_comp_name %in% unique(compare$Compart)) {
+        if (delete==T) {showNotification("Scenarios deleted", type = "error")} else {
+          showNotification("Duplicated scenario name", type = "error")
+        }
+        #repe=T
+        
+      }
+      
+    } 
+    
+    
+    if (repe==F & input$save_comp_name!="" & exists("compare")==T) {
       compare <<- union_all(compare,data_comp())} else if (input$save_comp_name!="" & exists("compare")==F) {
         compare <<- data_comp() 
+        showNotification("Escenario guardado")
       }
-    showNotification("Escenario guardado") 
-    compare
+    
+    if (delete==F & exists("compare")) {compare} else {
+      compare <<- data_graf() %>% dplyr::filter(Compart=="")
+      
+    }
+    
   }
+  
+  observe({
+    if (nrow(data_comp_graf())==0) {shinyjs::hide("graficoComp")}
+  })
+  
 
   setDefaultParams <- function() {
     updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
@@ -1041,8 +1075,20 @@ server <- function (input, output, session) {
      plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
         
      
+   })
+   
+   shinyjs::hide("del_scenarios")
+   observeEvent(input$save_comp,{
+     if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
    }) 
-
+   
+   observeEvent(input$del_scenarios, {
+     shinyjs::hide("graficoComp")
+     shinyjs::hide("del_scenarios")
+     updateSelectInput(session, "saved_series", choices = "", selected = "")
+     
+   })
+  
 }
   
 shinyApp(ui = ui, server = server)
