@@ -377,16 +377,16 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     non-pharmaceutical interventions to keep hospitalizations due to COVID-19 
                                                     and other background causes below maximum hospital capacity in the settings 
                                                     modelled?"),
-                                                  actionButton("q2_80_low", label = "Uptk 80% in 6 months, low NPIs combined", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_80_intensive", label = "Uptk 80% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_80_combined", label = "Uptk 80% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_80_lockdown", label = "Uptk 80% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   br(),
-                                                  actionButton("q2_50_low", label = "Uptk 50% in 6 months, low NPIs combined", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_50_intensive", label = "Uptk 50% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_50_combined", label = "Uptk 50% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_50_lockdown", label = "Uptk 50% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   br(),
-                                                  actionButton("q2_20_low", label = "Uptk 20% in 6 months, low NPIs combined", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_20_intensive", label = "Uptk 20% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_20_combined", label = "Uptk 20% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_20_lockdown", label = "Uptk 20% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
                                                 )
                                         ),
@@ -398,17 +398,48 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     school closures, travel restrictions, gathering size limits, mask wearing) 
                                                     at different levels of vaccine efficacy and vaccination coverage for different 
                                                     priority groups as outlined in the SAGE Prioritization Roadmap?"),
-                                                  actionButton("t4q1_80_low", label = "Uptk 80% in 6 months, low NPIs combined", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_80_intensive", label = "Uptk 80% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_80_lockdown", label = "Uptk 80% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  br(),
-                                                  actionButton("q2_50_low", label = "Uptk 50% in 6 months, low NPIs combined", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_50_intensive", label = "Uptk 50% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_50_lockdown", label = "Uptk 50% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  br(),
-                                                  actionButton("q2_20_low", label = "Uptk 20% in 6 months, low NPIs combined", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_20_intensive", label = "Uptk 20% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_20_lockdown", label = "Uptk 20% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
+                                                  radioButtons("t4q1_output", "Graph:",
+                                                               c("Daily cases (morbidity):" = "i",
+                                                                 "Daily deaths (mostrality)" = "d",
+                                                                 "Hospitalizations in ICU" = "Ic"),
+                                                               inline=T),
+                                                  fluidRow(
+                                                    column(3,
+                                                           selectInput(
+                                                             "t4q1_uptake",
+                                                             label="Coverage",
+                                                             choices = c("High",
+                                                                         "Middle",
+                                                                         "Low"),
+                                                             selected = "High"
+                                                            )
+                                                      ),
+                                                    column(3,
+                                                           selectInput(
+                                                             "t4q1_efficacy",
+                                                             label="Efficacy",
+                                                             choices = c("High",
+                                                                         "Middle",
+                                                                         "Low"),
+                                                             selected = "High"
+                                                           )
+                                                    ),
+                                                    column(3,
+                                                           selectInput(
+                                                             "t4q1_npis",
+                                                             label="NPIs Strength",
+                                                             choices = c("High",
+                                                                         "Middle",
+                                                                         "Low"),
+                                                             selected = "High"
+                                                           )
+                                                     )
+                                                  ),
+                                                  actionButton("t4q1_project", label = "Project scenario", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  br(),br(),
+                                                  tags$small("* High coverage: 80%; Middle: 50%; Low: 20%;"),br(),
+                                                  tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 80%, 50%"),br(),
+                                                  tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive")
                                                 )
                                        )
                             )),
@@ -1054,7 +1085,7 @@ server <- function (input, output, session) {
     updateSelectInput(session, "vacStrat", selected = "Priority: school age -> others")
     updateTextInput(session, "save_comp_name", value="School aged population first")
   })
-  observeEvent(input$q2_80_low,{
+  observeEvent(input$q2_80_combined,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
@@ -1075,7 +1106,7 @@ server <- function (input, output, session) {
     updateSelectInput(session, "npiScenario", selected = "Lockdown")
     updateTextInput(session, "save_comp_name", value="Uptake 80%, lockdown")
   })
-  observeEvent(input$q2_50_low,{
+  observeEvent(input$q2_50_combined,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
@@ -1096,7 +1127,7 @@ server <- function (input, output, session) {
     updateSelectInput(session, "npiScenario", selected = "Lockdown")
     updateTextInput(session, "save_comp_name", value="Uptake 50%, lockdown")
   })
-  observeEvent(input$q2_20_low,{
+  observeEvent(input$q2_20_combined,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
@@ -1115,7 +1146,39 @@ server <- function (input, output, session) {
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 50%")
     updateSelectInput(session, "npiScenario", selected = "Lockdown")
-    updateTextInput(session, "save_comp_name", value="Uptake 20%, lockdown")
+  })
+  observeEvent(input$t4q1_project,{
+    setDefaultParams()
+    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$t4q1_output == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$t4q1_output == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$t4q1_output == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
+    if (input$t4q1_uptake == "High") {
+      updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
+    } else if (input$t4q1_uptake == "Middle") {
+      updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
+    } else if (input$t4q1_uptake == "Low") {
+      updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
+    }
+    if (input$t4q1_efficacy == "High") {
+      updateSelectInput(session, "vacEfficacy", selected = "B1. 100%, 80%, 80%")
+    } else if (input$t4q1_efficacy == "Middle") {
+      updateSelectInput(session, "vacUptake", selected = "C1. 80%, 80%, 50%")
+    } else if (input$t4q1_efficacy == "Low") {
+      updateSelectInput(session, "vacUptake", selected = "C2. 80%, 50%, 50%")
+    }
+    if (input$t4q1_npis == "High") {
+      updateSelectInput(session, "npiScenario", selected = "Lockdown")
+    } else if (input$t4q1_npis == "Middle") {
+      updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
+    } else if (input$t4q1_npis == "Low") {
+      updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
+    }
+    updateTextInput(session, "save_comp_name", value=paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis))
   })
    
   
