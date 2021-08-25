@@ -445,7 +445,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                        )
                             )),
                             tabPanel("Saved scenarios", 
-                                     selectInput("saved_series", "Saved series", choices="", multiple = T),
+                                     fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
+                                              column(3,
+                                                     br(),
+                                                     prettyCheckbox("icu_beds","Show ICU beds endowment"))),
                                      #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp"),
                                      br(),
@@ -1208,6 +1211,7 @@ server <- function (input, output, session) {
    })
    
    output$graficoComp <- renderPlotly({
+     
      data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
      plot_comp <- plot_ly() 
      lapply(unique(data_comp$Compart), function(k) {
@@ -1220,19 +1224,28 @@ server <- function (input, output, session) {
                                name=k)
        
      })
-     plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
-        
+     
+     if (input$icu_beds==T & nrow(data_comp)>0) {
+       
+       plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
+       plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+       plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+    }
+     plot_comp
      
    })
    
    shinyjs::hide("del_scenarios")
+   shinyjs::hide("icu_beds")
    observeEvent(input$save_comp,{
      if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
+     if (nrow(data_comp())!=0) {shinyjs::show("icu_beds")}
    }) 
    
    observeEvent(input$del_scenarios, {
      shinyjs::hide("graficoComp")
      shinyjs::hide("del_scenarios")
+     shinyjs::hide("icu_beds")
      updateSelectInput(session, "saved_series", choices = "", selected = "")
      
    })
