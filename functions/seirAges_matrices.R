@@ -265,6 +265,7 @@ seir_ages <- function(dias,
     # browser()
     # Diferencias: print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
+
   salida <- list("S: Susceptible"=S,
                  "V: Vaccinated"=V,
                  "vA: Daily vaccinations"=vA,
@@ -280,6 +281,14 @@ seir_ages <- function(dias,
                  "u: Daily survivors"=u,
                  "D: Deaths"=D,
                  "d: Daily deaths"=d)
+  
+  Rt <- estimate_R(sapply(salida$`i: Daily infectious`,sum), 
+                   method = "parametric_si",
+                   config = make_config(list(mean_si = 3, std_si = 4)))$R
+  
+  salida$'Rt: Effective reproduction number' <- c(rep(0,7),Rt)
+  
+  
   #names(salida) <- c("S","V","E","e","I","Ii","i","Ig","Ic","U","u","D","d","R","v","vA")
   return(salida) 
 }
