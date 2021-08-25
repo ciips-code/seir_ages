@@ -371,7 +371,12 @@ get_npi_cm_scenario <- function(scenario = "Baseline",
   if(scenario == "Self-isolation"){
     out <- contact_matrix * .65
   }
-  if(scenario == "Combined"){
+  if(scenario == "Combined with schools open"){
+    out <- 1 * contact_matrix_home   + cbind(.5 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+      1 * contact_matrix_school + cbind(.5 * contact_matrix_other[,-cols_70_older], .25 * contact_matrix_other[,cols_70_older])
+    out <- out * .65 
+  }
+  if(scenario == "Combined with schools closed"){
     out <- 1 * contact_matrix_home   + cbind(.5 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
            0 * contact_matrix_school + cbind(.5 * contact_matrix_other[,-cols_70_older], .25 * contact_matrix_other[,cols_70_older])
     out <- out * .65 
