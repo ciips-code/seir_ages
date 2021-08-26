@@ -94,7 +94,7 @@ N = c(13150705,
 
 # datos de gravedad
 # Age specific IFR
-ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) * 1.4
+ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) * 2.1
 # porcentajeCasosGraves = 0.0328
 porcentajeCasosGravesRow = c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628) * 0.7
 porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = names)
@@ -235,12 +235,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                           selectInput(
                                                                             "vacUptake",
                                                                             label="Vaccination uptake",
-                                                                            choices = c("Current uptake",
-                                                                                        "High uptake: 95%",
+                                                                            choices = c("High uptake: 95%",
                                                                                         "High uptake: 80%",
                                                                                         "Mid-range uptake: 50%",
                                                                                         "Low uptake: 20%",
-                                                                                        "No vaccination")
+                                                                                        "No vaccination"),
+                                                                            selected = "Mid-range uptake: 50%"
                                                                           ),
                                                                           selectInput(
                                                                             "vacDateGoal",
@@ -248,13 +248,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                             choices = c("Mid 2021"="2021-06-30",
                                                                                         "End 2021"="2021-12-31",
                                                                                         "Mid 2022"="2022-05-30",
-                                                                                        "End 2022"="2022-12-31")
+                                                                                        "End 2022"="2022-12-31"),
+                                                                            selected = "2021-12-31"
                                                                           ),
                                                                           selectInput(
                                                                             "vacStrat",
                                                                             label="Vaccination priorities",
-                                                                            choices = c("Current priorities",
-                                                                                        "Priority: older -> adults -> young",
+                                                                            choices = c("Priority: older -> adults -> young",
                                                                                         "Priority: older + adults -> young",
                                                                                         "Priority: adults -> older -> young",
                                                                                         "Priority: school age -> others",
@@ -269,14 +269,15 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                                         "C1. 80%, 80%, 50%",
                                                                                         "C2. 80%, 50%, 50%"),
                                                                             selected = "B2. 100%, 80%, 50%"
-                                                                          ),
-                                                                          selectInput(
-                                                                            "immunityDuration",
-                                                                            label="Immunity duration",
-                                                                            choices = c("6 months"=180,
-                                                                                        "1 year"=360,
-                                                                                        "Lifelong"=2000)
                                                                           )
+                                                                          # ,
+                                                                          # selectInput(
+                                                                          #   "immunityDuration",
+                                                                          #   label="Immunity duration",
+                                                                          #   choices = c("6 months"=180,
+                                                                          #               "1 year"=360,
+                                                                          #               "Lifelong"=2000)
+                                                                          # )
                                                           ),
                                                           column(4,
                                                                  selectInput(
@@ -377,27 +378,33 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     non-pharmaceutical interventions to keep hospitalizations due to COVID-19 
                                                     and other background causes below maximum hospital capacity in the settings 
                                                     modelled?"),
-                                                  actionButton("q2_80_intensive", label = "Uptk 80% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_80_combined", label = "Uptk 80% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_80_lockdown", label = "Uptk 80% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_80_low", label = "Uptk 80% in 6 months, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_80_mid", label = "Uptk 80% in 6 months, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_80_high", label = "Uptk 80% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   br(),
-                                                  actionButton("q2_50_intensive", label = "Uptk 50% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_50_combined", label = "Uptk 50% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_50_lockdown", label = "Uptk 50% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_50_low", label = "Uptk 50% in 6 months, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_50_mid", label = "Uptk 50% in 6 months, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_50_high", label = "Uptk 50% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   br(),
-                                                  actionButton("q2_20_intensive", label = "Uptk 20% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_20_combined", label = "Uptk 20% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_20_lockdown", label = "Uptk 20% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
+                                                  actionButton("q2_20_low", label = "Uptk 20% in 6 months, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_20_mid", label = "Uptk 20% in 6 months, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  actionButton("q2_20_high", label = "Uptk 20% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  br(),
+                                                  tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385.")
                                                 )
                                         ),
-                                       tabPanel("Topic IV - Question 1",
+                                       tabPanel("Topic IV - Question 1&3",
                                                 div(
-                                                  p("What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations 
+                                                  p("Question 1: What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations 
                                                     (including peak demand), and COVID-19 morbidity and mortality 
                                                     of lifting non-pharmaceutical interventions (e.g., business closures, 
                                                     school closures, travel restrictions, gathering size limits, mask wearing) 
                                                     at different levels of vaccine efficacy and vaccination coverage for different 
                                                     priority groups as outlined in the SAGE Prioritization Roadmap?"),
+                                                  p("Question 3: What is the probability and stability of local or regional elimination of SARS-CoV-2 transmission 
+                                                    under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority 
+                                                    groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of 
+                                                    non-pharmaceutical interventions?"),
                                                   radioButtons("t4q1_output", "Graph:",
                                                                c("Daily cases (morbidity):" = "i",
                                                                  "Daily deaths (mostrality)" = "d",
@@ -421,7 +428,17 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                              choices = c("High",
                                                                          "Middle",
                                                                          "Low"),
-                                                             selected = "High"
+                                                             selected = "Middle"
+                                                           )
+                                                    ),
+                                                    column(3,
+                                                           selectInput(
+                                                             "t4q1_priority",
+                                                             label="Priority",
+                                                             choices = c("Older -> adults -> young",
+                                                                         "Adults -> older -> young",
+                                                                         "Young -> others"),
+                                                             selected = "Older -> adults -> young"
                                                            )
                                                     ),
                                                     column(3,
@@ -431,7 +448,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                              choices = c("High",
                                                                          "Middle",
                                                                          "Low"),
-                                                             selected = "High"
+                                                             selected = "Middle"
                                                            )
                                                      )
                                                   ),
@@ -439,7 +456,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                   br(),br(),
                                                   tags$small("* High coverage: 80%; Middle: 50%; Low: 20%;"),br(),
                                                   tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 80%, 50%"),br(),
-                                                  tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive")
+                                                  tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive"),br(),
+                                                  tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385.")
                                                 )
                                        )
                             )),
@@ -661,16 +679,21 @@ server <- function (input, output, session) {
     shinyjs::show("vacDateGoal")
     shinyjs::show("vacStrat")
     shinyjs::show("vacEfficacy")
-    shinyjs::show("immunityDuration")
+    # shinyjs::show("immunityDuration")
     if (input$vacUptake == "Current uptake") {
       shinyjs::hide("vacDateGoal")
     } else if (input$vacUptake == "No vaccination") {
       shinyjs::hide("vacDateGoal")
       shinyjs::hide("vacStrat")
       shinyjs::hide("vacEfficacy")
-      shinyjs::hide("immunityDuration")
+      # shinyjs::hide("immunityDuration")
     }
-
+    diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+    selectedPriority <- getPrioritiesV2(input$vacStrat)
+    selectedUptake <- getUptake(input$vacUptake)
+    cantidadVacunasTotal = selectedUptake * sum(N)
+    ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+    
     planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
                                               planVacunacionFinal, N, tVacunasCero, diaCeroVac)
     
@@ -728,6 +751,9 @@ server <- function (input, output, session) {
               modif_porc_cr=efficacy$modif_porc_cr,
               modif_ifr=efficacy$modif_ifr,
               planVacunacionFinal=planVacunacionFinalParam,
+              selectedPriority=selectedPriority,
+              ritmoVacunacion=ritmoVacunacion,
+              diasVacunacion=diasVacunacion,
               immunityStates=immunityStates,
               ageGroups=ageGroups,
               paramVac=paramVac_edit,
@@ -1055,11 +1081,11 @@ server <- function (input, output, session) {
 
   setDefaultParams <- function() {
     updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    updateSelectInput(session, "vacUptake", selected = "Current uptake")
-    updateSelectInput(session, "vacDateGoal", selected = "2021-06-30")
-    updateSelectInput(session, "vacStrat", selected = "Current priorities")
+    updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
+    updateSelectInput(session, "vacDateGoal", selected = "2021-12-31")
+    updateSelectInput(session, "vacStrat", selected = "Priority: older -> adults -> young")
     updateSelectInput(session, "vacEfficacy", selected = "B2. 100%, 80%, 50%")
-    updateSelectInput(session, "immunityDuration", selected = 180)
+    # updateSelectInput(session, "immunityDuration", selected = 180)
     updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
     updateRadioButtons(session, "npiStrat", selected = "cont")
     updateSelectInput(session, "relaxationDateGoal", selected = "2021-06-30")
@@ -1085,67 +1111,68 @@ server <- function (input, output, session) {
     updateSelectInput(session, "vacStrat", selected = "Priority: school age -> others")
     updateTextInput(session, "save_comp_name", value="School aged population first")
   })
-  observeEvent(input$q2_80_combined,{
+  observeEvent(input$q2_80_low,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
-    updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
-    updateTextInput(session, "save_comp_name", value="Uptake 80%, combined low NPIs")
+    updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
+    updateTextInput(session, "save_comp_name", value="Uptake 80%, Intensive interventions with schools open")
   })
-  observeEvent(input$q2_80_intensive,{
+  observeEvent(input$q2_80_mid,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
-    updateTextInput(session, "save_comp_name", value="Uptake 80%, intensive NPIs")
+    updateTextInput(session, "save_comp_name", value="Uptake 80%, Intensive interventions with schools closed")
   })
-  observeEvent(input$q2_80_lockdown,{
+  observeEvent(input$q2_80_high,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
-    updateSelectInput(session, "npiScenario", selected = "Lockdown")
-    updateTextInput(session, "save_comp_name", value="Uptake 80%, lockdown")
+    updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
+    updateTextInput(session, "save_comp_name", value="Uptake 80%, Combined with schools closed")
   })
-  observeEvent(input$q2_50_combined,{
+  observeEvent(input$q2_50_low,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
-    updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
-    updateTextInput(session, "save_comp_name", value="Uptake 50%, combined low NPIs")
+    updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
+    updateTextInput(session, "save_comp_name", value="Uptake 50%, Intensive interventions with schools open")
   })
-  observeEvent(input$q2_50_intensive,{
+  observeEvent(input$q2_50_mid,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
-    updateTextInput(session, "save_comp_name", value="Uptake 50%, intensive NPIs")
+    updateTextInput(session, "save_comp_name", value="Uptake 50%, Intensive interventions with schools closed")
   })
-  observeEvent(input$q2_50_lockdown,{
+  observeEvent(input$q2_50_high,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
-    updateSelectInput(session, "npiScenario", selected = "Lockdown")
-    updateTextInput(session, "save_comp_name", value="Uptake 50%, lockdown")
+    updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
+    updateTextInput(session, "save_comp_name", value="Uptake 50%, Combined with schools closed")
   })
-  observeEvent(input$q2_20_combined,{
+  observeEvent(input$q2_20_low,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
-    updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
-    updateTextInput(session, "save_comp_name", value="Uptake 20%, combined low NPIs")
+    updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
+    updateTextInput(session, "save_comp_name", value="Uptake 20%, Intensive interventions with schools open")
   })
-  observeEvent(input$q2_20_intensive,{
+  observeEvent(input$q2_20_mid,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
-    updateTextInput(session, "save_comp_name", value="Uptake 20%, intensive NPIs")
+    updateTextInput(session, "save_comp_name", value="Uptake 20%, Intensive interventions with schools closed")
   })
-  observeEvent(input$q2_20_lockdown,{
+  observeEvent(input$q2_20_high,{
     setDefaultParams()
     updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 50%")
-    updateSelectInput(session, "npiScenario", selected = "Lockdown")
+    updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
+    updateTextInput(session, "save_comp_name", value="Uptake 20%, Combined with schools closed")
   })
   observeEvent(input$t4q1_project,{
     setDefaultParams()
@@ -1171,14 +1198,22 @@ server <- function (input, output, session) {
     } else if (input$t4q1_efficacy == "Low") {
       updateSelectInput(session, "vacUptake", selected = "C2. 80%, 50%, 50%")
     }
-    if (input$t4q1_npis == "High") {
-      updateSelectInput(session, "npiScenario", selected = "Lockdown")
-    } else if (input$t4q1_npis == "Middle") {
-      updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
-    } else if (input$t4q1_npis == "Low") {
-      updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
+    if (input$t4q1_priority == "Older -> adults -> young") {
+      updateSelectInput(session, "vacStrat", selected = "Priority: older -> adults -> young")
+    } else if (input$t4q1_priority == "Adults -> older -> young") {
+      updateSelectInput(session, "vacStrat", selected = "Priority: adults -> older -> young")
+    } else if (input$t4q1_priority == "Young -> others") {
+      updateSelectInput(session, "vacStrat", selected = "Priority: school age -> others")
     }
-    updateTextInput(session, "save_comp_name", value=paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis))
+    if (input$t4q1_npis == "High") {
+      updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
+    } else if (input$t4q1_npis == "Middle") {
+      updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
+    } else if (input$t4q1_npis == "Low") {
+      updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
+    }
+    updateTextInput(session, "save_comp_name", 
+                    value=paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis,", Priority",input$t4q1_priority))
   })
    
   
@@ -1218,8 +1253,9 @@ server <- function (input, output, session) {
      updateSelectInput(session, "saved_series", choices = "", selected = "")
      
    })
-  
+   
 }
+
   
 shinyApp(ui = ui, server = server)
 
