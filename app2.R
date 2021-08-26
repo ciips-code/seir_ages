@@ -225,7 +225,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                               column(4,fluidRow(column(4,textInput("save_comp_name", "Save scenario", placeholder = "Enter name")),
                                                                 column(2,br(),actionButton("save_comp", icon("chevron-right"))),
                                                                 column(2,prettyCheckbox(inputId = "check_cases",label = "Show reported cases",value = FALSE),
-                                                                         prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE)))
+                                                                         prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE),
+                                                                         prettyCheckbox(inputId = "check_rt",label = "Effective reproduction number (Rt)",value = FALSE)))
                                               )
                                       ),
                                      plotlyOutput("graficoUnico"),
@@ -462,7 +463,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                        )
                             )),
                             tabPanel("Saved scenarios", 
-                                     selectInput("saved_series", "Saved series", choices="", multiple = T),
+                                     fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
+                                              column(3,
+                                                     br(),
+                                                     prettyCheckbox("icu_beds","Show ICU beds endowment"))),
                                      #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp"),
                                      br(),
@@ -866,6 +870,7 @@ server <- function (input, output, session) {
   output$graficoUnico <- renderPlotly({
     
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
+      
       col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
       dataTemp = data_graf() %>% dplyr::filter(Compart == col_id)
       dataTemp$fechaDia = fechas_master 
@@ -881,7 +886,8 @@ server <- function (input, output, session) {
       maxy = max(dataTemp$total)
       
       if (is.null(input$edad)==F & is.na(input$diasProy)==F) {
-          data=dataTemp[1:(input$t+input$diasProy),]
+          #data=dataTemp[1:(input$t+input$diasProy),]
+          data=dataTemp
           plot=plot_ly(data=data, x=~fechaDia)          
           
           if (length(input$edad)>0) {
@@ -895,29 +901,31 @@ server <- function (input, output, session) {
               if (input$check_deaths==T) {
                 plot <<- add_trace(p=plot, data=dataRep_deaths, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
               }
-
+              
 
             })
-          
+            
             if (input$compart_a_graficar == "Ig: Infectious (moderate) SKIP") {
               plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = camasGenerales*porcAsignadoCovid, yend = camasGenerales*porcAsignadoCovid, name = "General beds", line=list(color="#fc9272", dash="dot"))
               plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,camasGenerales*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
-              plot %>% layout(xaxis = list(title = "Fecha"), 
-                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+              plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
+                                      yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
               # , range = c(0,60000)
             } else if (input$compart_a_graficar == "Ic: Infectious (severe)") {
               #browser()
               plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
               plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
               plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
-              plot %>% layout(xaxis = list(title = "Fecha"), 
-                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+              plot <-  plot %>% layout(xaxis = list(title = "Fecha"), 
+                                       yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
               
             } else {
               plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
-              plot %>% layout(xaxis = list(title = "Fecha"), 
-                              yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+              plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
+                                      yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
             }
+            
+            
           }
           
           
@@ -927,9 +935,22 @@ server <- function (input, output, session) {
           #         add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
           # 
         
-          
+          if (input$check_rt==T) {
+            days_before_rt <- c(rep(0,7))
+            days_after_rt <- c(rep(NA,nrow(data[is.na(data$Compart),])))
+            
+            r <- c(days_before_rt,
+                   proy()$`Rt: Effective reproduction number`$`Median(R)`,
+                   days_after_rt)
+            plot %>% add_trace(y = ~r, mode = "dotted", line=list(dash="dot"), type="scatter", yaxis = "y2", name = "Rt") %>%
+              layout(yaxis2 = list(overlaying = "y", side = "right"),
+                     xaxis = list(title = "Fecha"),
+                     yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+          } else (plot)
       }
       
+      
+
     }
     
   })
@@ -1225,6 +1246,7 @@ server <- function (input, output, session) {
    })
    
    output$graficoComp <- renderPlotly({
+     
      data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
      plot_comp <- plot_ly() 
      lapply(unique(data_comp$Compart), function(k) {
@@ -1237,19 +1259,28 @@ server <- function (input, output, session) {
                                name=k)
        
      })
-     plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
-        
+     
+     if (input$icu_beds==T & nrow(data_comp)>0) {
+       
+       plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
+       plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+       plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+    }
+     plot_comp
      
    })
    
    shinyjs::hide("del_scenarios")
+   shinyjs::hide("icu_beds")
    observeEvent(input$save_comp,{
      if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
+     if (nrow(data_comp())!=0) {shinyjs::show("icu_beds")}
    }) 
    
    observeEvent(input$del_scenarios, {
      shinyjs::hide("graficoComp")
      shinyjs::hide("del_scenarios")
+     shinyjs::hide("icu_beds")
      updateSelectInput(session, "saved_series", choices = "", selected = "")
      
    })
