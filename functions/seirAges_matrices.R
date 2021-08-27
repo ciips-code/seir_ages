@@ -18,6 +18,7 @@ seir_ages <- function(dias,
                       defunciones_reales,
                       planVacunacionFinal,
                       selectedPriority,
+                      selectedUptake,
                       ritmoVacunacion,
                       diasVacunacion,
                       immunityStates,
@@ -143,17 +144,18 @@ seir_ages <- function(dias,
     porcProt = as.numeric(paramVac[vacuna,4])
     tiempoP = as.numeric(paramVac[vacuna,5])
     intervalo = as.numeric(paramVac[vacuna,6])
-    
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
-      # browser()
+      # browser(expr = { t > 400 })
       prioridadesHoy <- selectedPriority
       prioridadesHoy[prioridadesHoy != vacGroupActive] = 0
       prioridadesHoy[prioridadesHoy == vacGroupActive] = 1
       numeroDeGrupos = length(prioridadesHoy[prioridadesHoy == 1])
       ritmoPorGrupo = ritmoVacunacion/numeroDeGrupos
       vectorVacunacion = prioridadesHoy * ritmoPorGrupo
-      haySparaVacunar = S[[t-1]][1,] > vectorVacunacion
+      limitesPorGrupoDeEdad = N[1,] * selectedUptake
+      haySparaVacunar = (Reduce("+",vA)[vacuna,] < limitesPorGrupoDeEdad)
       haySparaVacunar[haySparaVacunar == TRUE] = 1
+      haySparaVacunar[is.na(haySparaVacunar)] = 0
       haySparaVacunar = haySparaVacunar * prioridadesHoy
       if (sum(haySparaVacunar) > 0) {
         vectorVacunacion = vectorVacunacion * haySparaVacunar
