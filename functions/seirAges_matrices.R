@@ -145,7 +145,7 @@ seir_ages <- function(dias,
     tiempoP = as.numeric(paramVac[vacuna,5])
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
-      # browser(expr = { t > 400 })
+      browser(expr = { t > 450 })
       prioridadesHoy <- selectedPriority
       prioridadesHoy[prioridadesHoy != vacGroupActive] = 0
       prioridadesHoy[prioridadesHoy == vacGroupActive] = 1
@@ -187,6 +187,7 @@ seir_ages <- function(dias,
       dosis1aReforzar = vA[[t-30]][3,]
       segundasDosisHoyV3 = dosis1aReforzar * porcV
       segundasDosisHoyS3 = dosis1aReforzar * porcProt
+      vA[[t]][4,] = segundasDosisHoyV3 + segundasDosisHoyS3
     }
     
     # Arma la lista de vacunas

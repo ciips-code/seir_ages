@@ -95,7 +95,7 @@ colnames(transmission_probability) = rownames(transmission_probability) = ageGro
 
 # datos de gravedad
 # Age specific IFR
-ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) * 2.1
+ifr = c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684)
 # porcentajeCasosGraves = 0.0328
 porcentajeCasosGravesRow = c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628) * 0.7
 porcentajeCasosGraves = matrix(rep(porcentajeCasosGravesRow,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = names)
@@ -492,7 +492,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                      column(2,actionButton("del_scenarios","Delete all scenarios"))),
                             tabPanel("Compartments", fluidRow(id="content"))
                 ),
-                fluidRow(column(12,id="content")),
+                # fluidRow(column(12,id="content")),
                 br(),
                 br(),
                 br(),
@@ -829,6 +829,13 @@ server <- function (input, output, session) {
     # print(porcentajeCasosGraves)
     # print(porcentajeCasosCriticos)
     #browser()
+    tVacunasCero = 303
+    ifrProy = ifr_edit[1,]
+    if (input$country == "Argentina") {
+      ifrProy = ifrProy * 2.0
+    } else if (input$country == "Peru") {
+      ifrProy = ifrProy * 3.55
+    }
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
@@ -836,7 +843,7 @@ server <- function (input, output, session) {
               porc_cr = porcentajeCasosCriticos,
               duracionIg = diasHospCasosGraves,
               duracionIc = diasHospCasosCriticos,
-              ifr = ifr_edit[1,],
+              ifr = ifrProy,
               contact_matrix = contact_matrix_scenario,
               transmission_probability = trans_prob_param,
               N = N,
@@ -865,9 +872,9 @@ server <- function (input, output, session) {
   })
   observe({
     if (primeraVez) {
-      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy()),"pV: Vaccination plan"), selected="i: Daily infectious")
+      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[-16],"pV: Vaccination plan"), selected="i: Daily infectious")
       updateNumericInput(session, inputId = "t", value = tHoy)
-      for (c in rev(str_trim(str_replace_all(substring(names(proy()),1,3),":","")))) {
+      for (c in rev(str_trim(str_replace_all(substring(names(proy())[-16],1,3),":","")))) {
         insertUI("#content", "afterEnd",
                  column(6,fluidRow(column(1,p(c), align="center"),
                                    column(11,
@@ -1039,11 +1046,7 @@ server <- function (input, output, session) {
                      yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
           } else (plot)
       }
-      
-      
-
     }
-    
   })
   output$resumen_tabla <- renderDataTable({
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
