@@ -385,7 +385,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                   p("In which order should the following groups beprioritized for COVID-19 
                                                     vaccination as vaccine supply increases so as to keep hospitalizations, 
                                                     and intensive care unit use (where available), due to COVID-19 and other 
-                                                    background causes below maximum hospital capacity in the setting(s) modeled?"),
+                                                    background causes below maximum hospital capacity in the setting(s) modeled? (50% Uptake)"),
+                                                  radioButtons("simpleCompartSelector", "Graph:",
+                                                               c("Daily cases (morbidity):" = "i",
+                                                                 "Daily deaths (mostrality)" = "d",
+                                                                 "Hospitalizations in ICU" = "Ic"),
+                                                               inline=T),
                                                   actionButton("q1_older", label = "Older population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q1_adult", label = "Adult population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q1_school", label = "School aged population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
@@ -397,6 +402,11 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     non-pharmaceutical interventions to keep hospitalizations due to COVID-19 
                                                     and other background causes below maximum hospital capacity in the settings 
                                                     modelled?"),
+                                                  radioButtons("simpleCompartSelector", "Graph:",
+                                                               c("Daily cases (morbidity):" = "i",
+                                                                 "Daily deaths (mostrality)" = "d",
+                                                                 "Hospitalizations in ICU" = "Ic"),
+                                                               inline=T),
                                                   actionButton("q2_80_low", label = "Uptk 80%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_80_mid", label = "Uptk 80%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_80_high", label = "Uptk 80%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
@@ -412,7 +422,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                   tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385.")
                                                 )
                                         ),
-                                       tabPanel("Topic IV - Question 1&3",
+                                       tabPanel("Topic IV",
                                                 div(
                                                   p("Question 1: What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations 
                                                     (including peak demand), and COVID-19 morbidity and mortality 
@@ -424,7 +434,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority 
                                                     groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of 
                                                     non-pharmaceutical interventions?"),
-                                                  radioButtons("t4q1_output", "Graph:",
+                                                  radioButtons("simpleCompartSelector", "Graph:",
                                                                c("Daily cases (morbidity):" = "i",
                                                                  "Daily deaths (mostrality)" = "d",
                                                                  "Hospitalizations in ICU" = "Ic"),
@@ -836,6 +846,7 @@ server <- function (input, output, session) {
     } else if (input$country == "Peru") {
       ifrProy = ifrProy * 3.55
     }
+    print(paste("2",input$vacUptake))
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
@@ -1210,93 +1221,164 @@ server <- function (input, output, session) {
   
   observeEvent(input$q1_older,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacStrat", selected = "Priority: older -> adults -> young")
     updateTextInput(session, "save_comp_name", value="Older population first")
   })
   observeEvent(input$q1_adult,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacStrat", selected = "Priority: adults -> older -> young")
     updateTextInput(session, "save_comp_name", value="Adult population first")
   })
   observeEvent(input$q1_school,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacStrat", selected = "Priority: school age -> others")
     updateTextInput(session, "save_comp_name", value="School aged population first")
   })
   observeEvent(input$q2_80_low,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
     updateTextInput(session, "save_comp_name", value="Uptake 80%, Intensive interventions with schools open")
   })
   observeEvent(input$q2_80_mid,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
     updateTextInput(session, "save_comp_name", value="Uptake 80%, Intensive interventions with schools closed")
   })
   observeEvent(input$q2_80_high,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
     updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
     updateTextInput(session, "save_comp_name", value="Uptake 80%, Combined with schools closed")
   })
   observeEvent(input$q2_50_low,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
     updateTextInput(session, "save_comp_name", value="Uptake 50%, Intensive interventions with schools open")
   })
   observeEvent(input$q2_50_mid,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
     updateTextInput(session, "save_comp_name", value="Uptake 50%, Intensive interventions with schools closed")
   })
   observeEvent(input$q2_50_high,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
     updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
     updateTextInput(session, "save_comp_name", value="Uptake 50%, Combined with schools closed")
   })
   observeEvent(input$q2_20_low,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
     updateTextInput(session, "save_comp_name", value="Uptake 20%, Intensive interventions with schools open")
   })
   observeEvent(input$q2_20_mid,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
     updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools closed")
     updateTextInput(session, "save_comp_name", value="Uptake 20%, Intensive interventions with schools closed")
   })
   observeEvent(input$q2_20_high,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    updateSelectInput(session, "vacUptake", selected = "Low uptake: 50%")
+    if (input$simpleCompartSelector == "i") {
+      updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
+    } else if (input$simpleCompartSelector == "Ic") {
+      updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
+    } else if (input$simpleCompartSelector == "d") {
+      updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
+    }
+    updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
     updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
     updateTextInput(session, "save_comp_name", value="Uptake 20%, Combined with schools closed")
   })
   observeEvent(input$t4q1_project,{
     setDefaultParams()
-    updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    if (input$t4q1_output == "i") {
+    if (input$simpleCompartSelector == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$t4q1_output == "Ic") {
+    } else if (input$simpleCompartSelector == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$t4q1_output == "d") {
+    } else if (input$simpleCompartSelector == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     if (input$t4q1_uptake == "High") {
@@ -1309,9 +1391,9 @@ server <- function (input, output, session) {
     if (input$t4q1_efficacy == "High") {
       updateSelectInput(session, "vacEfficacy", selected = "B1. 100%, 80%, 80%")
     } else if (input$t4q1_efficacy == "Middle") {
-      updateSelectInput(session, "vacUptake", selected = "C1. 80%, 80%, 50%")
+      updateSelectInput(session, "vacEfficacy", selected = "C1. 80%, 80%, 50%")
     } else if (input$t4q1_efficacy == "Low") {
-      updateSelectInput(session, "vacUptake", selected = "C2. 80%, 50%, 50%")
+      updateSelectInput(session, "vacEfficacy", selected = "C2. 80%, 50%, 50%")
     }
     if (input$t4q1_priority == "Older -> adults -> young") {
       updateSelectInput(session, "vacStrat", selected = "Priority: older -> adults -> young")
@@ -1327,7 +1409,7 @@ server <- function (input, output, session) {
     } else if (input$t4q1_npis == "Low") {
       updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
     }
-    updateTextInput(session, "save_comp_name", 
+    updateTextInput(session, "save_comp_name",
                     value=paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis,", Priority",input$t4q1_priority))
   })
    

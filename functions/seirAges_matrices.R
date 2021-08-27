@@ -145,7 +145,7 @@ seir_ages <- function(dias,
     tiempoP = as.numeric(paramVac[vacuna,5])
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
-      browser(expr = { t > 450 })
+      # browser(expr = { t > 450 })
       prioridadesHoy <- selectedPriority
       prioridadesHoy[prioridadesHoy != vacGroupActive] = 0
       prioridadesHoy[prioridadesHoy == vacGroupActive] = 1
