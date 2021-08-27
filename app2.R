@@ -20,16 +20,16 @@ library(shinyWidgets)
 options(dplyr.summarise.inform = FALSE)
 rm(list = ls())
 
+countries <- c("Argentina", "Peru")
+
+flags <- c(
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg"
+)
+
 # carga RData
 
-load("DatosIniciales_ARG.RData", envir = .GlobalEnv)
-rm(list=setdiff(ls(), c("duracionMediaInf",
-                        "diasHospCasosCriticos",
-                        "diasHospCasosGraves",
-                        "periodoPreinfPromedio",
-                        "dataEcdc",
-                        "porcentajeCasosGraves",
-                        "porcentajeCasosCriticos")))
+load("data/parameters.RData", envir = .GlobalEnv)
 
 # lee funciones
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
@@ -66,31 +66,32 @@ transmission_probability = matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.309
 
 transmission_probability = transmission_probability * 0.68
 
-if(use_empirical_mc){
-  contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "general")
-  contact_matrix_home <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "home")
-  contact_matrix_school <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "school")
-  contact_matrix_work <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "work")
-  contact_matrix_other <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "other")
-  colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-  colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
-  colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
-  colnames(contact_matrix_work) = rownames(contact_matrix_work) = ageGroups
-  colnames(contact_matrix_other) = rownames(contact_matrix_other) = ageGroups
-  transmission_probability = transmission_probability
-}
+# if(use_empirical_mc){
+#   contact_matrix <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "general")
+#   contact_matrix_home <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "home")
+#   contact_matrix_school <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "school")
+#   contact_matrix_work <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "work")
+#   contact_matrix_other <- get_empirical_cm(country = "Argentina", ages=as.numeric(ageGroupsV), type = "other")
+#   colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
+#   colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
+#   colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
+#   colnames(contact_matrix_work) = rownames(contact_matrix_work) = ageGroups
+#   colnames(contact_matrix_other) = rownames(contact_matrix_other) = ageGroups
+#   transmission_probability = transmission_probability
+# }
 
 colnames(transmission_probability) = rownames(transmission_probability) = ageGroups
 
 # datos de poblacion ejemplo Argentina
-N = c(13150705,
-      8487490,
-      6482663,
-      5743626,
-      4381897,
-      3560538,
-      2323393,
-      1246451)
+# N = c(13150705,
+#       8487490,
+#       6482663,
+#       5743626,
+#       4381897,
+#       3560538,
+#       2323393,
+#       1246451)
+
 
 # datos de gravedad
 # Age specific IFR
@@ -108,19 +109,19 @@ porcAsignadoCovid <- .7
 
 
 # prepara datos reportados
-load("data/dataARG.RData", envir = .GlobalEnv)
+# load("data/dataARG.RData", envir = .GlobalEnv)
 source("update.R", encoding = "UTF-8")
-dataPorEdad = formatData("ARG", ageGroupsV)
+# dataPorEdad = formatData("ARG", ageGroupsV)
 
-diaCeroVac <- min(dataPorEdad$FMTD$vac$fecha)
-tVacunasCero <-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
-vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
-                                                        nrow=length(immunityStates),
-                                                        ncol=length(ageGroups))
-
-vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
-                                             nrow=length(immunityStates),
-                                             ncol=length(ageGroups))
+## diaCeroVac <- min(dataPorEdad$FMTD$vac$fecha)
+## tVacunasCero <-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
+## vacPre = lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
+##                                                         nrow=length(immunityStates),
+##                                                         ncol=length(ageGroups))
+## 
+## vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
+##                                              nrow=length(immunityStates),
+##                                              ncol=length(ageGroups))
 
 # vacArg2 = lapply(1:nrow(dataPorEdad$FMTD$vac2), matrix,  data=0,
 #                  nrow=length(immunityStates),
@@ -128,11 +129,11 @@ vacArg = lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
 
 
 
-for (t in 1:length(vacArg)) {
-  # TODO: Expandir a otras vacunas
-  vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
-  vacArg[[t]][4,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
-}
+## for (t in 1:length(vacArg)) {
+##  # TODO: Expandir a otras vacunas
+##  vacArg[[t]][3,]  = as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
+##  vacArg[[t]][4,]  = as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
+## }
 
 # for (t in 1:length(vacArg2)) {
 #   # TODO: Expandir a otras vacunas
@@ -140,14 +141,14 @@ for (t in 1:length(vacArg)) {
 # }
 
 # pone cero si hay na en 2da dosis
-vacArg <- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
+## vacArg <- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
 
 # promedio de aplicacion de cada dosis 
-promedio =  round(Reduce("+", vacArg) / length(vacArg),0)
+## promedio =  round(Reduce("+", vacArg) / length(vacArg),0)
 
-vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
-                 nrow=length(immunityStates),
-                 ncol=length(ageGroups))
+## vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
+##                 nrow=length(immunityStates),
+##                 ncol=length(ageGroups))
 
 # vacPlan2 = lapply(1:(diasDeProyeccion-length(vacArg2)-length(vacPre)), matrix, data=t(promedio2),
 #                   nrow=length(immunityStates),
@@ -155,29 +156,30 @@ vacPlan = lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, dat
 
 
 
-planVacunacionFinal <<- c(vacPre,vacArg,vacPlan)
+## planVacunacionFinal <<- c(vacPre,vacArg,vacPlan)
 
 
 # vacPlanDia <- length(vacPre)+length(vacArg)
 
 # t <- seq(1:nrow(dataEcdc))
-temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
-  loessCol = paste0(loopCol,'_loess')
-  dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
-})
+## temp <- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
+##  loessCol = paste0(loopCol,'_loess')
+##  dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
+## })
 
 
-rm(temp)
+## rm(temp)
 
 # muertes
-loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
-def_p <- dataPorEdad$FMTD$def[,loessCols]
-def_p <- def_p[1:(nrow(def_p)-15),]
+## loessCols = which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
+## def_p <- dataPorEdad$FMTD$def[,loessCols]
+## def_p <- def_p[1:(nrow(def_p)-15),]
 
-rowSums(def_p[206,])
+## rowSums(def_p[206,])
 
-fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
-                    min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
+## fechas_master = seq(min(dataPorEdad$FMTD$def$fecha),
+##                     min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
+
 modif_beta =  modif_beta_param = matrix(rep(c(1,0.15,.6,.5),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_gr =  modif_porc_gr_param = matrix(rep(c(1,.3,.1,.05),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
 modif_porc_cr =  modif_porc_cr_param = matrix(rep(c(1,.1,.03,.02),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = names)
@@ -199,10 +201,26 @@ paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
 ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 useShinyjs(),
                 fluidRow(id="inputs", 
-                         column(width = 6,
+                         column(width = 4,
                                 h2("IECS - CIIPS: Vaccines Impact Modeling")
                                 , align="left"),
-                         column(width = 4,
+                         column(width = 3,
+                                pickerInput("country", 
+                                            "Country", 
+                                            multiple = F,
+                                            choices = countries,
+                                            choicesOpt = list(content =  
+                                                                mapply(countries, flags, FUN = function(country, flagUrl) {
+                                                                  HTML(paste(
+                                                                    tags$img(src=flagUrl, width=20, height=15),
+                                                                    country
+                                                                  ))
+                                                                }, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+                                                              
+                                            ),
+                                            selected = "Argentina")
+                                , align="left"),
+                         column(width = 3,
                                 numericInput("t", label = "Day of projection", value = 1, step = 1)
                                 , align="right"),
                          column(width = 2,
@@ -467,6 +485,79 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 
 
 server <- function (input, output, session) {
+  
+  # country customize
+  observeEvent(input$country, { 
+    #browser()
+    iso_country <- if (input$country=="Argentina") {"ARG"} else
+                   if (input$country=="Peru") {"PER"}
+    print(iso_country)
+    
+    # empirical cm
+    if(use_empirical_mc){
+    #browser()
+      contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
+      contact_matrix_home <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "home")
+      contact_matrix_school <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "school")
+      contact_matrix_work <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "work")
+      contact_matrix_other <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "other")
+      colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
+      colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
+      colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
+      colnames(contact_matrix_work) = rownames(contact_matrix_work) = ageGroups
+      colnames(contact_matrix_other) = rownames(contact_matrix_other) = ageGroups
+      transmission_probability = transmission_probability
+      
+      # population data
+      load("data/population.RData")
+      N <<- population[[input$country]]
+      
+      # epi data
+      load(paste0("data/data", iso_country, ".RData"), envir = .GlobalEnv)
+      dataPorEdad <<- formatData(iso_country, ageGroupsV)
+      diaCeroVac <<- min(dataPorEdad$FMTD$vac$fecha)
+      tVacunasCero <<-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
+      vacPre <<- lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
+                        nrow=length(immunityStates),
+                        ncol=length(ageGroups))
+      
+      vacArg <<- lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
+                        nrow=length(immunityStates),
+                        ncol=length(ageGroups))
+      for (t in 1:length(vacArg)) {
+        # TODO: Expandir a otras vacunas
+        
+        vacArg[[t]][3,]  <<- as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
+        vacArg[[t]][4,]  <<- as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
+      }
+      vacArg <<- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
+      promedio <<- round(Reduce("+", vacArg) / length(vacArg),0)
+      vacPlan <<- lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
+                         nrow=length(immunityStates),
+                         ncol=length(ageGroups))
+      
+      planVacunacionFinal <<- c(vacPre,vacArg,vacPlan)
+      temp <<- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
+        loessCol = paste0(loopCol,'_loess')
+        dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
+      })
+      
+      rm(temp)
+      
+      loessCols <<- which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
+      def_p <<- dataPorEdad$FMTD$def[,loessCols]
+      def_p <<- def_p[1:(nrow(def_p)-15),]
+      
+      
+      
+      fechas_master <<- seq(min(dataPorEdad$FMTD$def$fecha),
+                            min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
+      
+      
+      
+  }
+  })
+  
   delete<<-F
   observe({
     input$mbeta_cell_edit
@@ -657,7 +748,7 @@ server <- function (input, output, session) {
     paste(input$mifr_cell_edit)
     paste(input$porc_cr_cell_edit)
     paste(input$porc_gr_cell_edit)
-    
+    paste(input$country)
     duracion_inmunidad = input$duracionInm
 
     
@@ -714,7 +805,7 @@ server <- function (input, output, session) {
     
     # print(porcentajeCasosGraves)
     # print(porcentajeCasosCriticos)
-    
+    #browser()
     proy <- seir_ages(dias=diasDeProyeccion,
               duracionE = periodoPreinfPromedio,
               duracionIi = duracionMediaInf,
@@ -784,7 +875,6 @@ server <- function (input, output, session) {
   })
   
   data_graf <- reactive({
-    
     proy <- proy()
     
     data_graf <- bind_rows(
@@ -842,7 +932,7 @@ server <- function (input, output, session) {
   })
   
   output$graficoUnico <- renderPlotly({
-    
+    #browser()
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       
       col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))

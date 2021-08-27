@@ -25,7 +25,7 @@ seir_ages <- function(dias,
                       relaxGoal,
                       relaxFactor
 ){
-  #browser()
+  
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   names = list(immunityStates,
                ageGroups)
@@ -330,6 +330,7 @@ get_factor_given_rt = function(contact_matrix, transmission_probability, duracio
 
 # get contact matrix from covoid study: library(covoid) 
 get_empirical_cm <- function(country, ages, type = "general"){
+  
   # get matrix from covoid package
   mc_arg  <- as.data.frame(t(import_contact_matrix(country = country,setting = type)))
   pop_arg <- data.frame(pop = as.numeric(import_age_distribution(country)), group = rownames(mc_arg))
@@ -340,16 +341,16 @@ get_empirical_cm <- function(country, ages, type = "general"){
   age_il <- ages
   contact_matrix <-
     pivot_longer(mc_arg %>%
-                   mutate(to_group = rownames(mc_arg)),
+                   dplyr::mutate(to_group = rownames(mc_arg)),
                  cols=1:ncol(mc_arg),names_to = "group") %>%
     left_join(pop_arg, by = "group") %>%
-    mutate(group = as.integer(group), to_group = as.integer(to_group),
+    dplyr::mutate(group = as.integer(group), to_group = as.integer(to_group),
            new_group = cut(group, breaks = c(age_il-1,100)),
            new_to_group = cut(to_group, breaks = c(age_il-1,100))) %>%
     group_by(new_group, new_to_group) %>%
-    summarise(new_contacts = sum(pop*value)/sum(pop)) %>%
+    dplyr::summarise(new_contacts = sum(pop*value)/sum(pop)) %>%
     pivot_wider(names_from = "new_group", values_from = "new_contacts") %>% ungroup() %>%
-    select(-1) %>% as.matrix()
+    dplyr::select(-1) %>% as.matrix()
   rownames(contact_matrix) <-  colnames(contact_matrix) <- age_il
   contact_matrix
 }

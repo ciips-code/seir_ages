@@ -2,7 +2,7 @@ library(dplyr)
 library(reshape)
 library(archive)
 library(RSocrata)
-
+library(plyr)
 
 ##### funcion update #####
 update <-  function(pais,diasDeProyeccion) {
@@ -167,6 +167,7 @@ update <-  function(pais,diasDeProyeccion) {
   ##### PERU #####
   
   if (pais=="PER") {
+    
     url <- 'https://cloud.minsa.gob.pe/s/AC2adyLkHCKjmfm/download'
     download.file(url, "covidPeru.csv")
     casos <- read.csv2("covidPeru.csv", encoding = "UTF-8")
@@ -253,7 +254,7 @@ update <-  function(pais,diasDeProyeccion) {
     download.file( file.path , tf , mode = "wb" )
     file <- archive(tf)
     dataVacunas <- read.csv(archive_read(file, "vacunas_covid.csv"), encoding="UTF-8")
-    
+
     Vacunas = dataVacunas
     
     Vacunas <- Vacunas %>% dplyr::filter(DOSIS==1) %>%
@@ -290,7 +291,34 @@ update <-  function(pais,diasDeProyeccion) {
                                     max(Vacunas$fecha),
                                     by=1)) %>% left_join(Vacunas)
     
+    ageG <- c("00-04",
+              "05-09",
+              "10-14",
+              "15-17",
+              "18-24",
+              "25-29",
+              "30-34",
+              "35-39",
+              "40-44",
+              "45-49",
+              "50-54",
+              "55-59",
+              "60-64",
+              "65-69",
+              "70-74",
+              "75-79",
+              "80-84",
+              "85-89",
+              "90-99")
+              
+    Vacunas_df <- data.frame(fecha='',t(matrix(rep(NA,length(ageG)), byrow = F)))
+    colnames(Vacunas_df) <- c("fecha",ageG)
+    Vacunas_df[,Vacunas_df$fecha!='']
+    Vacunas <- plyr::rbind.fill(Vacunas_df,Vacunas)
     Vacunas[is.na(Vacunas)] <- 0
+    Vacunas <- Vacunas[Vacunas$fecha!="",]
+    
+    Vacunas$fecha <- as.Date(Vacunas$fecha)
     
     Vacunas2 <- dataVacunas
     Vacunas2 <- Vacunas2 %>% dplyr::filter(DOSIS==1) %>%
@@ -323,11 +351,18 @@ update <-  function(pais,diasDeProyeccion) {
       dplyr::select(-`S.I.`) %>%
       dplyr::filter(is.na(fecha)==F)
     
-    Vacunas2 <- data.frame(fecha=seq(min(Vacunas$fecha),
-                                     max(Vacunas$fecha),
+    Vacunas2 <- data.frame(fecha=seq(min(Vacunas2$fecha),
+                                     max(Vacunas2$fecha),
                                      by=1)) %>% left_join(Vacunas2)
     
+    Vacunas2_df <- data.frame(fecha='',t(matrix(rep(NA,length(ageG)), byrow = F)))
+    colnames(Vacunas2_df) <- c("fecha",ageG)
+    Vacunas2_df[,Vacunas2_df$fecha!='']
+    Vacunas2 <- plyr::rbind.fill(Vacunas2_df,Vacunas2)
     Vacunas2[is.na(Vacunas2)] <- 0
+    Vacunas2 <- Vacunas2[Vacunas2$fecha!="",]
+    
+    Vacunas2$fecha <- as.Date(Vacunas2$fecha)
     
     eval(parse(text=paste0('countryData$',
                            pais,
@@ -450,10 +485,10 @@ formatData <- function(pais, ageGroups) {
   eval(parse(text=paste0('countryData$FMTD <- countryData$',pais)))
   
   
-  fechasDef <- countryData$ARG$def$fecha
-  fechasVac <- countryData$ARG$vac$fecha
-  fechasVac2 <- countryData$ARG$vac2$fecha
-  fechasCasos <- countryData$ARG$casos$fecha
+  fechasDef <- countryData[[pais]]$def$fecha
+  fechasVac <- countryData[[pais]]$vac$fecha
+  fechasVac2 <- countryData[[pais]]$vac2$fecha
+  fechasCasos <- countryData[[pais]]$casos$fecha
   ageGSel <- colnames(countryData$FMTD$def)[substring(colnames(countryData$FMTD$def),1,2) %in% ageGroups]
   ageSelCol <- which(colnames(countryData$FMTD$def) %in% ageGSel)
   
@@ -553,10 +588,9 @@ formatData <- function(pais, ageGroups) {
 
 
 # actualiza argentina y guarda RData
-# update(pais = "COL", diasDeProyeccion = 1100)
+# update(pais = "PER", diasDeProyeccion = 1100)
 
 # agrupa edades
 # datosArg <- formatData("ARG", ageGroups = ageGroupsV)
-
 
 
