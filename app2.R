@@ -20,6 +20,8 @@ library(shinyWidgets)
 options(dplyr.summarise.inform = FALSE)
 rm(list = ls())
 
+comp_table <<- list()
+output_list <<- c()
 countries <- c("Argentina", "Peru")
 
 flags <- c(
@@ -387,6 +389,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     background causes below maximum hospital capacity in the setting(s) modeled?"),
                                                   actionButton("q1_older", label = "Older population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q1_adult", label = "Adult population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                  DTOutput("resumen_tabla2"),
                                                   actionButton("q1_school", label = "School aged population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
                                                 )
                                        ),
@@ -470,6 +473,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                      #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp"),
                                      br(),
+                                     column(4,uiOutput("tables")),
                                      br(),
                                      column(2,actionButton("del_scenarios","Delete all scenarios"))),
                             tabPanel("Compartments", fluidRow(id="content"))
@@ -485,6 +489,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 
 
 server <- function (input, output, session) {
+  
+  cancel.onSessionEnded <- session$onSessionEnded(function () {
+    compare <<- compare[compare$Compart=="",]
+  })
   
   # country customize
   observeEvent(input$country, { 
@@ -1018,7 +1026,11 @@ server <- function (input, output, session) {
     }
     
   })
-  output$resumen_tabla <- renderDataTable({
+  
+  
+  res_t <- reactive({
+    paste(input$save_comp)
+    
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
     
@@ -1040,26 +1052,51 @@ server <- function (input, output, session) {
                               data_text$Compart=="i"]
     
     vacunas_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
-                                data_text$Compart=="vA"]
+                                data_text$Compart=="vA"] 
+    #browser()
+    tFechas <- c(grep(fechas[1], fechas_master),
+                 grep(fechas[2], fechas_master),
+                 grep(fechas[3], fechas_master))
+                  
+    poblacion_vac <- c(
     
-    poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
-                                   data_text$Compart=="vA"] / sum(N) * 100
+    sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[1]],
+               simplify = T,
+               function (x) {
+                 sum(x[3, ])
+               })),
     
-    sumt1 = proy()$`S: Susceptible`[[tfechas[1]]] + proy()$`V: Vaccinated`[[tfechas[1]]] +
-      proy()$`E: Exposed`[[tfechas[1]]] + proy()$`I: Infectious`[[tfechas[1]]] + 
-      proy()$`R: Recovered (survivors + deaths)`[[tfechas[1]]]
-    poblacion_vac[1] = sum(sumt1[3,]) / sum(N) * 100
+    sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[2]],
+               simplify = T,
+               function (x) {
+                 sum(x[3, ])
+               })),
     
-    sumt2 = proy()$`S: Susceptible`[[tfechas[2]]] + proy()$`V: Vaccinated`[[tfechas[2]]] +
-      proy()$`E: Exposed`[[tfechas[2]]] + proy()$`I: Infectious`[[tfechas[2]]] + 
-      proy()$`R: Recovered (survivors + deaths)`[[tfechas[2]]]
-    poblacion_vac[2] = sum(sumt2[3,]) / sum(N) * 100
-    
-    sumt3 = proy()$`S: Susceptible`[[tfechas[3]]] + proy()$`V: Vaccinated`[[tfechas[3]]] +
-      proy()$`E: Exposed`[[tfechas[3]]] + proy()$`I: Infectious`[[tfechas[3]]] + 
-      proy()$`R: Recovered (survivors + deaths)`[[tfechas[3]]]
-    poblacion_vac[3] = sum(sumt3[3,]) / sum(N) * 100
-    
+    sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[3]],
+               simplify = T,
+               function (x) {
+                 sum(x[3, ])
+               }))
+    ) / sum(N) *100
+      
+    # poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
+    #                                data_text$Compart=="vA"] / sum(N) * 100
+    # 
+    # sumt1 = proy()$`S: Susceptible`[[tfechas[1]]] + proy()$`V: Vaccinated`[[tfechas[1]]] +
+    #   proy()$`E: Exposed`[[tfechas[1]]] + proy()$`I: Infectious`[[tfechas[1]]] + 
+    #   proy()$`R: Recovered (survivors + deaths)`[[tfechas[1]]]
+    # poblacion_vac[1] = sum(sumt1[3,]) / sum(N) * 100
+    # 
+    # sumt2 = proy()$`S: Susceptible`[[tfechas[2]]] + proy()$`V: Vaccinated`[[tfechas[2]]] +
+    #   proy()$`E: Exposed`[[tfechas[2]]] + proy()$`I: Infectious`[[tfechas[2]]] + 
+    #   proy()$`R: Recovered (survivors + deaths)`[[tfechas[2]]]
+    # poblacion_vac[2] = sum(sumt2[3,]) / sum(N) * 100
+    # 
+    # sumt3 = proy()$`S: Susceptible`[[tfechas[3]]] + proy()$`V: Vaccinated`[[tfechas[3]]] +
+    #   proy()$`E: Exposed`[[tfechas[3]]] + proy()$`I: Infectious`[[tfechas[3]]] + 
+    #   proy()$`R: Recovered (survivors + deaths)`[[tfechas[3]]]
+    # poblacion_vac[3] = sum(sumt3[3,]) / sum(N) * 100
+    # 
     
     var=c("Cumulative deaths",
           "Cumulative infections",
@@ -1088,17 +1125,32 @@ server <- function (input, output, session) {
     colnames(tabla) <- c(" ",fechas)
     
     
-    DT::datatable(tabla,
-                  caption = 'Results summary',
-                  options = list(ordering=F, 
-                                 searching=F, 
-                                 paging=F, 
-                                 info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
-                                              formatStyle(fechas[1], `text-align` = 'right') %>%
-                                              formatStyle(fechas[2], `text-align` = 'right') %>%
-                                              formatStyle(fechas[3], `text-align` = 'right') 
-    
+    tabla_scn <<- DT::datatable(tabla,
+                                caption = 'Results summary',
+                                options = list(ordering=F, 
+                                               searching=F, 
+                                               paging=F, 
+                                               info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
+                                                            formatStyle(fechas[1], `text-align` = 'right') %>%
+                                                            formatStyle(fechas[2], `text-align` = 'right') %>%
+                                                            formatStyle(fechas[3], `text-align` = 'right') 
+    comp_table[[input$save_comp_name]] <<- DT::datatable(tabla,
+                                                         caption = input$save_comp_name,
+                                                         options = list(ordering=F, 
+                                                                        searching=F, 
+                                                                        paging=F, 
+                                                                        info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
+                                                                                     formatStyle(fechas[1], `text-align` = 'right') %>%
+                                                                                     formatStyle(fechas[2], `text-align` = 'right') %>%
+                                                                                     formatStyle(fechas[3], `text-align` = 'right') 
+    output_list <<- unique(c(output_list,names(comp_table[input$save_comp_name])))
+    tabla_scn
   })
+  
+  output$resumen_tabla <- renderDataTable({res_t()})
+  
+  output$resumen_tabla2 <- renderDataTable({res_t()})
+  
   
   observe({
     if (str_trim(input$save_comp_name)=="") {
@@ -1300,7 +1352,41 @@ server <- function (input, output, session) {
      
    })
    
+   observeEvent(input$save_comp, {
+     browser()
+     
+     #output[[input$save_comp_name]] <<- renderDataTable({comp_table[[input$save_comp_name]]})
+       #eval(parse(text=paste0("output$",g," <<- renderDataTable({",g,"})")))
+     
+     table <- comp_table[[input$save_comp_name]]
+     eval(parse(text=
+                  paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
+                ))
+     
+   })
+   
+   observe({
+     
+   output$tables <- renderUI({
+     
+     paste(input$save_comp)
+     
+     
+     eval(parse(text=
+     paste0("tagList(",paste0("DTOutput('",output_list,"')", collapse = ','),")")
+     ))
+     # tagList(DTOutput("es1"),
+     #         DTOutput("es2"))
+
+       
+   })
+     
+   })
+   
+   
    output$graficoComp <- renderPlotly({
+   
+     #View(reactiveValuesToList(input))
      
      data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
      plot_comp <- plot_ly() 
@@ -1339,9 +1425,16 @@ server <- function (input, output, session) {
      updateSelectInput(session, "saved_series", choices = "", selected = "")
      
    })
+   
+   onStart = function() {
+     cat("Doing application setup\n")
+     
+     onStop(function() {
+       cat("Doing application cleanup\n")
+       print("lll")
+     })
+     }
   
 }
-  
-shinyApp(ui = ui, server = server)
 
-  
+shinyApp(ui, server)
