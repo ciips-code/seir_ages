@@ -59,8 +59,8 @@ contact_matrix = matrix(c(5,1,1,1,1,1,1,1,
                           2,4,4,4,4,4,4,4,
                           2,4,4,4,4,4,4,4,
                           2,4,4,4,4,4,4,4,
-                         .5,1,1,1,1,1,5,5,
-                         .5,1,1,1,1,1,5,5),8,byrow = T)
+                          .5,1,1,1,1,1,5,5,
+                          .5,1,1,1,1,1,5,5),8,byrow = T)
 colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
 
 transmission_probability = matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.3097, 0.3211, 0.3211,
@@ -199,12 +199,12 @@ namesVac = list(immunityStates,
                 c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP", "intervaloInterDosis", "idVacuna", "dosis"))
 
 paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
-                          0,0,0,0,0,0,0,0,
-                          20,.2,30,.6,360,30,"SchemeIncomplete",1
-                          ,20,.4,30,.5,360,30,"SchemeComplete",2
-                          # ,20,.4,0,.5,360,30,"SINOPH",1
-                          # ,20,.4,0,.5,360,30,"SINOPH",2
-                          ), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
+                           0,0,0,0,0,0,0,0,
+                           20,.2,30,.6,360,30,"SchemeIncomplete",1
+                           ,20,.4,30,.5,360,30,"SchemeComplete",2
+                           # ,20,.4,0,.5,360,30,"SINOPH",1
+                           # ,20,.4,0,.5,360,30,"SINOPH",2
+), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 useShinyjs(),
@@ -238,7 +238,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                 actionButton("prev", label = NULL, icon = icon("chevron-left")),
                                 actionButton("prox", label = NULL, icon = icon("chevron-right"))
                                 , align="left")
-                         ),
+                ),
                 tabsetPanel(type = "tabs",
                             tabPanel("Graphs",
                                      br(),
@@ -248,14 +248,14 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                    multiple = T,
                                                                    selected= c("total"))),
                                               
-                                                       
+                                              
                                               column(4,fluidRow(column(4,textInput("save_comp_name", "Save scenario", placeholder = "Enter name")),
                                                                 column(2,br(),actionButton("save_comp", icon("chevron-right"))),
                                                                 column(2,prettyCheckbox(inputId = "check_cases",label = "Show reported cases",value = FALSE),
-                                                                         prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE),
-                                                                         prettyCheckbox(inputId = "check_rt",label = "Effective reproduction number (Rt)",value = FALSE)))
+                                                                       prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE),
+                                                                       prettyCheckbox(inputId = "check_rt",label = "Effective reproduction number (Rt)",value = FALSE)))
                                               )
-                                      ),
+                                     ),
                                      plotlyOutput("graficoUnico"),
                                      tabsetPanel(type = "tabs",
                                                  tabPanel("Scenario configuration",
@@ -349,163 +349,163 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                           column(4,DTOutput("resumen_tabla"))
                                                           )
                                                  ),
-                                       tabPanel("Other parameters",
-                                         fluidRow(
-                                           column(12,
-                                             fluidRow(
-                                               column(6,
-                                                  fluidRow(
-                                                    column(4,
-                                                          numericInput("diasProy",
-                                                          "Days to display",
-                                                          min=30,
-                                                          max=diasDeProyeccion,
-                                                          value = diasDeProyeccion)),
-                                                    column(4,numericInput("duracionInm",
-                                                           "Immunity duration",
-                                                           min=1,
-                                                           max=360,
-                                                           value = duracion_inmunidad))
-                                                  ),
-                                                  fluidRow(
-                                                    column(12,
-                                                           DT::dataTableOutput("transprob")
-                                                    )
-                                                  )
-                                               ),
-                                              column(6,
-                                                     DT::dataTableOutput("ifrt"),
-                                                     DT::dataTableOutput("porc_gr"),
-                                                     DT::dataTableOutput("porc_cr")
-                                                     )
-                                             ),
-                                             fluidRow(
-                                               column(3,DT::dataTableOutput("mbeta")),
-                                               column(3,DT::dataTableOutput("mgraves")),
-                                               column(3,DT::dataTableOutput("mcriticos")),
-                                               column(3,DT::dataTableOutput("mifr")),
-                                               column(3,DT::dataTableOutput("paramVac"))
-                                             )
-                                           )
-                                         )
-                                       ),
-                                       tabPanel("Topic II - Question 1",
-                                                div(
-                                                  p("In which order should the following groups beprioritized for COVID-19 
+                                                 tabPanel("Other parameters",
+                                                          fluidRow(
+                                                            column(12,
+                                                                   fluidRow(
+                                                                     column(6,
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     numericInput("diasProy",
+                                                                                                  "Days to display",
+                                                                                                  min=30,
+                                                                                                  max=diasDeProyeccion,
+                                                                                                  value = diasDeProyeccion)),
+                                                                              column(4,numericInput("duracionInm",
+                                                                                                    "Immunity duration",
+                                                                                                    min=1,
+                                                                                                    max=360,
+                                                                                                    value = duracion_inmunidad))
+                                                                            ),
+                                                                            fluidRow(
+                                                                              column(12,
+                                                                                     DT::dataTableOutput("transprob")
+                                                                              )
+                                                                            )
+                                                                     ),
+                                                                     column(6,
+                                                                            DT::dataTableOutput("ifrt"),
+                                                                            DT::dataTableOutput("porc_gr"),
+                                                                            DT::dataTableOutput("porc_cr")
+                                                                     )
+                                                                   ),
+                                                                   fluidRow(
+                                                                     column(3,DT::dataTableOutput("mbeta")),
+                                                                     column(3,DT::dataTableOutput("mgraves")),
+                                                                     column(3,DT::dataTableOutput("mcriticos")),
+                                                                     column(3,DT::dataTableOutput("mifr")),
+                                                                     column(3,DT::dataTableOutput("paramVac"))
+                                                                   )
+                                                            )
+                                                          )
+                                                 ),
+                                                 tabPanel("Topic II - Question 1",
+                                                          div(
+                                                            p("In which order should the following groups beprioritized for COVID-19 
                                                     vaccination as vaccine supply increases so as to keep hospitalizations, 
                                                     and intensive care unit use (where available), due to COVID-19 and other 
                                                     background causes below maximum hospital capacity in the setting(s) modeled? (50% Uptake)"),
-                                                  radioButtons("simpleCompartSelector", "Graph:",
-                                                               c("Daily cases (morbidity):" = "i",
-                                                                 "Daily deaths (mostrality)" = "d",
-                                                                 "Hospitalizations in ICU" = "Ic"),
-                                                               inline=T),
-                                                  actionButton("q1_older", label = "Older population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q1_adult", label = "Adult population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q1_school", label = "School aged population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")),
-                                                  
-                                                  column(4,DTOutput("resumen_tabla2"))
-                                                ))
-                                       ),
-                                       tabPanel("Topic II - Question 2",
-                                                div(
-                                                  p("What would be the optimal vaccination strategy in combination with which 
+                                                            radioButtons("simpleCompartSelector2q1", "Graph:",
+                                                                         c("Daily cases (morbidity):" = "i",
+                                                                           "Daily deaths (mortality)" = "d",
+                                                                           "Hospitalizations in ICU" = "Ic"),
+                                                                         inline=T),
+                                                            actionButton("q1_older", label = "Older population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q1_adult", label = "Adult population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q1_school", label = "School aged population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")),
+                                                          
+                                                          column(6,DTOutput("resumen_tabla2"))
+                                                 ),
+                                                 tabPanel("Topic II - Question 2",
+                                                          div(
+                                                            p("What would be the optimal vaccination strategy in combination with which 
                                                     non-pharmaceutical interventions to keep hospitalizations due to COVID-19 
                                                     and other background causes below maximum hospital capacity in the settings 
                                                     modelled?"),
-                                                  radioButtons("simpleCompartSelector", "Graph:",
-                                                               c("Daily cases (morbidity):" = "i",
-                                                                 "Daily deaths (mostrality)" = "d",
-                                                                 "Hospitalizations in ICU" = "Ic"),
-                                                               inline=T),
-                                                  actionButton("q2_80_low", label = "Uptk 80%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_80_mid", label = "Uptk 80%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_80_high", label = "Uptk 80%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  br(),
-                                                  actionButton("q2_50_low", label = "Uptk 50%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_50_mid", label = "Uptk 50%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_50_high", label = "Uptk 50%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  br(),
-                                                  actionButton("q2_20_low", label = "Uptk 20%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_20_mid", label = "Uptk 20%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  actionButton("q2_20_high", label = "Uptk 20%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  br(),
-                                                  tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385."),
-                                                  br(),
-                                                  DTOutput("resumen_tabla3")
-                                                  )
-                                                ),
-                                       tabPanel("Topic IV",
-                                                div(
-                                                  p("Question 1: What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations 
+                                                            radioButtons("simpleCompartSelector2q2", "Graph:",
+                                                                         c("Daily cases (morbidity):" = "i",
+                                                                           "Daily deaths (mortality)" = "d",
+                                                                           "Hospitalizations in ICU" = "Ic"),
+                                                                         inline=T),
+                                                            actionButton("q2_80_low", label = "Uptk 80%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q2_80_mid", label = "Uptk 80%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q2_80_high", label = "Uptk 80%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            br(),
+                                                            actionButton("q2_50_low", label = "Uptk 50%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q2_50_mid", label = "Uptk 50%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q2_50_high", label = "Uptk 50%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            br(),
+                                                            actionButton("q2_20_low", label = "Uptk 20%, intensive NPIs, schools open", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q2_20_mid", label = "Uptk 20%, intensive NPIs, schools closed", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            actionButton("q2_20_high", label = "Uptk 20%, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            br(),
+                                                            tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385."),
+                                                            br(),
+                                                            column(6,DTOutput("resumen_tabla3"))
+                                                          )
+                                                 ),
+                                                 tabPanel("Topic IV",
+                                                          div(
+                                                            p("Question 1: What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations 
                                                     (including peak demand), and COVID-19 morbidity and mortality 
                                                     of lifting non-pharmaceutical interventions (e.g., business closures, 
                                                     school closures, travel restrictions, gathering size limits, mask wearing) 
                                                     at different levels of vaccine efficacy and vaccination coverage for different 
                                                     priority groups as outlined in the SAGE Prioritization Roadmap?"),
-                                                  p("Question 3: What is the probability and stability of local or regional elimination of SARS-CoV-2 transmission 
+                                                            p("Question 3: What is the probability and stability of local or regional elimination of SARS-CoV-2 transmission 
                                                     under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority 
                                                     groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of 
                                                     non-pharmaceutical interventions?"),
-                                                  radioButtons("simpleCompartSelector", "Graph:",
-                                                               c("Daily cases (morbidity):" = "i",
-                                                                 "Daily deaths (mostrality)" = "d",
-                                                                 "Hospitalizations in ICU" = "Ic"),
-                                                               inline=T),
-                                                  fluidRow(
-                                                    column(3,
-                                                           selectInput(
-                                                             "t4q1_uptake",
-                                                             label="Coverage",
-                                                             choices = c("High",
-                                                                         "Middle",
-                                                                         "Low"),
-                                                             selected = "High"
-                                                            )
-                                                      ),
-                                                    column(3,
-                                                           selectInput(
-                                                             "t4q1_efficacy",
-                                                             label="Efficacy",
-                                                             choices = c("High",
-                                                                         "Middle",
-                                                                         "Low"),
-                                                             selected = "Middle"
-                                                           )
-                                                    ),
-                                                    column(3,
-                                                           selectInput(
-                                                             "t4q1_priority",
-                                                             label="Priority",
-                                                             choices = c("Older -> adults -> young",
-                                                                         "Adults -> older -> young",
-                                                                         "Young -> others"),
-                                                             selected = "Older -> adults -> young"
-                                                           )
-                                                    ),
-                                                    column(3,
-                                                           selectInput(
-                                                             "t4q1_npis",
-                                                             label="NPIs Strength",
-                                                             choices = c("High",
-                                                                         "Middle",
-                                                                         "Low"),
-                                                             selected = "Middle"
-                                                           )
-                                                     )
-                                                  ),
-                                                  actionButton("t4q1_project", label = "Project scenario", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  br(),br(),
-                                                  tags$small("* High coverage: 80%; Middle: 50%; Low: 20%;"),br(),
-                                                  tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 80%, 50%"),br(),
-                                                  tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive"),br(),
-                                                  tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385."),
-                                                  br(),
-                                                  DTOutput("resumen_tabla4")
-                                                )
-
-                                       )
-                            )),
+                                                            radioButtons("simpleCompartSelector4q", "Graph:",
+                                                                         c("Daily cases (morbidity):" = "i",
+                                                                           "Daily deaths (mortality)" = "d",
+                                                                           "Hospitalizations in ICU" = "Ic"),
+                                                                         inline=T),
+                                                            fluidRow(
+                                                              column(3,
+                                                                     selectInput(
+                                                                       "t4q1_uptake",
+                                                                       label="Coverage",
+                                                                       choices = c("High",
+                                                                                   "Middle",
+                                                                                   "Low"),
+                                                                       selected = "High"
+                                                                     )
+                                                              ),
+                                                              column(3,
+                                                                     selectInput(
+                                                                       "t4q1_efficacy",
+                                                                       label="Efficacy",
+                                                                       choices = c("High",
+                                                                                   "Middle",
+                                                                                   "Low"),
+                                                                       selected = "Middle"
+                                                                     )
+                                                              ),
+                                                              column(3,
+                                                                     selectInput(
+                                                                       "t4q1_priority",
+                                                                       label="Priority",
+                                                                       choices = c("Older -> adults -> young",
+                                                                                   "Adults -> older -> young",
+                                                                                   "Young -> others"),
+                                                                       selected = "Older -> adults -> young"
+                                                                     )
+                                                              ),
+                                                              column(3,
+                                                                     selectInput(
+                                                                       "t4q1_npis",
+                                                                       label="NPIs Strength",
+                                                                       choices = c("High",
+                                                                                   "Middle",
+                                                                                   "Low"),
+                                                                       selected = "Middle"
+                                                                     )
+                                                              )
+                                                            ),
+                                                            actionButton("t4q1_project", label = "Project scenario", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
+                                                            br(),br(),
+                                                            tags$small("* High coverage: 80%; Middle: 50%; Low: 20%;"),br(),
+                                                            tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 80%, 50%"),br(),
+                                                            tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive"),br(),
+                                                            tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385."),
+                                                            br(),
+                                                            column(6,DTOutput("resumen_tabla4"))
+                                                          )
+                                                          
+                                                 )
+                                         )
+                            ),
                             tabPanel("Saved scenarios", 
                                      fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
                                               column(3,
@@ -514,7 +514,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                      #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
                                      plotlyOutput("graficoComp"),
                                      br(),
-                                     column(4,uiOutput("tables")),
+                                     div(uiOutput("tables")),
                                      br(),
                                      column(2,actionButton("del_scenarios","Delete all scenarios"))),
                             tabPanel("Compartments", fluidRow(id="content"))
@@ -527,7 +527,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 br()
 )
 
-                
+
 
 server <- function (input, output, session) {
   
@@ -542,15 +542,15 @@ server <- function (input, output, session) {
       updatePickerInput(session,"country", selected="Argentina")
     } else {
       iso_country <- if (input$country=="Argentina") {"ARG"} else
-                     if (input$country=="Peru") {"PER"} else
-                     if (input$country=="Colombia") {"COL"} else
-                     if (input$country=="Mexico") {"MEX"} else
-                     if (input$country=="Chile") {"CHL"}
-      print(iso_country)
+        if (input$country=="Peru") {"PER"} else
+          if (input$country=="Colombia") {"COL"} else
+            if (input$country=="Mexico") {"MEX"} else
+              if (input$country=="Chile") {"CHL"}
+      # print(iso_country)
       
       # empirical cm
       if(use_empirical_mc){
-      #browser()
+        #browser()
         contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
         contact_matrix_home <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "home")
         contact_matrix_school <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "school")
@@ -623,7 +623,7 @@ server <- function (input, output, session) {
       mbeta_primeraVez<<-F
     } else {
       mbeta_edit[as.numeric(input$mbeta_cell_edit[1]),
-               as.numeric(input$mbeta_cell_edit[2])+1] <- as.numeric(input$mbeta_cell_edit[3])
+                 as.numeric(input$mbeta_cell_edit[2])+1] <- as.numeric(input$mbeta_cell_edit[3])
       mbeta_edit <<- mbeta_edit
     }
   })
@@ -638,7 +638,7 @@ server <- function (input, output, session) {
       mgraves_primeraVez<<-F
     } else {
       mgraves_edit[as.numeric(input$mgraves_cell_edit[1]),
-                 as.numeric(input$mgraves_cell_edit[2])+1] <- as.numeric(input$mgraves_cell_edit[3])
+                   as.numeric(input$mgraves_cell_edit[2])+1] <- as.numeric(input$mgraves_cell_edit[3])
       mgraves_edit <<- mgraves_edit
     }
   })
@@ -653,7 +653,7 @@ server <- function (input, output, session) {
       mcriticos_primeraVez<<-F
     } else {
       mcriticos_edit[as.numeric(input$mcriticos_cell_edit[1]),
-                   as.numeric(input$mcriticos_cell_edit[2])+1] <- as.numeric(input$mcriticos_cell_edit[3])
+                     as.numeric(input$mcriticos_cell_edit[2])+1] <- as.numeric(input$mcriticos_cell_edit[3])
       mcriticos_edit <<- mcriticos_edit
     }
   })
@@ -668,7 +668,7 @@ server <- function (input, output, session) {
       mifr_primeraVez<<-F
     } else {
       mifr_edit[as.numeric(input$mifr_cell_edit[1]),
-                     as.numeric(input$mifr_cell_edit[2])+1] <- as.numeric(input$mifr_cell_edit[3])
+                as.numeric(input$mifr_cell_edit[2])+1] <- as.numeric(input$mifr_cell_edit[3])
       mifr_edit <<- mifr_edit
     }
   })
@@ -685,7 +685,7 @@ server <- function (input, output, session) {
       ifr_primeraVez<<-F
     } else {
       ifr_edit[as.numeric(input$ifrt_cell_edit[1]),
-                    as.numeric(input$ifrt_cell_edit[2])+1] <- as.numeric(input$ifrt_cell_edit[3])
+               as.numeric(input$ifrt_cell_edit[2])+1] <- as.numeric(input$ifrt_cell_edit[3])
       ifr_edit <<- ifr_edit
     }
   })
@@ -707,7 +707,7 @@ server <- function (input, output, session) {
       transprob_primeraVez<<-F
     } else {
       transprob_edit[as.numeric(input$transprob_cell_edit[1]),
-                    as.numeric(input$transprob_cell_edit[2])] <- as.numeric(input$transprob_cell_edit[3])
+                     as.numeric(input$transprob_cell_edit[2])] <- as.numeric(input$transprob_cell_edit[3])
       transprob_edit <<- transprob_edit  
     }
   })
@@ -716,25 +716,25 @@ server <- function (input, output, session) {
     DT::datatable(transprob_edit, editable = T,
                   caption = 'Effective contacts matrix',
                   options = list(ordering=F, 
-                                searching=F, 
-                                paging=F, 
-                                info=F))
+                                 searching=F, 
+                                 paging=F, 
+                                 info=F))
   })
   
   observe({
     input$paramVac_cell_edit
     if (paramVac_primeraVez==T) {
-        paramVac_edit <- paramVac
-        paramVac_edit <<- as.matrix(paramVac_edit)
-        paramVac_primeraVez<<-F
+      paramVac_edit <- paramVac
+      paramVac_edit <<- as.matrix(paramVac_edit)
+      paramVac_primeraVez<<-F
     } else {
-        paramVac_edit[as.numeric(input$paramVac_cell_edit[1]),
-                      as.numeric(input$paramVac_cell_edit[2])] <<- as.numeric(input$paramVac_cell_edit[3])
-        paramVac_edit <<- paramVac_edit  
+      paramVac_edit[as.numeric(input$paramVac_cell_edit[1]),
+                    as.numeric(input$paramVac_cell_edit[2])] <<- as.numeric(input$paramVac_cell_edit[3])
+      paramVac_edit <<- paramVac_edit  
     }
   })
   
-
+  
   observe({
     input$porc_cr_cell_edit
     
@@ -745,7 +745,7 @@ server <- function (input, output, session) {
       porc_cr_primeraVez<<-F
     } else {
       porc_cr_edit[as.numeric(input$porc_cr_cell_edit[1]),
-               as.numeric(input$porc_cr_cell_edit[2])+1] <- as.numeric(input$porc_cr_cell_edit[3])
+                   as.numeric(input$porc_cr_cell_edit[2])+1] <- as.numeric(input$porc_cr_cell_edit[3])
       porc_cr_edit <<- porc_cr_edit
       porcentajeCasosCriticos <<- matrix(rep(porc_cr_edit,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
     }
@@ -793,7 +793,7 @@ server <- function (input, output, session) {
                                  paging=F, 
                                  info=F))
   })
-
+  
   proy <- reactive({
     # paste activa reactive (no comentar)
     paste(input$paramVac_cell_edit)
@@ -807,7 +807,7 @@ server <- function (input, output, session) {
     paste(input$porc_gr_cell_edit)
     paste(input$country)
     duracion_inmunidad = input$duracionInm
-
+    
     
     # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, planVacDosis1
     shinyjs::show("vacDateGoal")
@@ -829,7 +829,7 @@ server <- function (input, output, session) {
     ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
     
     planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
-                                              planVacunacionFinal, N, tVacunasCero, diaCeroVac)
+                                                    planVacunacionFinal, N, tVacunasCero, diaCeroVac)
     
     planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
     return(dia)})
@@ -854,11 +854,11 @@ server <- function (input, output, session) {
     # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
     contact_matrix_scenario <- get_npi_cm_scenario(scenario = input$npiScenario,
                                                    matrix_list = list(
-                                                                 contact_matrix = contact_matrix,
-                                                                 contact_matrix_work = contact_matrix_work,
-                                                                 contact_matrix_home = contact_matrix_home,
-                                                                 contact_matrix_school = contact_matrix_school,
-                                                                 contact_matrix_other = contact_matrix_other),
+                                                     contact_matrix = contact_matrix,
+                                                     contact_matrix_work = contact_matrix_work,
+                                                     contact_matrix_home = contact_matrix_home,
+                                                     contact_matrix_school = contact_matrix_school,
+                                                     contact_matrix_other = contact_matrix_other),
                                                    ages= as.numeric(ageGroupsV))
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
     
@@ -875,36 +875,35 @@ server <- function (input, output, session) {
     } else if (input$country == "Peru") {
       ifrProy = ifrProy * 3.55
     }
-    print(paste("2",input$vacUptake))
     proy <- seir_ages(dias=diasDeProyeccion,
-              duracionE = periodoPreinfPromedio,
-              duracionIi = duracionMediaInf,
-              porc_gr = porcentajeCasosGraves,
-              porc_cr = porcentajeCasosCriticos,
-              duracionIg = diasHospCasosGraves,
-              duracionIc = diasHospCasosCriticos,
-              ifr = ifrProy,
-              contact_matrix = contact_matrix_scenario,
-              transmission_probability = trans_prob_param,
-              N = N,
-              defunciones_reales=def_p,
-              modif_beta=efficacy$modif_beta,
-              modif_porc_gr=efficacy$modif_porc_gr,
-              modif_porc_cr=efficacy$modif_porc_cr,
-              modif_ifr=efficacy$modif_ifr,
-              planVacunacionFinal=planVacunacionFinalParam,
-              selectedPriority=selectedPriority,
-              selectedUptake=selectedUptake,
-              ritmoVacunacion=ritmoVacunacion,
-              diasVacunacion=diasVacunacion,
-              immunityStates=immunityStates,
-              ageGroups=ageGroups,
-              paramVac=paramVac_edit,
-              duracion_inmunidad=duracion_inmunidad,
-              tVacunasCero=tVacunasCero,
-              relaxNpi=relaxNpi,
-              relaxGoal=relaxGoal,
-              relaxFactor=input$relaxationFactor
+                      duracionE = periodoPreinfPromedio,
+                      duracionIi = duracionMediaInf,
+                      porc_gr = porcentajeCasosGraves,
+                      porc_cr = porcentajeCasosCriticos,
+                      duracionIg = diasHospCasosGraves,
+                      duracionIc = diasHospCasosCriticos,
+                      ifr = ifrProy,
+                      contact_matrix = contact_matrix_scenario,
+                      transmission_probability = trans_prob_param,
+                      N = N,
+                      defunciones_reales=def_p,
+                      modif_beta=efficacy$modif_beta,
+                      modif_porc_gr=efficacy$modif_porc_gr,
+                      modif_porc_cr=efficacy$modif_porc_cr,
+                      modif_ifr=efficacy$modif_ifr,
+                      planVacunacionFinal=planVacunacionFinalParam,
+                      selectedPriority=selectedPriority,
+                      selectedUptake=selectedUptake,
+                      ritmoVacunacion=ritmoVacunacion,
+                      diasVacunacion=diasVacunacion,
+                      immunityStates=immunityStates,
+                      ageGroups=ageGroups,
+                      paramVac=paramVac_edit,
+                      duracion_inmunidad=duracion_inmunidad,
+                      tVacunasCero=tVacunasCero,
+                      relaxNpi=relaxNpi,
+                      relaxGoal=relaxGoal,
+                      relaxFactor=input$relaxationFactor
     )
     
     return(proy)
@@ -1006,6 +1005,7 @@ server <- function (input, output, session) {
   
   output$graficoUnico <- renderPlotly({
     #browser()
+    res_t()
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       
       col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
@@ -1017,73 +1017,73 @@ server <- function (input, output, session) {
       dataRep_deaths$fechaDia = fechas_master
       
       #colnames(dataTemp)[8] <- "70-79"
-        
+      
       # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
       valx = dataTemp$fechaDia[input$t]
       maxy = max(dataTemp$total)
       
       if (is.null(input$edad)==F & is.na(input$diasProy)==F) {
-          #data=dataTemp[1:(input$t+input$diasProy),]
-          data=dataTemp
-          plot=plot_ly(data=data, x=~fechaDia)          
-          
-          if (length(input$edad)>0) {
-            lapply(X=input$edad, FUN = function(edad) {
-              
-              plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
-              if (input$check_cases==T) {
-                plot <<- add_trace(p=plot, data=dataRep_cases, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
-              }
-
-              if (input$check_deaths==T) {
-                plot <<- add_trace(p=plot, data=dataRep_deaths, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
-              }
-              
-
-            })
+        #data=dataTemp[1:(input$t+input$diasProy),]
+        data=dataTemp
+        plot=plot_ly(data=data, x=~fechaDia)          
+        
+        if (length(input$edad)>0) {
+          lapply(X=input$edad, FUN = function(edad) {
             
-            if (input$compart_a_graficar == "Ig: Infectious (moderate) SKIP") {
-              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = camasGenerales*porcAsignadoCovid, yend = camasGenerales*porcAsignadoCovid, name = "General beds", line=list(color="#fc9272", dash="dot"))
-              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,camasGenerales*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
-              plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
-                                      yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
-              # , range = c(0,60000)
-            } else if (input$compart_a_graficar == "Ic: Infectious (severe)") {
-              #browser()
-              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
-              plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
-              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
-              plot <-  plot %>% layout(xaxis = list(title = "Fecha"), 
-                                       yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
-              
-            } else {
-              plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
-              plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
-                                      yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+            plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
+            if (input$check_cases==T) {
+              plot <<- add_trace(p=plot, data=dataRep_cases, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
+            }
+            
+            if (input$check_deaths==T) {
+              plot <<- add_trace(p=plot, data=dataRep_deaths, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
             }
             
             
+          })
+          
+          if (input$compart_a_graficar == "Ig: Infectious (moderate) SKIP") {
+            plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = camasGenerales*porcAsignadoCovid, yend = camasGenerales*porcAsignadoCovid, name = "General beds", line=list(color="#fc9272", dash="dot"))
+            plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,camasGenerales*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
+            plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
+                                    yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+            # , range = c(0,60000)
+          } else if (input$compart_a_graficar == "Ic: Infectious (severe)") {
+            #browser()
+            plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+            plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+            plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
+            plot <-  plot %>% layout(xaxis = list(title = "Fecha"), 
+                                     yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+            
+          } else {
+            plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
+            plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
+                                    yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
           }
           
           
-          # plot <- plot_ly(data=data, x=~fechaDia,
-          #         y=~eval(parse(text=paste0('`',input$edad,'`'))),
-          #         type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
-          #         add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
-          # 
+        }
         
-          if (input$check_rt==T) {
-            days_before_rt <- c(rep(0,7))
-            days_after_rt <- c(rep(NA,nrow(data[is.na(data$Compart),])))
-            
-            r <- c(days_before_rt,
-                   proy()$`Rt: Effective reproduction number`$`Median(R)`,
-                   days_after_rt)
-            plot %>% add_trace(y = ~r, mode = "dotted", line=list(dash="dot"), type="scatter", yaxis = "y2", name = "Rt") %>%
-              layout(yaxis2 = list(overlaying = "y", side = "right"),
-                     xaxis = list(title = "Fecha"),
-                     yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
-          } else (plot)
+        
+        # plot <- plot_ly(data=data, x=~fechaDia,
+        #         y=~eval(parse(text=paste0('`',input$edad,'`'))),
+        #         type="scatter", mode="lines", name = paste("Valor de",input$compart_a_graficar)) %>%
+        #         add_segments(x= valx, xend = valx, y = 0, yend = maxy, name = paste("t"))
+        # 
+        
+        if (input$check_rt==T) {
+          days_before_rt <- c(rep(0,7))
+          days_after_rt <- c(rep(NA,nrow(data[is.na(data$Compart),])))
+          
+          r <- c(days_before_rt,
+                 proy()$`Rt: Effective reproduction number`$`Median(R)`,
+                 days_after_rt)
+          plot %>% add_trace(y = ~r, mode = "dotted", line=list(dash="dot"), type="scatter", yaxis = "y2", name = "Rt") %>%
+            layout(yaxis2 = list(overlaying = "y", side = "right"),
+                   xaxis = list(title = "Fecha"),
+                   yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+        } else (plot)
       }
     }
   })
@@ -1096,7 +1096,7 @@ server <- function (input, output, session) {
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
     
     data_text <- data_text %>% dplyr::group_by(Compart) %>%
-                               dplyr::mutate(ac=cumsum(total))
+      dplyr::mutate(ac=cumsum(total))
     
     fechas <- c("2021-12-31",
                 "2022-06-30",
@@ -1107,39 +1107,39 @@ server <- function (input, output, session) {
                  which(fechas_master == "2022-12-31"))
     
     def_ac <- data_text$total[(as.character(data_text$fechaDia) %in% fechas) &
-                               data_text$Compart=="D"]  
+                                data_text$Compart=="D"]  
     
     casos_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
-                              data_text$Compart=="i"]
+                               data_text$Compart=="i"]
     
     vacunas_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
-                                data_text$Compart=="vA"] 
+                                 data_text$Compart=="vA"] 
     #browser()
     tFechas <- c(grep(fechas[1], fechas_master),
                  grep(fechas[2], fechas_master),
                  grep(fechas[3], fechas_master))
-                  
+    
     poblacion_vac <- c(
-    
-    sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[1]],
-               simplify = T,
-               function (x) {
-                 sum(x[3, ])
-               })),
-    
-    sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[2]],
-               simplify = T,
-               function (x) {
-                 sum(x[3, ])
-               })),
-    
-    sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[3]],
-               simplify = T,
-               function (x) {
-                 sum(x[3, ])
-               }))
-    ) / sum(N) *100
       
+      sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[1]],
+                 simplify = T,
+                 function (x) {
+                   sum(x[3, ])
+                 })),
+      
+      sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[2]],
+                 simplify = T,
+                 function (x) {
+                   sum(x[3, ])
+                 })),
+      
+      sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[3]],
+                 simplify = T,
+                 function (x) {
+                   sum(x[3, ])
+                 }))
+    ) / sum(N) *100
+    
     # poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
     #                                data_text$Compart=="vA"] / sum(N) * 100
     # 
@@ -1192,29 +1192,29 @@ server <- function (input, output, session) {
                                                searching=F, 
                                                paging=F, 
                                                info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
-                                                            formatStyle(fechas[1], `text-align` = 'right') %>%
-                                                            formatStyle(fechas[2], `text-align` = 'right') %>%
-                                                            formatStyle(fechas[3], `text-align` = 'right') 
+      formatStyle(fechas[1], `text-align` = 'right') %>%
+      formatStyle(fechas[2], `text-align` = 'right') %>%
+      formatStyle(fechas[3], `text-align` = 'right') 
     comp_table[[input$save_comp_name]] <<- DT::datatable(tabla,
                                                          caption = input$save_comp_name,
                                                          options = list(ordering=F, 
                                                                         searching=F, 
                                                                         paging=F, 
                                                                         info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
-                                                                                     formatStyle(fechas[1], `text-align` = 'right') %>%
-                                                                                     formatStyle(fechas[2], `text-align` = 'right') %>%
-                                                                                     formatStyle(fechas[3], `text-align` = 'right') 
+      formatStyle(fechas[1], `text-align` = 'right') %>%
+      formatStyle(fechas[2], `text-align` = 'right') %>%
+      formatStyle(fechas[3], `text-align` = 'right') 
     output_list <<- unique(c(output_list,names(comp_table[input$save_comp_name])))
     tabla_scn
   })
   
   output$resumen_tabla <- renderDataTable({res_t()})
   
-  output$resumen_tabla2 <- renderDataTable({res_t()})
-  
-  output$resumen_tabla3 <- renderDataTable({res_t()})
-  
-  output$resumen_tabla4 <- renderDataTable({res_t()})
+  # output$resumen_tabla2 <- renderDataTable({res_t()})
+  # 
+  # output$resumen_tabla3 <- renderDataTable({res_t()})
+  # 
+  # output$resumen_tabla4 <- renderDataTable({res_t()})
   
   observe({
     if (str_trim(input$save_comp_name)=="") {
@@ -1228,7 +1228,7 @@ server <- function (input, output, session) {
   data_comp <- reactive({
     
     df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
-                          dplyr::mutate(Compart=paste0(input$save_comp_name," - Showing: ",substring(input$compart_a_graficar,4,50)))
+      dplyr::mutate(Compart=input$save_comp_name)
     df$fechaDia=fechas_master
     df
     
@@ -1237,40 +1237,49 @@ server <- function (input, output, session) {
   
   
   data_comp_graf <- eventReactive({input$save_comp
-                                   input$del_scenarios
-                                   1},{
-    saveScenario()
-  })
+    input$del_scenarios
+    1},{
+      saveScenario()
+    })
   
-  observeEvent(input$save_comp,{delete<<-F
-                                show("graficoComp")
-  })
-  observeEvent(input$del_scenarios,{delete<<-T})
-
+  observeEvent(input$save_comp,{
+    delete<<-F
+    show("graficoComp")
+    }
+  )
+  observeEvent(input$del_scenarios,{
+    delete<<-T
+    print("Deletign scenarios")
+    comp_table <<- list()
+    }
+  )
+  
   saveScenario <- function() {
     repe = F
     if (input$save_comp_name!="" &
         exists("compare")==T) {
       if (input$save_comp_name %in% unique(compare$Compart)) {
-        if (delete==T) {showNotification("Scenarios deleted", type = "error")} else {
+        if (delete==T) {
+          comp_table <<- list()
+          showNotification("Scenarios deleted", type = "error")
+        } else {
           showNotification("Duplicated scenario name", type = "error")
         }
-        #repe=T
-        
+        repe=T
       }
-      
     } 
     
     
     if (repe==F & input$save_comp_name!="" & exists("compare")==T) {
-      compare <<- union_all(compare,data_comp())} else if (input$save_comp_name!="" & exists("compare")==F) {
-        compare <<- data_comp() 
-        showNotification("Escenario guardado")
-      }
+      compare <<- union_all(compare,data_comp())
+      showNotification("Saved!")
+    } else if (input$save_comp_name!="" & exists("compare")==F) {
+      compare <<- data_comp()
+      showNotification("Saved!")
+    }
     
     if (delete==F & exists("compare")) {compare} else {
       compare <<- data_graf() %>% dplyr::filter(Compart=="")
-      
     }
     
   }
@@ -1279,7 +1288,7 @@ server <- function (input, output, session) {
     if (nrow(data_comp_graf())==0) {shinyjs::hide("graficoComp")}
   })
   
-
+  
   setDefaultParams <- function() {
     updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
@@ -1296,11 +1305,11 @@ server <- function (input, output, session) {
   
   observeEvent(input$q1_older,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q1 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q1 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q1 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacStrat", selected = "Priority: older -> adults -> young")
@@ -1308,11 +1317,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q1_adult,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q1 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q1 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q1 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacStrat", selected = "Priority: adults -> older -> young")
@@ -1320,11 +1329,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q1_school,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q1 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q1 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q1 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacStrat", selected = "Priority: school age -> others")
@@ -1332,11 +1341,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_80_low,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
@@ -1345,11 +1354,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_80_mid,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
@@ -1358,11 +1367,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_80_high,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
@@ -1371,11 +1380,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_50_low,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
@@ -1384,11 +1393,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_50_mid,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
@@ -1397,11 +1406,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_50_high,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
@@ -1410,11 +1419,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_20_low,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
@@ -1423,11 +1432,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_20_mid,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
@@ -1436,11 +1445,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$q2_20_high,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector2q2 == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector2q2 == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector2q2 == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
@@ -1449,11 +1458,11 @@ server <- function (input, output, session) {
   })
   observeEvent(input$t4q1_project,{
     setDefaultParams()
-    if (input$simpleCompartSelector == "i") {
+    if (input$simpleCompartSelector4q == "i") {
       updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
-    } else if (input$simpleCompartSelector == "Ic") {
+    } else if (input$simpleCompartSelector4q == "Ic") {
       updateSelectInput(session, "compart_a_graficar", selected = "Ic: Infectious (severe)")
-    } else if (input$simpleCompartSelector == "d") {
+    } else if (input$simpleCompartSelector4q == "d") {
       updateSelectInput(session, "compart_a_graficar", selected = "d: Daily deaths")
     }
     if (input$t4q1_uptake == "High") {
@@ -1487,97 +1496,88 @@ server <- function (input, output, session) {
     updateTextInput(session, "save_comp_name",
                     value=paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis,", Priority",input$t4q1_priority))
   })
-   
   
-   observeEvent(input$save_comp,{
-     
-     updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart), selected = unique(data_comp_graf()$Compart))
-     
-     
-   })
-   
-   observeEvent(input$save_comp, {
-
-     table <- comp_table[[input$save_comp_name]]
-     eval(parse(text=
-                  paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
-                ))
-     
-   })
-   
-   observe({
-     
-   output$tables <- renderUI({
-     
-     paste(input$save_comp)
-     
-     
-     eval(parse(text=
-     paste0("tagList(",paste0("DTOutput('",output_list,"')", collapse = ','),")")
-     ))
-     # tagList(DTOutput("es1"),
-     #         DTOutput("es2"))
-
-       
-   })
-     
-   })
-   
-   
-   output$graficoComp <- renderPlotly({
-   
-     #View(reactiveValuesToList(input))
-     if (nrow(data_comp_graf())>0) {
-       data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
-       plot_comp <- plot_ly() 
-       lapply(unique(data_comp$Compart), function(k) {
-          plot_comp <<- add_trace(plot_comp,
-                                 data_comp[data_comp$Compart==k,],
-                                 x=~data_comp$fechaDia[data_comp$Compart==k],
-                                 y=~data_comp$total[data_comp$Compart==k], 
-                                  
-                                 type="scatter", mode="lines",
-                                 name=k)
-         
-       })
-       
-       if (input$icu_beds==T & nrow(data_comp)>0) {
-         
-         plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
-         plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
-         plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+  
+  observeEvent(input$save_comp,{
+    
+    updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart), selected = unique(data_comp_graf()$Compart))
+    
+    
+  })
+  
+  observeEvent(input$save_comp, {
+    
+    table <- comp_table[[input$save_comp_name]]
+    eval(parse(text=
+                 paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
+    ))
+    
+  })
+  
+  observe({
+    
+    output$tables <- renderUI({
+      
+      paste(input$save_comp)
+      
+      output_list = output_list[is.na(output_list) == F]
+      eval(parse(text=
+                   paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
+      ))
+      # tagList(DTOutput("es1"),
+      #         DTOutput("es2"))
+      
+      
+    })
+    
+  })
+  
+  
+  output$graficoComp <- renderPlotly({
+    
+    #View(reactiveValuesToList(input))
+    if (nrow(data_comp_graf())>0) {
+      data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
+      plot_comp <- plot_ly() 
+      lapply(unique(data_comp$Compart), function(k) {
+        plot_comp <<- add_trace(plot_comp,
+                                data_comp[data_comp$Compart==k,],
+                                x=~data_comp$fechaDia[data_comp$Compart==k],
+                                y=~data_comp$total[data_comp$Compart==k], 
+                                
+                                type="scatter", mode="lines",
+                                name=k)
+        
+      })
+      
+      if (input$icu_beds==T & nrow(data_comp)>0) {
+        
+        plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
+        plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+        plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
       }
-       plot_comp
+      plot_comp
     }
-   })
-   
-   shinyjs::hide("del_scenarios")
-   shinyjs::hide("icu_beds")
-   observeEvent(input$save_comp,{
-     if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
-     if (nrow(data_comp())!=0) {shinyjs::show("icu_beds")}
-   }) 
-   
-   observeEvent(input$del_scenarios, {
-     
-     shinyjs::hide("graficoComp")
-     shinyjs::hide("del_scenarios")
-     shinyjs::hide("icu_beds")
-     hide_list <- output_list[is.na(output_list)==F]
-     eval(parse(text=paste0("shinyjs::hide('",hide_list,"')", collapse = ';')))
-     updateSelectInput(session, "saved_series", choices = "", selected = "")
-     
-   })
-   
-<<<<<<< HEAD
-
+  })
+  
+  shinyjs::hide("del_scenarios")
+  shinyjs::hide("icu_beds")
+  observeEvent(input$save_comp,{
+    if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
+    if (nrow(data_comp())!=0) {shinyjs::show("icu_beds")}
+  }) 
+  
+  observeEvent(input$del_scenarios, {
+    
+    shinyjs::hide("graficoComp")
+    shinyjs::hide("del_scenarios")
+    shinyjs::hide("icu_beds")
+    hide_list <- output_list[is.na(output_list)==F]
+    eval(parse(text=paste0("shinyjs::hide('",hide_list,"')", collapse = ';')))
+    updateSelectInput(session, "saved_series", choices = "", selected = "")
+    
+  })
   
 }
-=======
-}
 
-  
 shinyApp(ui = ui, server = server)
->>>>>>> 25a0392540e163d4959505ede9d2dd6aa25e60f1
-
-shinyApp(ui, server)
