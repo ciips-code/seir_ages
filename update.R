@@ -3,6 +3,9 @@ library(reshape)
 library(archive)
 library(RSocrata)
 library(plyr)
+library(zip)
+library(stringr)
+library(data.table)
 
 ##### funcion update #####
 update <-  function(pais,diasDeProyeccion) {
@@ -157,9 +160,7 @@ update <-  function(pais,diasDeProyeccion) {
       
       
       
-      eval(parse(text=paste0('countryData$',
-                             pais,
-                             ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, casos=casos)')))
+      
 
       
   } # cierra if de ARG
@@ -364,10 +365,6 @@ update <-  function(pais,diasDeProyeccion) {
     
     Vacunas2$fecha <- as.Date(Vacunas2$fecha)
     
-    eval(parse(text=paste0('countryData$',
-                           pais,
-                           ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, casos=casos)')))
-    
     
     
     }
@@ -461,15 +458,251 @@ update <-  function(pais,diasDeProyeccion) {
     
     def[is.na(def)] <- 0
     
-    # vacunas
+    Vacunas = casos 
+    Vacunas[,2:20] <- 0
+    Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
+    Vacunas2 <- Vacunas
     
-    
-    eval(parse(text=paste0('countryData$',
-                           pais,
-                           ' <- list(def=def, casos=casos)')))
     
     
     }
+  
+  ##### MEXICO #####
+  
+  if (pais == "MEX") {
+    
+    url <- "http://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/datos_abiertos_covid19.zip"
+    download.file(url, "Covid19Mex.zip")
+    unzip("Covid19Mex.zip")
+    fileName <- zip_list("Covid19Mex.zip")[1,1]
+    file.remove('Covid19Mex.zip')
+    data <- read.csv(fileName, 
+                     fileEncoding = "UTF-8")
+    
+    #casos
+    data[data$CLASIFICACION_FINAL %in% c(1,2,3),]
+    
+    #muertes
+    data[data$FECHA_DEF != "9999-99-99" & data$CLASIFICACION_FINAL %in% c(1,2,3),]
+    
+    
+    casos <- data %>% dplyr::filter(CLASIFICACION_FINAL %in% c(1,2,3)) %>%
+      dplyr::select(EDAD,
+                    FECHA_SINTOMAS,
+                    FECHA_INGRESO) %>%
+      dplyr::mutate(fecha=dplyr::coalesce(FECHA_SINTOMAS,
+                                          FECHA_INGRESO)) %>%
+      dplyr::mutate(gredad=case_when(EDAD>=0 & EDAD <=4 ~ "00-04",
+                                     EDAD>=5 & EDAD <=9 ~ "05-09",
+                                     EDAD>=10 & EDAD <=14 ~ "10-14",
+                                     EDAD>=15 & EDAD <=17 ~ "15-17",
+                                     EDAD>=18 & EDAD <=24 ~ "18-24",
+                                     EDAD>=25 & EDAD <=29 ~ "25-29",
+                                     EDAD>=30 & EDAD <=34 ~ "30-34",
+                                     EDAD>=35 & EDAD <=39 ~ "35-39",
+                                     EDAD>=40 & EDAD <=44 ~ "40-44",
+                                     EDAD>=45 & EDAD <=49 ~ "45-49",
+                                     EDAD>=50 & EDAD <=54 ~ "50-54",
+                                     EDAD>=55 & EDAD <=59 ~ "55-59",
+                                     EDAD>=60 & EDAD <=64 ~ "60-64",
+                                     EDAD>=65 & EDAD <=69 ~ "65-69",
+                                     EDAD>=70 & EDAD <=74 ~ "70-74",
+                                     EDAD>=75 & EDAD <=79 ~ "75-79",
+                                     EDAD>=80 & EDAD <=84 ~ "80-84",
+                                     EDAD>=85 & EDAD <=89 ~ "85-89",
+                                     EDAD>=90 & EDAD <=110 ~ "90-99",
+                                     TRUE ~ "S.I.")) %>%
+      dplyr::mutate(cuenta=1) %>%
+      reshape::cast(fecha~gredad, sum) %>%
+      dplyr::select(-`S.I.`)
+
+    casos <- data.frame(fecha=as.character(seq(as.Date(min(casos$fecha)),
+                                               as.Date(max(casos$fecha)),
+                                               by=1))) %>% left_join(casos)
+
+    casos[is.na(casos)] <- 0
+
+    
+    def <- data %>% dplyr::filter(FECHA_DEF != "9999-99-99" & CLASIFICACION_FINAL %in% c(1,2,3)) %>%
+                    dplyr::select(EDAD,
+                                  FECHA_DEF,
+                                  FECHA_SINTOMAS,
+                                  FECHA_INGRESO) %>%
+                    dplyr::mutate(fecha=dplyr::coalesce(FECHA_DEF,
+                                                        FECHA_SINTOMAS,
+                                                        FECHA_INGRESO)) %>%
+                    dplyr::mutate(gredad=case_when(EDAD>=0 & EDAD <=4 ~ "00-04",
+                                                   EDAD>=5 & EDAD <=9 ~ "05-09",
+                                                   EDAD>=10 & EDAD <=14 ~ "10-14",
+                                                   EDAD>=15 & EDAD <=17 ~ "15-17",
+                                                   EDAD>=18 & EDAD <=24 ~ "18-24",
+                                                   EDAD>=25 & EDAD <=29 ~ "25-29",
+                                                   EDAD>=30 & EDAD <=34 ~ "30-34",
+                                                   EDAD>=35 & EDAD <=39 ~ "35-39",
+                                                   EDAD>=40 & EDAD <=44 ~ "40-44",
+                                                   EDAD>=45 & EDAD <=49 ~ "45-49",
+                                                   EDAD>=50 & EDAD <=54 ~ "50-54",
+                                                   EDAD>=55 & EDAD <=59 ~ "55-59",
+                                                   EDAD>=60 & EDAD <=64 ~ "60-64",
+                                                   EDAD>=65 & EDAD <=69 ~ "65-69",
+                                                   EDAD>=70 & EDAD <=74 ~ "70-74",
+                                                   EDAD>=75 & EDAD <=79 ~ "75-79",
+                                                   EDAD>=80 & EDAD <=84 ~ "80-84",
+                                                   EDAD>=85 & EDAD <=89 ~ "85-89",
+                                                   EDAD>=90 & EDAD <=110 ~ "90-99",
+                                                   TRUE ~ "S.I.")) %>%
+                    dplyr::mutate(cuenta=1) %>%
+                    reshape::cast(fecha~gredad, sum) %>%
+                    dplyr::select(-`S.I.`)
+                  
+    def <- data.frame(fecha=as.character(seq(as.Date(min(casos$fecha)),
+                                             as.Date(max(casos$fecha)),
+                                             by=1))) %>% left_join(def)
+    
+    def[is.na(def)] <- 0
+    
+    Vacunas = casos 
+    Vacunas[,2:20] <- 0
+    Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
+    Vacunas2 <- Vacunas
+    
+    
+  }
+  
+  ##### CHILE #####
+  
+  if (pais == "CHL") {
+  browser()
+    # cases
+    url <- 'https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto16/CasosGeneroEtario.csv'
+    data <- read.csv(url, encoding = 'UTF-8')
+    
+    casos <- data[,-2] %>% dplyr::group_by(Grupo.de.edad) %>%
+      dplyr::summarise(across(everything(), list(sum)))
+    
+    casos$Grupo.de.edad <- str_remove_all(casos$Grupo.de.edad,'años')
+    casos$Grupo.de.edad <- str_remove_all(casos$Grupo.de.edad,' ')
+    casos <- transpose(casos, keep.names = "col", make.names = "Grupo.de.edad")
+    casos$`80-84` <- round(casos$`80ymás`/2,0) 
+    casos$`85-99` <- casos$`80-84`
+    casos$`80ymás` <- NULL
+    casos$col <- str_replace_all(casos$col,'_1','')
+    casos$col <- str_replace_all(casos$col,'X','')
+    casos$col <- str_replace_all(casos$col, '\\.','-')
+    colnames(casos)[1] <- "fecha"
+    casos$rep=T
+    casos$fecha <- as.Date(casos$fecha)
+    fix <- round(casos$`15-19`*.4,digits=0)
+    casos$`15-19` <- casos$`15-19`-fix 
+    casos$`20-24` <- casos$`20-24`+fix 
+    
+    colnames(casos)[5] <- "15-17"
+    colnames(casos)[6] <- "18-24"
+    
+    casos <- data.frame(fecha=seq(min(casos$fecha[is.na(casos$fecha)==F]),
+                                  max(casos$fecha[is.na(casos$fecha)==F]),
+                                  by=1)) %>% left_join(casos) 
+    
+    casos$row <- NA
+    casos$row <- row_number(casos$rep==T)
+    casos$rep[is.na(casos$rep)] <- F
+    
+    for (i in c(2:nrow(casos))) {
+      
+      if (is.na(casos$row[i]) & casos$rep[i-1]==T) {casos$row[i]=casos$row[i-1]+1} else
+        if (is.na(casos$row[i]) & casos$rep[i-1]==F) {casos$row[i]=casos$row[i-1]}  
+    }
+    
+    for (i in c(1:nrow(casos))) {
+      if (nrow(casos[casos$row==i,])>1) {
+        n_rows <- nrow(casos[casos$row==i,])  
+        casos[casos$row==i,][n_rows,2:19] <- casos[casos$row==i,][n_rows,2:19] / n_rows 
+        for (ii in (1):(n_rows-1)) {
+          casos[casos$row==i,][ii,2:19] <- as.numeric(casos[casos$row==i,2:19][n_rows,])
+        }  
+      }
+    }
+    
+    casos[2:19] <- sapply(casos[2:19],function(x) round(x, digits = 0))
+    casos$rep <- NULL
+    casos$row <- NULL
+    casos$`85-89` <- casos$`85-99`
+    casos$`85-99` <- NULL
+    casos$`90-99` <- 0
+    
+    # deaths
+    
+    url <- 'https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto10/FallecidosEtario_T.csv'
+    data <- read.csv(url, encoding = 'UTF-8')
+    data$`30-34`[1] <- data$X..39[1]/2
+    data$`35-39`[1] <- data$X..39[1]/2
+    data$`40-44`[1] <- data$X40.49[1]/2
+    data$`45-49`[1] <- data$X40.49[1]/2
+    data$`50-54`[1] <- data$X50.59[1]/2
+    data$`55-59`[1] <- data$X50.59[1]/2
+    data$`60-64`[1] <- data$X60.69[1]/2
+    data$`65-69`[1] <- data$X60.69[1]/2
+    data$`70-74`[1] <- data$X70.79[1]/2
+    data$`75-79`[1] <- data$X70.79[1]/2
+    data$`80-84`[1] <- data$X80.89[1]/2
+    data$`85-89`[1] <- data$X80.89[1]/2
+    data$`90-99`[1] <- data$X..90[1]
+    
+    for (i in c(2:nrow(data))) {
+      data$`30-34`[i] <- (data$X..39[i]-data$X..39[i-1])/2
+      data$`35-39`[i] <- (data$X..39[i]-data$X..39[i-1])/2
+      data$`40-44`[i] <- (data$X40.49[i]-data$X40.49[i-1])/2
+      data$`45-49`[i] <- (data$X40.49[i]-data$X40.49[i-1])/2
+      data$`50-54`[i] <- (data$X50.59[i]-data$X50.59[i-1])/2
+      data$`55-59`[i] <- (data$X50.59[i]-data$X50.59[i-1])/2
+      data$`60-64`[i] <- (data$X60.69[i]-data$X60.69[i-1])/2
+      data$`65-69`[i] <- (data$X60.69[i]-data$X60.69[i-1])/2
+      data$`70-74`[i] <- (data$X70.79[i]-data$X70.79[i-1])/2
+      data$`75-79`[i] <- (data$X70.79[i]-data$X70.79[i-1])/2
+      data$`80-84`[i] <- (data$X80.89[i]-data$X80.89[i-1])/2
+      data$`85-89`[i] <- (data$X80.89[i]-data$X80.89[i-1])/2
+      data$`90-99`[i] <- (data$X..90[i]-data$X..90[i-1])
+    }
+    
+    # aplica distribucion de ARG
+    load("data/dataARG.RData")
+    dist <- as.numeric(sapply(countryData$ARG$def[,2:9] %>% as.data.frame, function (x) sum(x))/sum(sapply(countryData$ARG$def[,2:9] %>% as.data.frame, function (x) sum(x))))
+    data$para_dist <- data$`30-34`+data$`35-39`
+    data$`00-04` <- dist[1]*data$para_dist
+    data$`05-09` <- dist[2]*data$para_dist
+    data$`10-14` <- dist[3]*data$para_dist
+    data$`15-17` <- dist[4]*data$para_dist
+    data$`18-24` <- dist[5]*data$para_dist
+    data$`25-29` <- dist[6]*data$para_dist
+    data$`30-34` <- dist[7]*data$para_dist
+    data$`35-39` <- dist[8]*data$para_dist
+    countryData$ARG <- NULL
+    
+    data <- data %>% select(fecha=Grupo.de.edad,`00-04`,`05-09`,`10-14`,`15-17`,`18-24`,`25-29`,`30-34`,`35-39`,`40-44`,`45-49`,`50-54`,`55-59`,`60-64`,`65-69`,`70-74`,`75-79`,`80-84`,`85-89`,`90-99`)
+    data$fecha <- as.Date(data$fecha)
+    
+    
+    def <- left_join(data.frame(fecha=seq(min(casos$fecha),
+                                          max(casos$fecha),
+                                          by=1)), data)
+    
+    def[is.na(def)] <- 0
+    
+    rm(data)
+    
+    # vacunas
+    
+    Vacunas = casos 
+    Vacunas[,2:20] <- 0
+    Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
+    Vacunas2 <- Vacunas
+
+  }
+  
+  
+  eval(parse(text=paste0('countryData$',
+                         pais,
+                         ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, casos=casos)')))
   
   print(paste('Actualizado:',pais, Sys.Date()))
   save(countryData,file=paste0('data/data',pais,'.RData'))
@@ -588,9 +821,9 @@ formatData <- function(pais, ageGroups) {
 
 
 # actualiza argentina y guarda RData
-# update(pais = "PER", diasDeProyeccion = 1100)
+# update(pais = "CHL", diasDeProyeccion = 1100)
 
 # agrupa edades
-# datosArg <- formatData("ARG", ageGroups = ageGroupsV)
+# datosArg <- formatData("COL", ageGroups = ageGroupsV)
 
 

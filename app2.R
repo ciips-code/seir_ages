@@ -17,15 +17,21 @@ library(modelr)
 library(stringr)
 library(shinyWidgets)
 
+jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
+
 options(dplyr.summarise.inform = FALSE)
 rm(list = ls())
 
 comp_table <<- list()
 output_list <<- c()
-countries <- c("Argentina", "Peru")
+countries <- c("Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru")
 
 flags <- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/br.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cl.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/co.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/mx.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg"
 )
 
@@ -202,6 +208,7 @@ paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 useShinyjs(),
+                extendShinyjs(text = jsResetCode, functions = "reset"),
                 fluidRow(id="inputs", 
                          column(width = 4,
                                 h2("IECS - CIIPS: Vaccines Impact Modeling")
@@ -387,11 +394,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                     vaccination as vaccine supply increases so as to keep hospitalizations, 
                                                     and intensive care unit use (where available), due to COVID-19 and other 
                                                     background causes below maximum hospital capacity in the setting(s) modeled?"),
+                                                  fluidRow(column(8,
                                                   actionButton("q1_older", label = "Older population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q1_adult", label = "Adult population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
-                                                  DTOutput("resumen_tabla2"),
-                                                  actionButton("q1_school", label = "School aged population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
-                                                )
+                                                  actionButton("q1_school", label = "School aged population first", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")),
+                                                  
+                                                  column(4,DTOutput("resumen_tabla2"))
+                                                ))
                                        ),
                                        tabPanel("Topic II - Question 2",
                                                 div(
@@ -410,7 +419,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                   actionButton("q2_20_intensive", label = "Uptk 20% in 6 months, intensive NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_20_combined", label = "Uptk 20% in 6 months, combined NPIs", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                   actionButton("q2_20_lockdown", label = "Uptk 20% in 6 months, lockdown", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;")
-                                                )
+                                                ),
+                                                column(4,
+                                                       br(),
+                                                       DTOutput("resumen_tabla3"))
                                         ),
                                        tabPanel("Topic IV - Question 1",
                                                 div(
@@ -462,7 +474,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                   tags$small("* High coverage: 80%; Middle: 50%; Low: 20%;"),br(),
                                                   tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 80%, 50%"),br(),
                                                   tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive")
-                                                )
+                                                ),
+                                                column(4,
+                                                       br(),
+                                                       DTOutput("resumen_tabla4"))
                                        )
                             )),
                             tabPanel("Saved scenarios", 
@@ -496,74 +511,82 @@ server <- function (input, output, session) {
   
   # country customize
   observeEvent(input$country, { 
-    #browser()
-    iso_country <- if (input$country=="Argentina") {"ARG"} else
-                   if (input$country=="Peru") {"PER"}
-    print(iso_country)
-    
-    # empirical cm
-    if(use_empirical_mc){
-    #browser()
-      contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
-      contact_matrix_home <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "home")
-      contact_matrix_school <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "school")
-      contact_matrix_work <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "work")
-      contact_matrix_other <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "other")
-      colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
-      colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
-      colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
-      colnames(contact_matrix_work) = rownames(contact_matrix_work) = ageGroups
-      colnames(contact_matrix_other) = rownames(contact_matrix_other) = ageGroups
-      transmission_probability = transmission_probability
+    if (input$country=="Brazil") {
+      showNotification("Not available", type="warning")
+      updatePickerInput(session,"country", selected="Argentina")
+    } else {
+      iso_country <- if (input$country=="Argentina") {"ARG"} else
+                     if (input$country=="Peru") {"PER"} else
+                     if (input$country=="Colombia") {"COL"} else
+                     if (input$country=="Mexico") {"MEX"} else
+                     if (input$country=="Chile") {"CHL"}
+      print(iso_country)
       
-      # population data
-      load("data/population.RData")
-      N <<- population[[input$country]]
-      
-      # epi data
-      load(paste0("data/data", iso_country, ".RData"), envir = .GlobalEnv)
-      dataPorEdad <<- formatData(iso_country, ageGroupsV)
-      diaCeroVac <<- min(dataPorEdad$FMTD$vac$fecha)
-      tVacunasCero <<-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
-      vacPre <<- lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
-                        nrow=length(immunityStates),
-                        ncol=length(ageGroups))
-      
-      vacArg <<- lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
-                        nrow=length(immunityStates),
-                        ncol=length(ageGroups))
-      for (t in 1:length(vacArg)) {
-        # TODO: Expandir a otras vacunas
+      # empirical cm
+      if(use_empirical_mc){
+      #browser()
+        contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
+        contact_matrix_home <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "home")
+        contact_matrix_school <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "school")
+        contact_matrix_work <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "work")
+        contact_matrix_other <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "other")
+        colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
+        colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
+        colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
+        colnames(contact_matrix_work) = rownames(contact_matrix_work) = ageGroups
+        colnames(contact_matrix_other) = rownames(contact_matrix_other) = ageGroups
+        transmission_probability = transmission_probability
         
-        vacArg[[t]][3,]  <<- as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
-        vacArg[[t]][4,]  <<- as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
-      }
-      vacArg <<- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
-      promedio <<- round(Reduce("+", vacArg) / length(vacArg),0)
-      vacPlan <<- lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
-                         nrow=length(immunityStates),
-                         ncol=length(ageGroups))
-      
-      planVacunacionFinal <<- c(vacPre,vacArg,vacPlan)
-      temp <<- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
-        loessCol = paste0(loopCol,'_loess')
-        dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
-      })
-      
-      rm(temp)
-      
-      loessCols <<- which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
-      def_p <<- dataPorEdad$FMTD$def[,loessCols]
-      def_p <<- def_p[1:(nrow(def_p)-15),]
-      
-      
-      
-      fechas_master <<- seq(min(dataPorEdad$FMTD$def$fecha),
-                            min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
-      
-      
-      
-  }
+        # population data
+        load("data/population.RData")
+        N <<- population[[input$country]]
+        
+        # epi data
+        load(paste0("data/data", iso_country, ".RData"), envir = .GlobalEnv)
+        dataPorEdad <<- formatData(iso_country, ageGroupsV)
+        diaCeroVac <<- min(dataPorEdad$FMTD$vac$fecha)
+        tVacunasCero <<-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
+        vacPre <<- lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
+                          nrow=length(immunityStates),
+                          ncol=length(ageGroups))
+        
+        vacArg <<- lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
+                          nrow=length(immunityStates),
+                          ncol=length(ageGroups))
+        for (t in 1:length(vacArg)) {
+          # TODO: Expandir a otras vacunas
+          
+          vacArg[[t]][3,]  <<- as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
+          vacArg[[t]][4,]  <<- as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
+        }
+        vacArg <<- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
+        promedio <<- round(Reduce("+", vacArg) / length(vacArg),0)
+        vacPlan <<- lapply(1:(diasDeProyeccion-length(vacArg)-length(vacPre)), matrix, data=t(promedio),
+                           nrow=length(immunityStates),
+                           ncol=length(ageGroups))
+        
+        planVacunacionFinal <<- c(vacPre,vacArg,vacPlan)
+        temp <<- lapply(colnames(dataPorEdad$FMTD$def)[-1], function(loopCol) {
+          loessCol = paste0(loopCol,'_loess')
+          
+          dataPorEdad$FMTD$def[loessCol] <<- predict(loess(dataPorEdad$FMTD$def[loopCol][,1]~seq(1,nrow(dataPorEdad$FMTD$def), by=1),span=.4))
+          dataPorEdad$FMTD$def[loessCol][dataPorEdad$FMTD$def[loessCol]<0] <- 0
+        })
+        
+        rm(temp)
+        
+        loessCols <<- which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
+        def_p <<- dataPorEdad$FMTD$def[,loessCols]
+        def_p <<- def_p[1:(nrow(def_p)-15),]
+        
+        
+        
+        fechas_master <<- seq(min(dataPorEdad$FMTD$def$fecha),
+                              min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
+        
+        
+      } 
+    }
   })
   
   delete<<-F
@@ -884,7 +907,6 @@ server <- function (input, output, session) {
   
   data_graf <- reactive({
     proy <- proy()
-    
     data_graf <- bind_rows(
       tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
       tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
@@ -1029,7 +1051,7 @@ server <- function (input, output, session) {
   
   
   res_t <- reactive({
-    paste(input$save_comp)
+    
     
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
@@ -1151,6 +1173,9 @@ server <- function (input, output, session) {
   
   output$resumen_tabla2 <- renderDataTable({res_t()})
   
+  output$resumen_tabla3 <- renderDataTable({res_t()})
+  
+  output$resumen_tabla4 <- renderDataTable({res_t()})
   
   observe({
     if (str_trim(input$save_comp_name)=="") {
@@ -1162,9 +1187,9 @@ server <- function (input, output, session) {
   })
   
   data_comp <- reactive({
-   
+    
     df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
-                          dplyr::mutate(Compart=input$save_comp_name)
+                          dplyr::mutate(Compart=paste0(input$save_comp_name," - Showing: ",substring(input$compart_a_graficar,4,50)))
     df$fechaDia=fechas_master
     df
     
@@ -1353,11 +1378,7 @@ server <- function (input, output, session) {
    })
    
    observeEvent(input$save_comp, {
-     browser()
-     
-     #output[[input$save_comp_name]] <<- renderDataTable({comp_table[[input$save_comp_name]]})
-       #eval(parse(text=paste0("output$",g," <<- renderDataTable({",g,"})")))
-     
+
      table <- comp_table[[input$save_comp_name]]
      eval(parse(text=
                   paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
@@ -1387,28 +1408,28 @@ server <- function (input, output, session) {
    output$graficoComp <- renderPlotly({
    
      #View(reactiveValuesToList(input))
-     
-     data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
-     plot_comp <- plot_ly() 
-     lapply(unique(data_comp$Compart), function(k) {
-        plot_comp <<- add_trace(plot_comp,
-                               data_comp[data_comp$Compart==k,],
-                               x=~data_comp$fechaDia[data_comp$Compart==k],
-                               y=~data_comp$total[data_comp$Compart==k], 
-                                
-                               type="scatter", mode="lines",
-                               name=k)
+     if (nrow(data_comp_graf())>0) {
+       data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
+       plot_comp <- plot_ly() 
+       lapply(unique(data_comp$Compart), function(k) {
+          plot_comp <<- add_trace(plot_comp,
+                                 data_comp[data_comp$Compart==k,],
+                                 x=~data_comp$fechaDia[data_comp$Compart==k],
+                                 y=~data_comp$total[data_comp$Compart==k], 
+                                  
+                                 type="scatter", mode="lines",
+                                 name=k)
+         
+       })
        
-     })
-     
-     if (input$icu_beds==T & nrow(data_comp)>0) {
-       
-       plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
-       plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
-       plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+       if (input$icu_beds==T & nrow(data_comp)>0) {
+         
+         plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
+         plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+         plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+      }
+       plot_comp
     }
-     plot_comp
-     
    })
    
    shinyjs::hide("del_scenarios")
@@ -1419,21 +1440,17 @@ server <- function (input, output, session) {
    }) 
    
    observeEvent(input$del_scenarios, {
+     
      shinyjs::hide("graficoComp")
      shinyjs::hide("del_scenarios")
      shinyjs::hide("icu_beds")
+     hide_list <- output_list[is.na(output_list)==F]
+     eval(parse(text=paste0("shinyjs::hide('",hide_list,"')", collapse = ';')))
      updateSelectInput(session, "saved_series", choices = "", selected = "")
      
    })
    
-   onStart = function() {
-     cat("Doing application setup\n")
-     
-     onStop(function() {
-       cat("Doing application cleanup\n")
-       print("lll")
-     })
-     }
+
   
 }
 
