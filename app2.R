@@ -112,7 +112,7 @@ porcentajeCasosCriticosRow = c(0.000966,0.000969,0.001428,0.00348,0.01326,0.0247
 porcentajeCasosCriticos = matrix(rep(porcentajeCasosCriticosRow,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = names)
 
 # datos de recursos
-capacidadUTI <- 11517
+## capacidadUTI <- 11517
 porcAsignadoCovid <- .7
 
 
@@ -598,10 +598,18 @@ server <- function (input, output, session) {
     } else {
       iso_country <- if (input$country=="Argentina") {"ARG"} else
         if (input$country=="Peru") {"PER"} else
-          if (input$country=="Colombia") {"COL"} else
-            if (input$country=="Mexico") {"MEX"} else
-              if (input$country=="Chile") {"CHL"}
+        if (input$country=="Colombia") {"COL"} else
+        if (input$country=="Mexico") {"MEX"} else
+        if (input$country=="Chile") {"CHL"}
       # print(iso_country)
+      
+      
+      capacidadUTI <<- if (input$country=="Argentina") {11517} else
+                       if (input$country=="Brazil") {49000} else
+                       if (input$country=="Peru") {700} else
+                       if (input$country=="Colombia") {5462} else
+                       if (input$country=="Mexico") {3891} else
+                       if (input$country=="Chile") {3295}
       
       # empirical cm
       if(use_empirical_mc){
@@ -1157,10 +1165,13 @@ server <- function (input, output, session) {
           r <- c(days_before_rt,
                  proy()$`Rt: Effective reproduction number`$`Median(R)`,
                  days_after_rt)
+          
+          plot <- 
           plot %>% add_trace(y = ~r, mode = "dotted", line=list(dash="dot"), type="scatter", yaxis = "y2", name = "Rt") %>%
-            layout(yaxis2 = list(overlaying = "y", side = "right"),
+                   layout(yaxis2 = list(overlaying = "y", side = "right"),
                    xaxis = list(title = "Fecha"),
                    yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+          plot %>% add_trace(y=~rep(1,1100), mode = "dotted", line=list(dash="dash", color="#bdbdbd"), type="scatter", yaxis = "y2", name = "Rt = 1")
         } else (plot)
       }
     }
@@ -1333,7 +1344,8 @@ server <- function (input, output, session) {
   data_comp <- reactive({
     
     df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
-      dplyr::mutate(Compart=input$save_comp_name)
+      dplyr::mutate(Compart=input$save_comp_name,
+                    Compart_label=input$compart_a_graficar)
     df$fechaDia=fechas_master
     df
     
@@ -1664,15 +1676,27 @@ server <- function (input, output, session) {
     #View(reactiveValuesToList(input))
     if (nrow(data_comp_graf())>0) {
       data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
-      plot_comp <- plot_ly() 
+      data_comp[data_comp<0] = 0
+      plot_comp <- plot_ly(name=paste0(
+                                       " [",
+                                       str_replace_all(trimws(substring(unique(data_comp$Compart_label),1,3), "right"),":",""), 
+                                       "]" 
+                                      ) 
+                   ) %>% layout(showlegend = TRUE)
       lapply(unique(data_comp$Compart), function(k) {
+        
         plot_comp <<- add_trace(plot_comp,
                                 data_comp[data_comp$Compart==k,],
                                 x=~data_comp$fechaDia[data_comp$Compart==k],
                                 y=~data_comp$total[data_comp$Compart==k], 
                                 
                                 type="scatter", mode="lines",
-                                name=k)
+                                name=paste0(k,
+                                            " [",
+                                            str_replace_all(trimws(substring(unique(data_comp$Compart_label[data_comp$Compart==k]),1,3), "right"),":",""), 
+                                            "]" 
+                                     )
+                                )
         
       })
       
@@ -1682,7 +1706,7 @@ server <- function (input, output, session) {
         plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
         plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
       }
-      plot_comp
+      plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))
     }
   })
   
