@@ -1180,9 +1180,9 @@ server <- function (input, output, session) {
                 "2022-06-30",
                 "2022-12-31")
     
-    tfechas <- c(which(fechas_master == "2021-12-31"),
-                 which(fechas_master == "2022-06-30"),
-                 which(fechas_master == "2022-12-31"))
+    tfechas <- c(which(fechas_master == "2021-06-30"),
+                 which(fechas_master == "2021-12-31"),
+                 which(fechas_master == "2022-06-30"))
     
     def_ac <- data_text$total[(as.character(data_text$fechaDia) %in% fechas) &
                                 data_text$Compart=="D"]  
@@ -1218,6 +1218,27 @@ server <- function (input, output, session) {
                  }))
     ) / sum(N) *100
     
+    poblacion_vac2 <- c(
+      
+      sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[1]],
+                 simplify = T,
+                 function (x) {
+                   sum(x[4, ])
+                 })),
+      
+      sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[2]],
+                 simplify = T,
+                 function (x) {
+                   sum(x[4, ])
+                 })),
+      
+      sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFechas[3]],
+                 simplify = T,
+                 function (x) {
+                   sum(x[4, ])
+                 }))
+    ) / sum(N) *100
+    
     # poblacion_vac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
     #                                data_text$Compart=="vA"] / sum(N) * 100
     # 
@@ -1240,21 +1261,25 @@ server <- function (input, output, session) {
     var=c("Cumulative deaths",
           "Cumulative infections",
           "Vaccines applied",
-          "Vaccination coverage (%)")
+          "Vaccination coverage dose #1 (%)",
+          "Vaccination coverage dose #2 (%)")
     C1 = c(def_ac[1],
            casos_ac[1],
            vacunas_ac[1],
-           poblacion_vac[1])
+           poblacion_vac[1],
+           poblacion_vac2[1])
     
     C2 = c(def_ac[2],
            casos_ac[2],
            vacunas_ac[2],
-           poblacion_vac[2])
+           poblacion_vac[2],
+           poblacion_vac2[2])
     
     C3 = c(def_ac[3],
            casos_ac[3],
            vacunas_ac[3],
-           poblacion_vac[3])
+           poblacion_vac[3],
+           poblacion_vac2[3])
     
     tabla <- cbind(var,
                    format(round(C1,0), big.mark = ','),
