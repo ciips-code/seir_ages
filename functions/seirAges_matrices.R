@@ -8,6 +8,8 @@ seir_ages <- function(dias,
                       ifr,
                       vacunados,
                       contact_matrix,
+                      relaxationThreshold,
+                      contact_matrix_relaxed,
                       transmission_probability,
                       N, 
                       modif_beta,
@@ -27,7 +29,8 @@ seir_ages <- function(dias,
                       tVacunasCero,
                       relaxNpi,
                       relaxGoal,
-                      relaxFactor
+                      relaxFactor,
+                      country
 ){
   
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
@@ -70,8 +73,21 @@ seir_ages <- function(dias,
   for(t in 2:dias){
     # if(t==448){browser()}
     # print(t)
-    # contagiados según matriz de contacto
-    beta       = contact_matrix * transmission_probability
+    
+    ##################
+    # Calculo de cobertura para escenario de cambio de NPIs
+    cantidadVacunas = Reduce('+',vA)
+    cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
+    poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
+    coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
+    # print(coberturaMas60)
+    if (coberturaMas60 > relaxationThreshold) {
+      beta = contact_matrix_relaxed * transmission_probability
+    } else {
+      beta = contact_matrix * transmission_probability
+    }
+    ##################
+    
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
     if (t<tHoy){
@@ -100,7 +116,7 @@ seir_ages <- function(dias,
       # e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
       #                              nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
       # e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
-      beta       = contact_matrix * transmission_probability * relaxValue[t]
+      beta       = beta * relaxValue[t]
       e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
     }
     
@@ -114,10 +130,24 @@ seir_ages <- function(dias,
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     if (t<tHoy){
+      # browser(expr={t==302})
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      # browser(expr={t==305})
+      # browser(expr={t==303})
       d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      if (country == "Argentina") {
+        d[[t]] = d[[t]] * 0.89
+      } else if (country == "Peru") {
+        d[[t]] = d[[t]] * 1.2
+      } else if (country == "Colombia") {
+        d[[t]] = d[[t]] * 1.10
+      } else if (country == "Chile") {
+        d[[t]] = d[[t]] * 1.10
+      } else if (country == "Mexico") {
+        d[[t]] = d[[t]] * 1
+      } else if (country == "Brazil") {
+        d[[t]] = d[[t]] * 1
+      }
     }
     D[[t]]      = D[[t-1]] + d[[t-1]]
     u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +

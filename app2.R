@@ -323,6 +323,30 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                                "Lockdown"),
                                                                    selected = "Combined with schools closed"
                                                                  ),
+                                                                 selectInput(
+                                                                   "npiScenarioRelaxed",
+                                                                   label="Relaxed NPI Scenario",
+                                                                   choices = c("Baseline",
+                                                                               "School closures",
+                                                                               "Physical distancing",
+                                                                               "Shielding of older people",
+                                                                               "Self-isolation",
+                                                                               "Combined with schools closed",
+                                                                               "Combined with schools open",
+                                                                               "Intensive interventions with schools closed",
+                                                                               "Intensive interventions with schools open",
+                                                                               "Lockdown"),
+                                                                   selected = "Combined with schools closed"
+                                                                 ),
+                                                                 selectInput(
+                                                                   "relaxationThreshold",
+                                                                   label="Relaxation Threshold",
+                                                                   choices = c("No relaxation"=1.1,
+                                                                               "80%"=.8,
+                                                                               "60%"=.6,
+                                                                               "50%"=.5,
+                                                                               "40%"=.4)
+                                                                 ),
                                                                  radioButtons("npiStrat", "NPI strategy:",
                                                                               c("Continued NPIs" = "cont",
                                                                                 "Relaxation of NPIs" = "relax")),
@@ -437,15 +461,18 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                  tabPanel("Topic IV",
                                                           div(
                                                             p("Question 1: What would be the effect on SARS-CoV-2 infections, COVID-19 hospitalizations 
-                                                    (including peak demand), and COVID-19 morbidity and mortality 
-                                                    of lifting non-pharmaceutical interventions (e.g., business closures, 
-                                                    school closures, travel restrictions, gathering size limits, mask wearing) 
-                                                    at different levels of vaccine efficacy and vaccination coverage for different 
-                                                    priority groups as outlined in the SAGE Prioritization Roadmap?"),
+                                                              (including peak demand), and COVID-19 morbidity and mortality 
+                                                              of lifting non-pharmaceutical interventions (e.g., business closures, 
+                                                              school closures, travel restrictions, gathering size limits, mask wearing) 
+                                                              at different levels of vaccine efficacy and vaccination coverage for different 
+                                                              priority groups as outlined in the SAGE Prioritization Roadmap?"),
+                                                            p("Question 2: What combinations of vaccine efficacy and vaccination coverage in different priority groups as 
+                                                              outlined in the SAGE Prioritization Roadmap together with which combinations of non-pharmaceutical interventions 
+                                                              could keep Rt below 1?"),
                                                             p("Question 3: What is the probability and stability of local or regional elimination of SARS-CoV-2 transmission 
-                                                    under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority 
-                                                    groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of 
-                                                    non-pharmaceutical interventions?"),
+                                                              under different scenarios of (i) vaccine efficacy and vaccination coverage in different priority 
+                                                              groups as outlined in the SAGE Prioritization Roadmap and (ii) different combinations of 
+                                                              non-pharmaceutical interventions?"),
                                                             radioButtons("simpleCompartSelector4q", "Graph:",
                                                                          c("Daily cases (morbidity):" = "i",
                                                                            "Daily deaths (mortality)" = "d",
@@ -459,7 +486,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                        choices = c("High",
                                                                                    "Middle",
                                                                                    "Low"),
-                                                                       selected = "High"
+                                                                       selected = "Middle"
                                                                      )
                                                               ),
                                                               column(3,
@@ -481,7 +508,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                                    "Young -> others"),
                                                                        selected = "Older -> adults -> young"
                                                                      )
-                                                              ),
+                                                              )
+                                                            ),
+                                                            fluidRow(
                                                               column(3,
                                                                      selectInput(
                                                                        "t4q1_npis",
@@ -491,19 +520,44 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                                                    "Low"),
                                                                        selected = "Middle"
                                                                      )
-                                                              )
+                                                              ),
+                                                              column(3,
+                                                                     selectInput(
+                                                                       "t4q1_npisRelaxThreshold",
+                                                                       label="Relax threshold (Uptk % in older)",
+                                                                       choices = c("No relaxation",
+                                                                                   "80%",
+                                                                                   "50%",
+                                                                                   "40%"),
+                                                                       selected = "No relaxation"
+                                                                     )
+                                                              ),
+                                                              column(3,
+                                                                    selectInput(
+                                                                      "t4q1_npisRelaxed",
+                                                                      label="NPIs Strength",
+                                                                      choices = c("High",
+                                                                                  "Middle",
+                                                                                  "Low"),
+                                                                      selected = "Middle"
+                                                                    )
+                                                              ),
                                                             ),
                                                             actionButton("t4q1_project", label = "Project scenario", icon = icon("chevron-right"), class = "btn-primary", style = "margin: 5px;"),
                                                             br(),br(),
                                                             tags$small("* High coverage: 80%; Middle: 50%; Low: 20%;"),br(),
-                                                            tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 80%, 50%"),br(),
-                                                            tags$small("* High NPIs: lockdown; Middle: combined; Low: intensive"),br(),
+                                                            tags$small("* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 50%, 50%"),br(),
+                                                            tags$small("* High NPIs: combined; Middle: intensive schools closed; Low: intensive schools open"),br(),
                                                             tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385."),
                                                             br(),
                                                             column(6,DTOutput("resumen_tabla4"))
                                                           )
                                                           
-                                                 )
+                                                 ),
+                                                 tabPanel("Reference",
+                                                          tags$small("Davies, Nicholas G., et al. \"Effects of non-pharmaceutical interventions on COVID-19 cases, deaths, and demand for hospital services in the UK: a modelling study.\" The Lancet Public Health 5.7 (2020): e375-e385."),
+                                                          tags$img(src='davies2.jpg')
+                                                          )
                                          )
                             ),
                             tabPanel("Saved scenarios", 
@@ -860,6 +914,14 @@ server <- function (input, output, session) {
                                                      contact_matrix_school = contact_matrix_school,
                                                      contact_matrix_other = contact_matrix_other),
                                                    ages= as.numeric(ageGroupsV))
+    contact_matrix_relaxed <- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
+                                                   matrix_list = list(
+                                                     contact_matrix = contact_matrix,
+                                                     contact_matrix_work = contact_matrix_work,
+                                                     contact_matrix_home = contact_matrix_home,
+                                                     contact_matrix_school = contact_matrix_school,
+                                                     contact_matrix_other = contact_matrix_other),
+                                                   ages= as.numeric(ageGroupsV))
     efficacy = applyVaccineEfficacy(input$vacEfficacy)
     
     # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
@@ -871,9 +933,17 @@ server <- function (input, output, session) {
     tVacunasCero = 303
     ifrProy = ifr_edit[1,]
     if (input$country == "Argentina") {
-      ifrProy = ifrProy * 2.0
+      ifrProy = ifrProy * 2.1
     } else if (input$country == "Peru") {
       ifrProy = ifrProy * 3.55
+    } else if (input$country == "Colombia") {
+      ifrProy = ifrProy * 1.6
+    } else if (input$country == "Chile") {
+      ifrProy = ifrProy * 1
+    } else if (input$country == "Mexico") {
+      ifrProy = ifrProy * 1
+    } else if (input$country == "Brazil") {
+      ifrProy = ifrProy * 1
     }
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
@@ -884,6 +954,8 @@ server <- function (input, output, session) {
                       duracionIc = diasHospCasosCriticos,
                       ifr = ifrProy,
                       contact_matrix = contact_matrix_scenario,
+                      relaxationThreshold = input$relaxationThreshold,
+                      contact_matrix_relaxed = contact_matrix_relaxed,
                       transmission_probability = trans_prob_param,
                       N = N,
                       defunciones_reales=def_p,
@@ -903,7 +975,8 @@ server <- function (input, output, session) {
                       tVacunasCero=tVacunasCero,
                       relaxNpi=relaxNpi,
                       relaxGoal=relaxGoal,
-                      relaxFactor=input$relaxationFactor
+                      relaxFactor=input$relaxationFactor,
+                      country=input$country
     )
     
     return(proy)
@@ -1025,6 +1098,8 @@ server <- function (input, output, session) {
       if (is.null(input$edad)==F & is.na(input$diasProy)==F) {
         #data=dataTemp[1:(input$t+input$diasProy),]
         data=dataTemp
+        data[data<0] = 0
+        # browser()
         plot=plot_ly(data=data, x=~fechaDia)          
         
         if (length(input$edad)>0) {
@@ -1297,6 +1372,8 @@ server <- function (input, output, session) {
     updateSelectInput(session, "vacEfficacy", selected = "B2. 100%, 80%, 50%")
     # updateSelectInput(session, "immunityDuration", selected = 180)
     updateSelectInput(session, "npiScenario", selected = "Combined with schools closed")
+    updateSelectInput(session, "npiScenarioRelaxed", selected = "Combined with schools closed")
+    updateSelectInput(session, "relaxationThreshold", selected = "No relaxation")
     updateRadioButtons(session, "npiStrat", selected = "cont")
     updateSelectInput(session, "relaxationDateGoal", selected = "2021-06-30")
     updateSliderInput(session, "relaxationFactor", value = 0)
@@ -1493,8 +1570,27 @@ server <- function (input, output, session) {
     } else if (input$t4q1_npis == "Low") {
       updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
     }
-    updateTextInput(session, "save_comp_name",
-                    value=paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis,", Priority",input$t4q1_priority))
+    if (input$t4q1_npisRelaxThreshold == "No relaxation") {
+      # Nada
+    } else if (input$t4q1_npisRelaxThreshold == "80%") {
+      updateSelectInput(session, "relaxationThreshold", selected = .8)
+    } else if (input$t4q1_npisRelaxThreshold == "50%") {
+      updateSelectInput(session, "relaxationThreshold", selected = .5)
+    } else if (input$t4q1_npisRelaxThreshold == "40%") {
+      updateSelectInput(session, "relaxationThreshold", selected = .4)
+    }
+    if (input$t4q1_npisRelaxed == "High") {
+      updateSelectInput(session, "npiScenarioRelaxed", selected = "Combined with schools closed")
+    } else if (input$t4q1_npisRelaxed == "Middle") {
+      updateSelectInput(session, "npiScenarioRelaxed", selected = "Intensive interventions with schools closed")
+    } else if (input$t4q1_npisRelaxed == "Low") {
+      updateSelectInput(session, "npiScenarioRelaxed", selected = "Intensive interventions with schools open")
+    }
+    saveLabel = paste("Coverage",input$t4q1_uptake,", Efficacy",input$t4q1_efficacy,", NPIs",input$t4q1_npis,", Priority",input$t4q1_priority)
+    if (input$t4q1_npisRelaxThreshold != "No relaxation") {
+      saveLabel = paste(saveLabel,", Relaxed at",input$t4q1_npisRelaxThreshold)
+    }
+    updateTextInput(session, "save_comp_name",value=saveLabel)
   })
   
   
