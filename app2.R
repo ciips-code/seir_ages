@@ -943,7 +943,7 @@ server <- function (input, output, session) {
     } else if (input$country == "Chile") {
       ifrProy = ifrProy * 1
     } else if (input$country == "Mexico") {
-      ifrProy = ifrProy * 1
+      ifrProy = ifrProy * 1.4
     } else if (input$country == "Brazil") {
       ifrProy = ifrProy * 1
     }
