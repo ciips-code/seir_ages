@@ -560,7 +560,7 @@ update <-  function(pais,diasDeProyeccion) {
                                              by=1))) %>% left_join(def)
     
     def[is.na(def)] <- 0
-    
+    def$fecha <- as.Date(def$fecha)
     Vacunas = casos 
     Vacunas[,2:20] <- 0
     Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
@@ -821,9 +821,8 @@ formatData <- function(pais, ageGroups) {
 
 
 # actualiza argentina y guarda RData
-# update(pais = "CHL", diasDeProyeccion = 1100)
+# update(pais = "MEX", diasDeProyeccion = 1100)
 
 # agrupa edades
-# datosArg <- formatData("COL", ageGroups = ageGroupsV)
-
+# datosArg <- formatData("MEX", ageGroups = ageGroupsV)
 

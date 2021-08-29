@@ -591,6 +591,7 @@ server <- function (input, output, session) {
   
   # country customize
   observeEvent(input$country, { 
+    
     if (input$country=="Brazil") {
       showNotification("Not available", type="warning")
       updatePickerInput(session,"country", selected="Argentina")
@@ -660,7 +661,7 @@ server <- function (input, output, session) {
         def_p <<- def_p[1:(nrow(def_p)-15),]
         
         
-        
+        #browser()
         fechas_master <<- seq(min(dataPorEdad$FMTD$def$fecha),
                               min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
         
@@ -849,6 +850,7 @@ server <- function (input, output, session) {
   })
   
   proy <- reactive({
+    #browser()
     # paste activa reactive (no comentar)
     paste(input$paramVac_cell_edit)
     paste(input$ifrt_cell_edit)
@@ -883,7 +885,7 @@ server <- function (input, output, session) {
     ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
     
     planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
-                                                    planVacunacionFinal, N, tVacunasCero, diaCeroVac)
+                                                    planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
     
     planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
     return(dia)})
@@ -1021,6 +1023,7 @@ server <- function (input, output, session) {
   })
   
   data_graf <- reactive({
+    #browser()
     proy <- proy()
     data_graf <- bind_rows(
       tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
@@ -1165,7 +1168,7 @@ server <- function (input, output, session) {
   
   
   res_t <- reactive({
-    
+    #browser()
     
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
@@ -1283,7 +1286,9 @@ server <- function (input, output, session) {
     tabla_scn
   })
   
-  output$resumen_tabla <- renderDataTable({res_t()})
+  output$resumen_tabla <- renderDataTable({
+    #browser()
+    res_t()})
   
   # output$resumen_tabla2 <- renderDataTable({res_t()})
   # 
