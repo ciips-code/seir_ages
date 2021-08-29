@@ -128,6 +128,40 @@ applyVaccineEfficacy <- function(selectedEfficacy) {
   return(efficacy)
 }
 
+######### V2
+
+getPrioritiesV2 <- function(priorities) {
+  if (priorities == "Priority: older -> adults -> young") {
+    return(c(4,3,3,2,2,1,1,1))
+  } else if (priorities == "Priority: older + adults -> young") {
+    return(c(3,2,2,1,1,1,1,1))
+  } else if (priorities == "Priority: adults -> older -> young") {
+    return(c(4,3,3,1,1,2,2,2))
+  } else if (priorities == "Priority: school age -> others") {
+    return(c(1,2,2,2,2,2,2,2))
+  } else if (priorities == "No priorities") {
+    return(c(1,1,1,1,1,1,1,1))
+  } 
+}
+
+getUptake <- function(uptake) {
+  coverage = NULL
+  if (uptake == "High uptake: 95%") {
+    coverage = .95
+  } else if (uptake == "High uptake: 80%") {
+    coverage = .80
+  }  else if (uptake == "Mid-range uptake: 50%") {
+    coverage = .50
+  }  else if (uptake == "Low uptake: 20%") {
+    coverage = .20
+  }  else if (uptake == "No vaccination") {
+    coverage = 0
+  }  else if (uptake == "Current uptake") {
+    coverage = 0
+  }
+  return(coverage)
+}
+
 # choices = c("A. 100% all disease",
 #             "B1. 100% severe, 80% moderate, 80% mild",
 #             "B2. 100% severe, 80% moderate, 50% mild",

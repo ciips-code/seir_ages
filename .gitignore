@@ -10,3 +10,5 @@ Covid19Casos.zip
 .Covid19Casos.csv.icloud
 .Covid19Casos.zip.icloud
 .datos_nomivac_covid19.csv.icloud
+.DS_Store
+*.dcf
