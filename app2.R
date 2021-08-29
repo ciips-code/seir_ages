@@ -943,15 +943,15 @@ server <- function (input, output, session) {
     tVacunasCero = 303
     ifrProy = ifr_edit[1,]
     if (input$country == "Argentina") {
-      ifrProy = ifrProy * 2.1
+      ifrProy = ifrProy * 2.4
     } else if (input$country == "Peru") {
       ifrProy = ifrProy * 3.55
     } else if (input$country == "Colombia") {
-      ifrProy = ifrProy * 1.6
+      ifrProy = ifrProy * 1.8
     } else if (input$country == "Chile") {
       ifrProy = ifrProy * 1
     } else if (input$country == "Mexico") {
-      ifrProy = ifrProy * 1.4
+      ifrProy = ifrProy * 1.8
     } else if (input$country == "Brazil") {
       ifrProy = ifrProy * 1
     }

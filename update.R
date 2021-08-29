@@ -572,7 +572,7 @@ update <-  function(pais,diasDeProyeccion) {
   ##### CHILE #####
   
   if (pais == "CHL") {
-  browser()
+  # browser()
     # cases
     url <- 'https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto16/CasosGeneroEtario.csv'
     data <- read.csv(url, encoding = 'UTF-8')

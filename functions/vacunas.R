@@ -132,13 +132,13 @@ applyVaccineEfficacy <- function(selectedEfficacy) {
 
 getPrioritiesV2 <- function(priorities) {
   if (priorities == "Priority: older -> adults -> young") {
-    return(c(4,3,3,2,2,1,1,1))
+    return(c(8,7,6,5,4,3,2,1))
   } else if (priorities == "Priority: older + adults -> young") {
-    return(c(3,2,2,1,1,1,1,1))
+    return(c(8,7,6,4,2,5,3,1))
   } else if (priorities == "Priority: adults -> older -> young") {
-    return(c(4,3,3,1,1,2,2,2))
+    return(c(8,7,6,2,1,3,4,5))
   } else if (priorities == "Priority: school age -> others") {
-    return(c(1,2,2,2,2,2,2,2))
+    return(c(1,8,7,6,5,4,3,2))
   } else if (priorities == "No priorities") {
     return(c(1,1,1,1,1,1,1,1))
   } 
