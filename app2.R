@@ -1179,7 +1179,7 @@ server <- function (input, output, session) {
   
   
   res_t <- reactive({
-    #browser()
+    
     
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
@@ -1187,9 +1187,9 @@ server <- function (input, output, session) {
     data_text <- data_text %>% dplyr::group_by(Compart) %>%
       dplyr::mutate(ac=cumsum(total))
     
-    fechas <- c("2021-12-31",
-                "2022-06-30",
-                "2022-12-31")
+    fechas <- c("2021-06-30",
+                "2021-12-31",
+                "2022-06-30")
     
     tfechas <- c(which(fechas_master == "2021-06-30"),
                  which(fechas_master == "2021-12-31"),
