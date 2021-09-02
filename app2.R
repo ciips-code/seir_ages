@@ -16,6 +16,7 @@ library(shinyjs)
 library(modelr)
 library(stringr)
 library(shinyWidgets)
+library(waiter)
 
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 
@@ -208,6 +209,7 @@ paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
 
 ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                 useShinyjs(),
+                useWaiter(),
                 extendShinyjs(text = jsResetCode, functions = "reset"),
                 fluidRow(id="inputs", 
                          column(width = 4,
@@ -239,7 +241,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                 actionButton("prox", label = NULL, icon = icon("chevron-right"))
                                 , align="left")
                 ),
-                tabsetPanel(type = "tabs",
+                tabsetPanel(id="TSP",
+                            type = "tabs",
                             tabPanel("Graphs",
                                      br(),
                                      fluidRow(column(3,selectInput("compart_a_graficar","Compartment",choices = NULL)),
@@ -560,7 +563,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                                                           )
                                          )
                             ),
-                            tabPanel("Saved scenarios", 
+                            tabPanel("Saved scenarios", id="SE", 
                                      fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
                                               column(3,
                                                      br(),
@@ -585,9 +588,19 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
 
 server <- function (input, output, session) {
   
-  cancel.onSessionEnded <- session$onSessionEnded(function () {
-    compare <<- compare[compare$Compart=="",]
+  observe({
+    
+    if (is.null(output_list)) {hide("del_scenarios")}
   })
+  
+  w <- Waiter$new(
+    id = "graficoUnico",
+    html = spin_3(), 
+    color = transparent(.5)
+  )
+  # cancel.onSessionEnded <- session$onSessionEnded(function () {
+  #   compare <<- compare[compare$Compart=="",]
+  # })
   
   # country customize
   observeEvent(input$country, { 
@@ -1031,6 +1044,7 @@ server <- function (input, output, session) {
   })
   
   data_graf <- reactive({
+    w$show()
     #browser()
     proy <- proy()
     data_graf <- bind_rows(
@@ -1180,6 +1194,7 @@ server <- function (input, output, session) {
   
   res_t <- reactive({
     
+    #browser()
     
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
@@ -1190,6 +1205,7 @@ server <- function (input, output, session) {
     fechas <- c("2021-06-30",
                 "2021-12-31",
                 "2022-06-30")
+    fechas <<- fechas
     
     tfechas <- c(which(fechas_master == "2021-06-30"),
                  which(fechas_master == "2021-12-31"),
@@ -1298,7 +1314,7 @@ server <- function (input, output, session) {
                    format(round(C3,0), big.mark = ','))
     
     colnames(tabla) <- c(" ",fechas)
-    
+    tabla <<- tabla
     
     tabla_scn <<- DT::datatable(tabla,
                                 caption = 'Results summary',
@@ -1309,6 +1325,16 @@ server <- function (input, output, session) {
       formatStyle(fechas[1], `text-align` = 'right') %>%
       formatStyle(fechas[2], `text-align` = 'right') %>%
       formatStyle(fechas[3], `text-align` = 'right') 
+    
+    tabla_scn
+  })
+  
+observeEvent(input$save_comp,{
+  print("pasa")
+  #browser()
+  if (input$save_comp_name %in% output_list) {showNotification("Duplicated scenario name", type="error")} else {
+    #browser()
+    showNotification("Saved!", type = "message")
     comp_table[[input$save_comp_name]] <<- DT::datatable(tabla,
                                                          caption = input$save_comp_name,
                                                          options = list(ordering=F, 
@@ -1318,9 +1344,13 @@ server <- function (input, output, session) {
       formatStyle(fechas[1], `text-align` = 'right') %>%
       formatStyle(fechas[2], `text-align` = 'right') %>%
       formatStyle(fechas[3], `text-align` = 'right') 
+    
     output_list <<- unique(c(output_list,names(comp_table[input$save_comp_name])))
-    tabla_scn
-  })
+    
+  }
+  
+  
+})
   
   output$resumen_tabla <- renderDataTable({
     #browser()
@@ -1353,58 +1383,96 @@ server <- function (input, output, session) {
   
   
   
-  data_comp_graf <- eventReactive({input$save_comp
-    input$del_scenarios
-    1},{
+  data_comp_graf <- eventReactive(input$save_comp,{
+      show("tables")
       saveScenario()
+      
     })
   
   observeEvent(input$save_comp,{
-    delete<<-F
+    show("del_scenarios")
     show("graficoComp")
     }
   )
+  
+  
+  
   observeEvent(input$del_scenarios,{
-    delete<<-T
-    print("Deletign scenarios")
+    compare <<-data_comp()[data_comp()$Compart=="",]
+    showNotification("Scenarios deleted", type = "warning")
     comp_table <<- list()
-    }
+    output_list
+    hide("tables")
+    output_list <<- c() 
+    hide("graficoComp")
+    hide("del_scenarios")
+    hide("icu_beds")
+    updateSelectInput(session,"saved_series",choices = "", selected = "")
+    res_t()
+    delete <<- T
+  }
   )
   
   saveScenario <- function() {
-    repe = F
-    if (input$save_comp_name!="" &
-        exists("compare")==T) {
-      if (input$save_comp_name %in% unique(compare$Compart)) {
-        if (delete==T) {
-          comp_table <<- list()
-          showNotification("Scenarios deleted", type = "error")
-        } else {
-          showNotification("Duplicated scenario name", type = "error")
-        }
-        repe=T
-      }
-    } 
-    
-    
-    if (repe==F & input$save_comp_name!="" & exists("compare")==T) {
-      compare <<- union_all(compare,data_comp())
-      showNotification("Saved!")
-    } else if (input$save_comp_name!="" & exists("compare")==F) {
-      compare <<- data_comp()
-      showNotification("Saved!")
-    }
-    
-    if (delete==F & exists("compare")) {compare} else {
-      compare <<- data_graf() %>% dplyr::filter(Compart=="")
-    }
-    
+    browser()
+    if (firstCompare==T) {compare<<-data_comp()[data_comp()$Compart=="",]
+                          firstCompare<<-F}
+    compare <<- if (exists("compare")==F) {compare<<-data_comp()} else {union_all(compare,data_comp())}
+    # firstScenario <- if (nrow(compare)==0) {T} else {F}
+    # repeatName <<- if (input$save_comp_name %in% unique(compare$Compart)) {T} else {F}
+    # 
+    # if (repeatName==F) {
+    #   if (firstScenario==T) {compare <<- data_comp()
+    #                          showNotification("Saved!")
+    #   }
+    #   if (firstScenario==F) {compare <<- union_all(compare,data_comp())
+    #                          showNotification("Saved!")
+    #   }
+    # 
+    # 
+    # 
+    # 
+    compare
+    # } else {showNotification("Duplicated scenario name", type = "error" )
+    #   compare
+    # }
+    # if (input$save_comp_name!="" &
+    #     exists("compare")==T) {
+    #   if (input$save_comp_name %in% unique(compare$Compart)) {
+    #     if (delete==T) {
+    # 
+    #       compare <<- compare[compare$Compart=="",]
+    #       output_list <- c()
+    #       comp_table <<- list()
+    #       showNotification("Scenarios deleted", type = "error")
+    #     } else {
+    #       showNotification("Duplicated scenario name", type = "error")
+    #     }
+    #     repe=T
+    #   }
+    # }
+    # 
+    # 
+    # if (repe==F & input$save_comp_name!="" & exists("compare")==T) {
+    # 
+    # 
+    #   compare <<- union_all(compare,data_comp())
+    #   showNotification("Saved!")
+    # } else if (input$save_comp_name!="" & exists("compare")==F) {
+    #   compare <<- data_comp()
+    #   showNotification("Saved!")
+    # }
+    # 
+    # if (delete==F & exists("compare")) {compare} else {
+    #   compare <<- data_graf() %>% dplyr::filter(Compart=="")
+    # }
+
   }
   
-  observe({
-    if (nrow(data_comp_graf())==0) {shinyjs::hide("graficoComp")}
-  })
-  
+  # observe({
+  #   if (nrow(data_comp_graf())==0) {shinyjs::hide("graficoComp")}
+  # })
+  # 
   
   setDefaultParams <- function() {
     updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
@@ -1648,28 +1716,31 @@ server <- function (input, output, session) {
     table <- comp_table[[input$save_comp_name]]
     eval(parse(text=
                  paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
+               
     ))
     
   })
   
-  observe({
+  observeEvent(input$save_comp, {
     
-    output$tables <- renderUI({
-      
-      paste(input$save_comp)
-      
-      output_list = output_list[is.na(output_list) == F]
+    output$tables <<- renderUI({
+      # if (is.null(output_list)) {output_list <- input$save_comp_name
+      # comp_table[[input$save_comp_name]] <<- res_t() }
+      # print(output_list)
+      # output_list <<- output_list[is.na(output_list) == F]
+      browser
+      show("tables")
       eval(parse(text=
                    paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
-      ))
+      
+                 ))
+      
       # tagList(DTOutput("es1"),
       #         DTOutput("es2"))
-      
-      
     })
     
+    
   })
-  
   
   output$graficoComp <- renderPlotly({
     
@@ -1710,23 +1781,29 @@ server <- function (input, output, session) {
     }
   })
   
-  shinyjs::hide("del_scenarios")
-  shinyjs::hide("icu_beds")
-  observeEvent(input$save_comp,{
-    if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
-    if (nrow(data_comp())!=0) {shinyjs::show("icu_beds")}
-  }) 
-  
-  observeEvent(input$del_scenarios, {
-    
-    shinyjs::hide("graficoComp")
-    shinyjs::hide("del_scenarios")
-    shinyjs::hide("icu_beds")
-    hide_list <- output_list[is.na(output_list)==F]
-    eval(parse(text=paste0("shinyjs::hide('",hide_list,"')", collapse = ';')))
-    updateSelectInput(session, "saved_series", choices = "", selected = "")
-    
-  })
+  # shinyjs::hide("del_scenarios")
+  # shinyjs::hide("icu_beds")
+  # observeEvent(input$save_comp,{
+  #   if (nrow(data_comp())!=0) {shinyjs::show("del_scenarios")}
+  #   if (nrow(data_comp())!=0) {shinyjs::show("icu_beds")}
+  # }) 
+  # 
+  # observeEvent(input$del_scenarios, {
+  #   shinyjs::hide("graficoComp")
+  #   shinyjs::hide("del_scenarios")
+  #   shinyjs::hide("icu_beds")
+  #   updateSelectInput(session, "saved_series", choices = "", selected = "")
+  #   comp_table <<- list()
+  #   output_list <- c()
+  #   compare <- compare[compare$Compart=="",]
+  #   
+  #   delete<<-T
+  #   output$tables<<-NULL
+  #   
+  #   
+  # })
+
+
   
 }
 
