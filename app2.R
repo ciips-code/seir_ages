@@ -598,9 +598,9 @@ server <- function (input, output, session) {
     html = spin_3(), 
     color = transparent(.5)
   )
-  # cancel.onSessionEnded <- session$onSessionEnded(function () {
-  #   compare <<- compare[compare$Compart=="",]
-  # })
+  cancel.onSessionEnded <- session$onSessionEnded(function () {
+    compare <<- compare[compare$Compart=="",]
+  })
   
   # country customize
   observeEvent(input$country, { 
@@ -823,7 +823,7 @@ server <- function (input, output, session) {
       porc_cr_edit[as.numeric(input$porc_cr_cell_edit[1]),
                    as.numeric(input$porc_cr_cell_edit[2])+1] <- as.numeric(input$porc_cr_cell_edit[3])
       porc_cr_edit <<- porc_cr_edit
-      porcentajeCasosCriticos <<- matrix(rep(porc_cr_edit,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+      porcentajeCasosCriticos <<- matrix(rep(porc_cr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = names)
     }
   })
   
@@ -848,7 +848,7 @@ server <- function (input, output, session) {
       porc_gr_edit[as.numeric(input$porc_gr_cell_edit[1]),
                    as.numeric(input$porc_gr_cell_edit[2])+1] <- as.numeric(input$porc_gr_cell_edit[3])
       porc_gr_edit <<- porc_gr_edit
-      porcentajeCasosGraves <<- matrix(rep(porc_gr_edit,length(immunityStates)),3,length(ageGroups),byrow=T,dimnames = names)
+      porcentajeCasosGraves <<- matrix(rep(porc_gr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = names)
     }
   })
   
@@ -1046,6 +1046,7 @@ server <- function (input, output, session) {
   data_graf <- reactive({
     w$show()
     #browser()
+    
     proy <- proy()
     data_graf <- bind_rows(
       tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
@@ -1194,7 +1195,7 @@ server <- function (input, output, session) {
   
   res_t <- reactive({
     
-    #browser()
+    browser()
     
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
@@ -1329,28 +1330,28 @@ server <- function (input, output, session) {
     tabla_scn
   })
   
-observeEvent(input$save_comp,{
-  print("pasa")
-  #browser()
-  if (input$save_comp_name %in% output_list) {showNotification("Duplicated scenario name", type="error")} else {
-    #browser()
-    showNotification("Saved!", type = "message")
-    comp_table[[input$save_comp_name]] <<- DT::datatable(tabla,
-                                                         caption = input$save_comp_name,
-                                                         options = list(ordering=F, 
-                                                                        searching=F, 
-                                                                        paging=F, 
-                                                                        info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
-      formatStyle(fechas[1], `text-align` = 'right') %>%
-      formatStyle(fechas[2], `text-align` = 'right') %>%
-      formatStyle(fechas[3], `text-align` = 'right') 
-    
-    output_list <<- unique(c(output_list,names(comp_table[input$save_comp_name])))
-    
-  }
-  
-  
-})
+# observeEvent(input$save_comp,{
+#   print("pasa")
+#   #browser()
+#   if (input$save_comp_name %in% output_list) {showNotification("Duplicated scenario name", type="error")} else {
+#     #browser()
+#     showNotification("Saved!", type = "message")
+#     comp_table[[input$save_comp_name]] <<- DT::datatable(tabla,
+#                                                          caption = input$save_comp_name,
+#                                                          options = list(ordering=F, 
+#                                                                         searching=F, 
+#                                                                         paging=F, 
+#                                                                         info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
+#       formatStyle(fechas[1], `text-align` = 'right') %>%
+#       formatStyle(fechas[2], `text-align` = 'right') %>%
+#       formatStyle(fechas[3], `text-align` = 'right') 
+#     
+#     output_list <<- unique(c(output_list,names(comp_table[input$save_comp_name])))
+#     
+#   }
+#   
+#   
+# })
   
   output$resumen_tabla <- renderDataTable({
     #browser()
@@ -1371,29 +1372,29 @@ observeEvent(input$save_comp,{
     
   })
   
-  data_comp <- reactive({
-    
-    df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
-      dplyr::mutate(Compart=input$save_comp_name,
-                    Compart_label=input$compart_a_graficar)
-    df$fechaDia=fechas_master
-    df
-    
-  })
+  # data_comp <- eventReactive(input$save_comp <- {
+  #   
+  #   df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
+  #     dplyr::mutate(Compart=input$save_comp_name,
+  #                   Compart_label=input$compart_a_graficar)
+  #   df$fechaDia=fechas_master
+  #   df
+  #   
+  # })
   
   
   
-  data_comp_graf <- eventReactive(input$save_comp,{
-      show("tables")
-      saveScenario()
-      
-    })
-  
-  observeEvent(input$save_comp,{
-    show("del_scenarios")
-    show("graficoComp")
-    }
-  )
+  # data_comp_graf <- eventReactive(input$save_comp,{
+  #     show("tables")
+  #     saveScenario()
+  #     
+  #   })
+  # 
+  # observeEvent(input$save_comp,{
+  #   show("del_scenarios")
+  #   show("graficoComp")
+  #   }
+  # )
   
   
   
@@ -1413,67 +1414,15 @@ observeEvent(input$save_comp,{
   }
   )
   
-  saveScenario <- function() {
-    browser()
-    if (firstCompare==T) {compare<<-data_comp()[data_comp()$Compart=="",]
-                          firstCompare<<-F}
-    compare <<- if (exists("compare")==F) {compare<<-data_comp()} else {union_all(compare,data_comp())}
-    # firstScenario <- if (nrow(compare)==0) {T} else {F}
-    # repeatName <<- if (input$save_comp_name %in% unique(compare$Compart)) {T} else {F}
-    # 
-    # if (repeatName==F) {
-    #   if (firstScenario==T) {compare <<- data_comp()
-    #                          showNotification("Saved!")
-    #   }
-    #   if (firstScenario==F) {compare <<- union_all(compare,data_comp())
-    #                          showNotification("Saved!")
-    #   }
-    # 
-    # 
-    # 
-    # 
-    compare
-    # } else {showNotification("Duplicated scenario name", type = "error" )
-    #   compare
-    # }
-    # if (input$save_comp_name!="" &
-    #     exists("compare")==T) {
-    #   if (input$save_comp_name %in% unique(compare$Compart)) {
-    #     if (delete==T) {
-    # 
-    #       compare <<- compare[compare$Compart=="",]
-    #       output_list <- c()
-    #       comp_table <<- list()
-    #       showNotification("Scenarios deleted", type = "error")
-    #     } else {
-    #       showNotification("Duplicated scenario name", type = "error")
-    #     }
-    #     repe=T
-    #   }
-    # }
-    # 
-    # 
-    # if (repe==F & input$save_comp_name!="" & exists("compare")==T) {
-    # 
-    # 
-    #   compare <<- union_all(compare,data_comp())
-    #   showNotification("Saved!")
-    # } else if (input$save_comp_name!="" & exists("compare")==F) {
-    #   compare <<- data_comp()
-    #   showNotification("Saved!")
-    # }
-    # 
-    # if (delete==F & exists("compare")) {compare} else {
-    #   compare <<- data_graf() %>% dplyr::filter(Compart=="")
-    # }
-
-  }
-  
-  # observe({
-  #   if (nrow(data_comp_graf())==0) {shinyjs::hide("graficoComp")}
-  # })
+  # saveScenario <- function() {
+  #   
+  #   compare <<- if (exists("compare")==F) {compare<<-data_comp()} else {union_all(compare,data_comp())}
   # 
+  #   compare
+  # 
+  # }
   
+
   setDefaultParams <- function() {
     updateSelectInput(session, "compart_a_graficar", selected = "i: Daily infectious")
     updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
@@ -1703,50 +1652,74 @@ observeEvent(input$save_comp,{
     updateTextInput(session, "save_comp_name",value=saveLabel)
   })
   
-  
-  observeEvent(input$save_comp,{
-    
-    updateSelectInput(session, "saved_series", choices = unique(data_comp_graf()$Compart), selected = unique(data_comp_graf()$Compart))
-    
-    
-  })
-  
   observeEvent(input$save_comp, {
+    browser()
+    if (input$save_comp_name %in% output_list) {showNotification("Duplicated scenario name", type="error")} else {
+      show("del_scenarios")
+      show("graficoComp")
+      df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
+        dplyr::mutate(Compart=input$save_comp_name,
+                      Compart_label=input$compart_a_graficar)
+      df$fechaDia=fechas_master
+      compare <<- if (exists("compare")==F) {compare<<-df} else {union_all(compare,df)}
+      updateSelectInput(session, "saved_series", choices = unique(compare$Compart), selected = unique(compare$Compart))
+      showNotification("Saved!", type = "message")
+      
+      
+      #browser()
+      
+      comp_table[[input$save_comp_name]] <<- DT::datatable(tabla,
+                                                           caption = input$save_comp_name,
+                                                           options = list(ordering=F, 
+                                                                          searching=F, 
+                                                                          paging=F, 
+                                                                          info=F)) %>% formatStyle(' ', `text-align` = 'left') %>%
+                                                                                       formatStyle(fechas[1], `text-align` = 'right') %>%
+                                                                                       formatStyle(fechas[2], `text-align` = 'right') %>%
+                                                                                       formatStyle(fechas[3], `text-align` = 'right') 
+        
+        table <- comp_table[[input$save_comp_name]]
+        output_list <<- unique(c(output_list,names(comp_table[input$save_comp_name])))
+        
+        eval(parse(text=
+                     paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
+
+        ))
     
-    table <- comp_table[[input$save_comp_name]]
-    eval(parse(text=
-                 paste0("output$`",input$save_comp_name,"` <<- renderDataTable({table})")
-               
-    ))
+        output$tables <<- renderUI({
+          show("tables")
+          eval(parse(text=
+                       paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
+                     
+          ))    
+    
+        })
+    }
+    
+    
+      
     
   })
   
-  observeEvent(input$save_comp, {
-    
-    output$tables <<- renderUI({
-      # if (is.null(output_list)) {output_list <- input$save_comp_name
-      # comp_table[[input$save_comp_name]] <<- res_t() }
-      # print(output_list)
-      # output_list <<- output_list[is.na(output_list) == F]
-      browser
-      show("tables")
-      eval(parse(text=
-                   paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
-      
-                 ))
-      
-      # tagList(DTOutput("es1"),
-      #         DTOutput("es2"))
-    })
-    
-    
-  })
+  # observeEvent(input$save_comp, {
+  #   
+  #   output$tables <<- renderUI({
+  #     show("tables")
+  #     eval(parse(text=
+  #                  paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
+  #     
+  #                ))
+  #     
+  #   })
+  #   
+  #   
+  # })
   
   output$graficoComp <- renderPlotly({
     
     #View(reactiveValuesToList(input))
-    if (nrow(data_comp_graf())>0) {
-      data_comp <-  data_comp_graf() %>% dplyr::filter(Compart %in% input$saved_series)
+    if (nrow(compare)>0) {
+      data_comp <-  compare %>% dplyr::filter(Compart %in% input$saved_series)
       data_comp[data_comp<0] = 0
       plot_comp <- plot_ly(name=paste0(
                                        " [",
