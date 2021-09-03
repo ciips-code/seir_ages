@@ -617,12 +617,12 @@ server <- function (input, output, session) {
       # print(iso_country)
       
       
-      capacidadUTI <<- if (input$country=="Argentina") {11517} else
-                       if (input$country=="Brazil") {49000} else
-                       if (input$country=="Peru") {700} else
-                       if (input$country=="Colombia") {5462} else
-                       if (input$country=="Mexico") {3891} else
-                       if (input$country=="Chile") {3295}
+      capacidadUTI <<- if (input$country=="Argentina") {11676} else
+                       if (input$country=="Brazil") {37950} else
+                       if (input$country=="Peru") {2804} else
+                       if (input$country=="Colombia") {13054} else
+                       if (input$country=="Mexico") {11634} else
+                       if (input$country=="Chile") {4481}
       
       # empirical cm
       if(use_empirical_mc){
@@ -1605,7 +1605,7 @@ server <- function (input, output, session) {
       updateSelectInput(session, "npiScenario", selected = "Intensive interventions with schools open")
     }
     if (input$t4q1_npisRelaxThreshold == "No relaxation") {
-      # Nada
+      updateSelectInput(session, "relaxationThreshold", selected = 1.1)
     } else if (input$t4q1_npisRelaxThreshold == "80%") {
       updateSelectInput(session, "relaxationThreshold", selected = .8)
     } else if (input$t4q1_npisRelaxThreshold == "50%") {
