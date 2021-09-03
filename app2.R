@@ -1195,7 +1195,8 @@ server <- function (input, output, session) {
   
   res_t <- reactive({
     
-    browser()
+    
+    input$TSP
     
     data_text <- cbind(data_graf(),rep(fechas_master,length(unique(data_graf()$Compart))))
     colnames(data_text)[ncol(data_text)] <- "fechaDia"
@@ -1372,34 +1373,8 @@ server <- function (input, output, session) {
     
   })
   
-  # data_comp <- eventReactive(input$save_comp <- {
-  #   
-  #   df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
-  #     dplyr::mutate(Compart=input$save_comp_name,
-  #                   Compart_label=input$compart_a_graficar)
-  #   df$fechaDia=fechas_master
-  #   df
-  #   
-  # })
-  
-  
-  
-  # data_comp_graf <- eventReactive(input$save_comp,{
-  #     show("tables")
-  #     saveScenario()
-  #     
-  #   })
-  # 
-  # observeEvent(input$save_comp,{
-  #   show("del_scenarios")
-  #   show("graficoComp")
-  #   }
-  # )
-  
-  
-  
   observeEvent(input$del_scenarios,{
-    compare <<-data_comp()[data_comp()$Compart=="",]
+    compare <<-compare[compare$Compart=="",]
     showNotification("Scenarios deleted", type = "warning")
     comp_table <<- list()
     output_list
@@ -1653,7 +1628,9 @@ server <- function (input, output, session) {
   })
   
   observeEvent(input$save_comp, {
-    browser()
+    
+    input$TSP
+    show("tables")
     if (input$save_comp_name %in% output_list) {showNotification("Duplicated scenario name", type="error")} else {
       show("del_scenarios")
       show("graficoComp")
@@ -1687,7 +1664,6 @@ server <- function (input, output, session) {
         ))
     
         output$tables <<- renderUI({
-          show("tables")
           eval(parse(text=
                        paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
                      
@@ -1701,57 +1677,45 @@ server <- function (input, output, session) {
     
   })
   
-  # observeEvent(input$save_comp, {
-  #   
-  #   output$tables <<- renderUI({
-  #     show("tables")
-  #     eval(parse(text=
-  #                  paste0("tagList(fluidRow(",paste0("column(4,DTOutput('",output_list,"'))", collapse = ','),"))")
-  #     
-  #                ))
-  #     
-  #   })
-  #   
-  #   
-  # })
-  
   output$graficoComp <- renderPlotly({
     
-    #View(reactiveValuesToList(input))
-    if (nrow(compare)>0) {
-      data_comp <-  compare %>% dplyr::filter(Compart %in% input$saved_series)
-      data_comp[data_comp<0] = 0
-      plot_comp <- plot_ly(name=paste0(
-                                       " [",
-                                       str_replace_all(trimws(substring(unique(data_comp$Compart_label),1,3), "right"),":",""), 
-                                       "]" 
-                                      ) 
-                   ) %>% layout(showlegend = TRUE)
-      lapply(unique(data_comp$Compart), function(k) {
+    input$TSP
+    if (exists("compare")) {
+      if (nrow(compare)>0) {
+        data_comp <-  compare %>% dplyr::filter(Compart %in% input$saved_series)
+        data_comp[data_comp<0] = 0
+        plot_comp <- plot_ly(name=paste0(
+                                         " [",
+                                         str_replace_all(trimws(substring(unique(data_comp$Compart_label),1,3), "right"),":",""), 
+                                         "]" 
+                                        ) 
+                     ) %>% layout(showlegend = TRUE)
+        lapply(unique(data_comp$Compart), function(k) {
+          
+          plot_comp <<- add_trace(plot_comp,
+                                  data_comp[data_comp$Compart==k,],
+                                  x=~data_comp$fechaDia[data_comp$Compart==k],
+                                  y=~data_comp$total[data_comp$Compart==k], 
+                                  
+                                  type="scatter", mode="lines",
+                                  name=paste0(k,
+                                              " [",
+                                              str_replace_all(trimws(substring(unique(data_comp$Compart_label[data_comp$Compart==k]),1,3), "right"),":",""), 
+                                              "]" 
+                                       )
+                                  )
+          
+        })
         
-        plot_comp <<- add_trace(plot_comp,
-                                data_comp[data_comp$Compart==k,],
-                                x=~data_comp$fechaDia[data_comp$Compart==k],
-                                y=~data_comp$total[data_comp$Compart==k], 
-                                
-                                type="scatter", mode="lines",
-                                name=paste0(k,
-                                            " [",
-                                            str_replace_all(trimws(substring(unique(data_comp$Compart_label[data_comp$Compart==k]),1,3), "right"),":",""), 
-                                            "]" 
-                                     )
-                                )
-        
-      })
-      
-      if (input$icu_beds==T & nrow(data_comp)>0) {
-        
-        plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
-        plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
-        plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+        if (input$icu_beds==T & nrow(data_comp)>0) {
+          
+          plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
+          plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
+          plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+        }
+        plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))
       }
-      plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))
-    }
+  } else {NULL}
   })
   
   # shinyjs::hide("del_scenarios")
