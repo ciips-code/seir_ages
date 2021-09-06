@@ -7,7 +7,13 @@ library(zip)
 library(stringr)
 library(data.table)
 
-##### funcion update #####
+##### test date format function #####
+is_date = function(x, format) {
+  formatted = try(as.Date(x, format), silent = TRUE)
+  return(as.character(formatted) == x)
+}
+
+##### update function #####
 update <-  function(pais,diasDeProyeccion) {
   countryData <- list()
   ##### ARGENTINA #####
@@ -698,7 +704,95 @@ update <-  function(pais,diasDeProyeccion) {
     Vacunas2 <- Vacunas
 
   }
-  
+
+  if (pais=="BRA") {
+    url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
+    html <- paste(readLines(url), collapse="\n")
+    links <- str_match_all(html, "<a href=\"(.*?)\"")
+    links <- str_subset(links[[1]],c("csv"))
+    links <- links[substring(links,1,1)!="<"] 
+    casesBrz <- data.frame()
+    defBrz <- data.frame()
+    
+    for (l in links) {
+      
+      file=str_replace_all(l,"https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/","")
+      
+      print(paste("Leyendo:",l))
+      df <- read.csv2(l) 
+      df <- df %>% dplyr::filter(substring(classificacaoFinal,1,6)=="Confir") %>%
+        dplyr::mutate(fechaRep=substring(dataNotificacao,1,10),
+                      fechaSintomas=substring(dataInicioSintomas,1,10),
+                      edad=as.numeric(idade)) %>%
+        dplyr::select(fechaRep,fechaSintomas,edad,evolucaoCaso) %>%
+        dplyr::mutate(gredad=case_when(edad>=1 & edad <=4 ~ "00-04",
+                                       edad>=5 & edad <=9 ~ "05-09",
+                                       edad>=10 & edad <=14 ~ "10-14",
+                                       edad>=15 & edad <=17 ~ "15-17",
+                                       edad>=18 & edad <=24 ~ "18-24",
+                                       edad>=25 & edad <=29 ~ "25-29",
+                                       edad>=30 & edad <=34 ~ "30-34",
+                                       edad>=35 & edad <=39 ~ "35-39",
+                                       edad>=40 & edad <=44 ~ "40-44",
+                                       edad>=45 & edad <=49 ~ "45-49",
+                                       edad>=50 & edad <=54 ~ "50-54",
+                                       edad>=55 & edad <=59 ~ "55-59",
+                                       edad>=60 & edad <=64 ~ "60-64",
+                                       edad>=65 & edad <=69 ~ "65-69",
+                                       edad>=70 & edad <=74 ~ "70-74",
+                                       edad>=75 & edad <=79 ~ "75-79",
+                                       edad>=80 & edad <=84 ~ "80-84",
+                                       edad>=85 & edad <=89 ~ "85-89",
+                                       edad>=90 & edad <=110 ~ "90-99",
+                                       TRUE ~ "S.I."))
+      df$fechaRep[df$fechaRep=="null"] <- NA
+      df$fechaRep[df$fechaRep=="undefined"] <- NA
+      df$fechaSintomas[df$fechaSintomas=="null"] <- NA
+      df$fechaSintomas[df$fechaSintomas=="undefined"] <- NA
+      df$fecha=coalesce(df$fechaSintomas,df$fechaRep)
+      df$fecha=as.Date(df$fecha)
+      df <- df %>% dplyr::select(fecha,gredad,evolucaoCaso)
+      casos <- df %>% dplyr::mutate(cuenta=1) %>%
+        reshape::cast(fecha~gredad, sum)
+      casos <- data.frame(fecha=as.Date(as.character(seq(as.Date("2020-01-01"),
+                                                         as.Date(Sys.Date()),
+                                                         by=1)))) %>% left_join(casos) 
+      casos[is.na(casos)] <- 0
+      casos$type <- "cases"
+      casos$file <- file
+      def <- df %>% dplyr::filter(evolucaoCaso=="Óbito") %>%
+        dplyr::mutate(cuenta=1) %>%
+        reshape::cast(fecha~gredad, sum) 
+      def <- data.frame(fecha=as.Date(as.character(seq(as.Date("2020-01-01"),
+                                                       as.Date(Sys.Date()),
+                                                       by=1)))) %>% left_join(def) 
+      def[is.na(def)] <- 0
+      def$type <- "def"
+      def$file <- file
+      casesBrz <- rbind.fill(casesBrz,casos)
+      defBrz <- rbind.fill(defBrz,def)
+      print(Sys.time())
+      print(paste("Agregado:",file))
+      print(paste("Archivos agregados:",grep(l,links)))
+      
+      casos <- casesBrz %>% dplyr::group_by(fecha) %>%
+        dplyr::summarise_at(colnames(casesBrz)[substring(colnames(casesBrz),1,1)>="0" &
+                                                 substring(colnames(casesBrz),1,1)<="9"], sum)
+      casos <- as.data.frame(casos)
+      defBrz[is.na(defBrz)] <- 0
+      def <- defBrz %>% dplyr::group_by(fecha) %>%
+        dplyr::summarise_at(colnames(defBrz)[substring(colnames(defBrz),1,1)>="0" &
+                                               substring(colnames(defBrz),1,1)<="9"], sum)
+      
+      def <- as.data.frame(def)
+      Vacunas = casos
+      Vacunas[,2:20] <- 0
+      Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
+      Vacunas2 <- Vacunas
+      
+    } 
+    
+  }
   
   eval(parse(text=paste0('countryData$',
                          pais,
@@ -710,7 +804,7 @@ update <-  function(pais,diasDeProyeccion) {
 }
 
 
-##### funcion formatData #####
+##### formatData function #####
 
 formatData <- function(pais, ageGroups) {
 

@@ -53,8 +53,7 @@ seir_ages <- function(dias,
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   # seir
-  # tHoy = cantidad de dias con muertes reales - 17 dias de inf - 5 dias de preinf - 7 dias de ajuste por retrasos en la notificacion
-  #tHoy <<- nrow(defunciones_reales)-17-round(periodoPreinfPromedio,0)
+  
   tHoy <<- tVacunasCero
   factorModificadorBeta = NULL
   relaxValue = rep(1,dias)
@@ -71,22 +70,17 @@ seir_ages <- function(dias,
   }
   vacGroupActive = 1
   for(t in 2:dias){
-    # if(t==448){browser()}
-    # print(t)
     
-    ##################
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
     poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
-    # print(coberturaMas60)
     if (coberturaMas60 > relaxationThreshold) {
       beta = contact_matrix_relaxed * transmission_probability
     } else {
       beta = contact_matrix * transmission_probability
     }
-    ##################
     
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
@@ -101,21 +95,8 @@ seir_ages <- function(dias,
                  dimnames = names)
       e[[t-1]] = apor*bpor/cpor
       e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
-      # e[[t-1]][1,] = expuestosTotalesHoy
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
-      # if (is.null(factorModificadorBeta)) { 1.12
-      #   ten_days_incidents = sapply((t-10):(t-1), function(s) {sum(i[[s]])})
-      #   porc_S = sum(S[[t-1]])/sum(N)
-      #   factorModificadorBeta = calcularFactorModificadorBeta(ten_days_incidents,
-      #                                                         contact_matrix,
-      #                                                         diag(transmission_probability),
-      #                                                         porc_S,
-      #                                                         duracionIi)
-      # }
-      # e[[t-1]] = S[[t-1]] * matrix((factorModificadorBeta$factor * beta) %*% I_edad/N_edad, 
-      #                              nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
-      # e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
       beta       = beta * relaxValue[t]
       e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
     }
@@ -130,10 +111,8 @@ seir_ages <- function(dias,
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     if (t<tHoy){
-      # browser(expr={t==302})
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      # browser(expr={t==303})
       d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
@@ -175,7 +154,6 @@ seir_ages <- function(dias,
     tiempoP = as.numeric(paramVac[vacuna,5])
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
-      # browser(expr = { t > 450 })
       prioridadesHoy <- selectedPriority
       prioridadesHoy[prioridadesHoy != vacGroupActive] = 0
       prioridadesHoy[prioridadesHoy == vacGroupActive] = 1
@@ -211,8 +189,6 @@ seir_ages <- function(dias,
       #  - Dosis para S1: Se quedan en S1
       #  - Con esto no estamos prolongando los tiempos
       #  - Se mantienen los efectos de la primera dosis, el que paso a V se queda, el que tuvo proteccion se queda, etc
-      # segundasDosisHoyV3 = vacunasDelDia[4,] * porcV
-      # segundasDosisHoyS3 = vacunasDelDia[4,] * porcProt
       # # segundasDosisHoyS1 no se calcula
       dosis1aReforzar = vA[[t-30]][3,]
       segundasDosisHoyV3 = dosis1aReforzar * porcV
@@ -220,53 +196,6 @@ seir_ages <- function(dias,
       vA[[t]][4,] = segundasDosisHoyV3 + segundasDosisHoyS3
     }
     
-    # Arma la lista de vacunas
-    # for (vacuna in c(3:nrow(paramVac))) {
-    #   latencia = as.numeric(paramVac[vacuna,1])
-    #   if (t>latencia) {
-    #     vacunasDelDia[vacuna,]=planVacunacionFinal[[t-latencia]][vacuna,]
-    #   }
-    # }
-
-    # Primera dosis
-    # TODO: No esta vacunando recuperados / Hard Coded para solo 3,4
-    # haySparaVacunar = S[[t-1]][1,] > vacunasDelDia[3,]
-    # haySparaVacunar[is.na(haySparaVacunar)] <- FALSE
-    # # for (vacuna in c(3:nrow(paramVac))) {
-    # # Aplica primera dosis
-    # vacuna = 3
-    # latencia = as.numeric(paramVac[vacuna,1])
-    # porcV = as.numeric(paramVac[vacuna,2])
-    # tiempoV = as.numeric(paramVac[vacuna,3])
-    # porcProt = as.numeric(paramVac[vacuna,4])
-    # if (t > latencia) {
-    #   for (iAge in c(1:length(ageGroups))) {
-    #     if (vacunasDelDia[vacuna,iAge] < S[[t-1]][1,iAge]) {
-    #       vacunadosVacunaDia[vacuna,iAge] = vacunasDelDia[vacuna,iAge]
-    #     } else {
-    #       vacunadosVacunaDia[vacuna,iAge] = 0
-    #     }
-    #   }
-    #   vA[[t]][vacuna,] = vacunadosVacunaDia[vacuna,]
-    #   # Los que pasan a V
-    #   Vin[vacuna,] =  vacunadosVacunaDia[vacuna,] * porcV
-    #   # Los que se quedan en S pero protegidos (deben cambiar de renglon)
-    #   VquedaEnS[vacuna,] =  vacunadosVacunaDia[vacuna,] * porcProt
-      # Los que no les hace ningun efecto y quedan en S como no inmunes, no hay que hacer nada
-    # }
-    # TODO: Segunda dosis
-    #  - La segunda dosis se aplica a la linea 3 en S y en V, y la 1 en S
-    #  - Dosis para V3 =  CantDia * porcV
-    #  - Dosis para S3 =  CantDia * porcProt
-    #  - Dosis para S1 =  CantDia * 1-porcV-porcProt
-    #  - Dosis para V3: Se pasan de 3 a 4
-    #  - Dosis para S3: Se pasan de 3 a 4
-    #  - Dosis para S1: Se quedan en S1
-    #  - Con esto no estamos prolongando los tiempos
-    #  - Se mantienen los efectos de la primera dosis, el que paso a V se queda, el que tuvo proteccion se queda, etc
-    # segundasDosisHoyV3 = vacunasDelDia[4,] * porcV
-    # segundasDosisHoyS3 = vacunasDelDia[4,] * porcProt
-    # # segundasDosisHoyS1 no se calcula
     # # Salida de V
     if (t>tiempoV+1) {
       totSalidaVHoy = v[[t-tiempoV]][vacuna,]
@@ -282,20 +211,17 @@ seir_ages <- function(dias,
     }
     V[[t]][3,] = V[[t-1]][3,] + Vin[3,] - Vout[3,]
     V[[t]][4,] = V[[t-1]][4,] - Vout[4,]
-    # browser(expr = {t > 322})
     for (iAge in c(1:length(ageGroups))) {
       if (segundasDosisHoyV3[iAge] < V[[t]][3,iAge]) {
         V[[t]][3,iAge] = V[[t]][3,iAge] - segundasDosisHoyV3[iAge]
         V[[t]][4,iAge] = V[[t]][4,iAge] + segundasDosisHoyV3[iAge]
       }
     }
-    # browser(expr = {t > 322})
     v[[t]] = Vin
     # Empiezo a armar el S a partir de las transiciones
     S[[t]] = S[[t-1]] - e[[t-1]]  + Vout
     S[[t]][1,] = S[[t]][1,] - colSums(Vin)
     S[[t]][2,] = S[[t]][2,] + colSums(losQueHoyPierdenImunidad)
-    # 
     # # Reasigno de renglon los que quedaron hoy en S luego de vacunarse
     S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
     S[[t]] =  S[[t]] + VquedaEnS
@@ -308,49 +234,17 @@ seir_ages <- function(dias,
     
     # S[[t]][1,] = colSums(E[[t]]) - colSums(I[[t]]) - colSums(R[[t]]) - colSums(V[[t]])
     # los recuperados de hoy son los recuperados de ayer menos los que se expusieron hoy
-   
-    # Aplica Segunda dosis
-    # - Calcula las cantidades de segundas dosis que se hacen efectivas hoy
-    # - La matriz de segundas dosis tiene que venir en la fila correcta (ej. 4)
-    # - Suma la matriz
-    # - Resta las segundas de las primeras, segun una tabla de equivalencias, y comprobando si no da negativo
-    #
-    # for (vacuna in c(3:nrow(paramVac))) {
-    #   latencia = paramVac[vacuna,1]
-    #   porcV = paramVac[vacuna,2]
-    #   porcProt = paramVac[vacuna,4]
-    #   if (t > latencia) {
-    #     for (iAge in c(1:length(ageGroups))) {
-    #       if (vacunasDelDia2[vacuna,iAge] < S[[t-1]][1,iAge]) {
-    #         vacunadosVacunaDia2[vacuna,iAge] = vacunasDelDia2[vacuna,iAge]
-    #       } else {
-    #         vacunadosVacunaDia2[vacuna,iAge] = 0
-    #       }
-    #     }
-    #   }
-    # }
-    
     # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
     # Vuelve a No inmunes los que terminan su tiempo de proteccion
+
     for (vacuna in c(3:nrow(paramVac))) {
       tiempoP = as.numeric(paramVac[vacuna,5])
       S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[t]][vacuna,]/tiempoP
       S[[t]][1,]=S[[t]][1,] + S[[t]][vacuna,]/tiempoP
     }
-    
-    
-    
-    # Corrigiendo los negativos generados por la reasignación de renglones
-    # if(any(S[[t]]<0)){browser()}
-    # for (ixx in seq_along(ageGroups)) {
-    #   if (S[[t]][1,ixx] < 0) {
-    #     S[[t]][2,ixx] = S[[t]][2,ixx] + S[[t]][1,ixx]
-    #     S[[t]][1,ixx] = 0
-    #   }
-    # }
-    
+
     tot[[t]] = S[[t]] + V[[t]] + E[[t]] + I[[t]] + R[[t]]
-    # browser()
+
     # Diferencias: print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
 
@@ -373,11 +267,7 @@ seir_ages <- function(dias,
   Rt <- estimate_R(sapply(salida$`i: Daily infectious`,sum), 
                    method = "parametric_si",
                    config = make_config(list(mean_si = 3, std_si = 4)))$R
-  
   salida$'Rt: Effective reproduction number' <- c(rep(0,7),Rt)
-  
-  
-  #names(salida) <- c("S","V","E","e","I","Ii","i","Ig","Ic","U","u","D","d","R","v","vA")
   return(salida) 
 }
 
