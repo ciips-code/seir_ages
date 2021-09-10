@@ -18,8 +18,6 @@ library(stringr)
 library(shinyWidgets)
 library(waiter)
 
-
-
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 
 options(dplyr.summarise.inform = FALSE)
