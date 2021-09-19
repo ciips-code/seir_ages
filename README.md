@@ -15,5 +15,7 @@ This version of the IECS-CIIPS model conyains two main sets of modifications. Fi
 by adding a representation of different immunity states, both related to vaccination and natural immunity. Secondly, to analyze the 
 differential impact of NPIs or immunization strategies by incorporating age compartments (and their contact matrices).
 
+![seir](https://user-images.githubusercontent.com/4990842/133930928-f7a81f69-a19a-4906-bf2e-a4b8059f4be3.jpg)
+
 ## Live model
 The live version of this model is available at: https://iecs.shinyapps.io/seir-ages/
