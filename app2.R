@@ -1034,6 +1034,7 @@ server <- function (input, output, session) {
     if (input$save_comp_name %in% output_list) {showNotification("Duplicated scenario name", type="error")} else {
       show("del_scenarios")
       show("graficoComp")
+      show("icu_beds")
       df <- data_graf() %>% dplyr::filter(Compart==str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))) %>%
         dplyr::mutate(Compart=input$save_comp_name,
                       Compart_label=input$compart_a_graficar)
