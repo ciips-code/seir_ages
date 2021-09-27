@@ -913,6 +913,55 @@ formatData <- function(pais, ageGroups) {
 }
 
 
+updateDataOWD <- function (countries) {
+  dataOWD <- read.csv2("https://covid.ourworldindata.org/data/owid-covid-data.csv", sep = ",")
+  dataOWD <- dataOWD %>% dplyr::filter(iso_code %in% countries)
+  update <- as.Date(max(dataOWD$date))
+  updateWeek <- update-6
+  OWDSummaryData <- data.frame()
+  
+  for (p in countries) {
+    filteredData <- dataOWD[dataOWD$iso_code == p,]
+    population <- as.numeric(unique(filteredData$population))
+    dailyCases <- round(mean(as.numeric(filteredData$new_cases[filteredData$date<=update &
+                                                            filteredData$date>=updateWeek])), digits=0)
+    dailyDeaths <- round(mean(as.numeric(filteredData$new_deaths[filteredData$date<=update &
+                                                              filteredData$date>=updateWeek])), digits=0)
+    populationOver65 <- round(as.numeric(unique(filteredData$aged_65_older)), digits = 1)
+    totalCases <- as.numeric(last(filteredData$total_cases))
+    totalDeaths <- as.numeric(last(filteredData$total_deaths))
+    lifeExp <- round(as.numeric(unique(filteredData$life_expectancy)), digits= 1)
+    totalTestPerMillon <- as.numeric(last(filteredData$total_tests_per_thousand[filteredData$total_tests_per_thousand!=""]))*1000
+    dailyTests <- mean(tail(as.numeric(filteredData$new_tests[filteredData$new_tests!=""]), 7))
+    
+    filteredData <- data.frame(iso_code=p,
+                               metric=c("population",
+                                        "dailyCases",
+                                        "dailyDeaths",
+                                        "populationOver65",
+                                        "totalCases",
+                                        "totalDeaths",
+                                        "lifeExp",
+                                        "totalTestPerMillon",
+                                        "dailyTests"),
+                               value=c(population,
+                                       dailyCases,
+                                       dailyDeaths,
+                                       populationOver65,
+                                       totalCases,
+                                       totalDeaths,
+                                       lifeExp,
+                                       totalTestPerMillon,
+                                       dailyTests)
+                    )
+    OWDSummaryData <- rbind.fill(OWDSummaryData,filteredData)
+    
+  }
+  save(OWDSummaryData, file="data/OWDSummaryData.RData")
+}
+
+# actualiza OWD
+# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER"))
 
 # actualiza argentina y guarda RData
 # update(pais = "MEX", diasDeProyeccion = 1100)

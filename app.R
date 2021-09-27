@@ -8,6 +8,7 @@ library(zoo)
 library(stats)
 library(ggpubr)
 library(reshape2)
+library(reshape)
 library(ggplot2)
 library(DT)
 library(EpiEstim)
@@ -17,6 +18,10 @@ library(modelr)
 library(stringr)
 library(shinyWidgets)
 library(waiter)
+library(leaflet)
+library(rgdal)
+library(rgeos)
+library(shinythemes)
 
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 
@@ -38,15 +43,21 @@ flags <<- c(
 # carga RData
 
 load("data/parameters.RData", envir = .GlobalEnv)
+load("data/map.RData", envir = .GlobalEnv)
+load("data/OWDSummaryData.RData", envir = .GlobalEnv)
 
 # lee funciones
 source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
-source("functions/ui.R", encoding = "UTF-8")
+#source("functions/ui.R", encoding = "UTF-8")
+source("functions/ui_bid.R", encoding = "UTF-8")
+
 
 setParameters()
+
+mode = "basico"
 
 server <- function (input, output, session) {
   
@@ -60,6 +71,13 @@ server <- function (input, output, session) {
     html = spin_3(), 
     color = transparent(.5)
   )
+  
+  wm <- Waiter$new(
+    id = "map",
+    html = spin_3(), 
+    color = transparent(.5)
+  )
+  
   cancel.onSessionEnded <- session$onSessionEnded(function () {
     if (exists("compare")) {
       compare <<- compare[compare$Compart=="",]
@@ -68,7 +86,7 @@ server <- function (input, output, session) {
   
   # country customize
   observeEvent(input$country, { 
-   iso_country <- if (input$country=="Argentina") {"ARG"} else
+   iso_country <<- if (input$country=="Argentina") {"ARG"} else
       if (input$country=="Peru") {"PER"} else
       if (input$country=="Brazil") {"BRA"} else
       if (input$country=="Colombia") {"COL"} else
@@ -565,10 +583,18 @@ server <- function (input, output, session) {
   
   output$graficoUnico <- renderPlotly({
     #browser()
+    print("grafica")
     res_t()
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
+      # if ("compart_checkbox" %in% names(reactiveValuesToList(input))) {
+        col_id=str_trim(str_replace_all(substring(input$compart_checkbox,1,3),":",""))
+        compart_label <- input$compart_checkbox
+      # } else {
+      #   col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+      # }
       
-      col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+      
+      
       dataTemp = data_graf() %>% dplyr::filter(Compart == col_id)
       dataTemp$fechaDia = fechas_master 
       dataRep_cases = data_graf() %>% dplyr::filter(Compart == "casos_registrados")
@@ -608,7 +634,7 @@ server <- function (input, output, session) {
             plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = camasGenerales*porcAsignadoCovid, yend = camasGenerales*porcAsignadoCovid, name = "General beds", line=list(color="#fc9272", dash="dot"))
             plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,camasGenerales*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
             plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
-                                    yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+                                    yaxis = list(title = paste("Compartimento:",compart_label)))
             # , range = c(0,60000)
           } else if (input$compart_a_graficar == "Ic: Infectious (severe)") {
             #browser()
@@ -616,12 +642,12 @@ server <- function (input, output, session) {
             plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
             plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
             plot <-  plot %>% layout(xaxis = list(title = "Fecha"), 
-                                     yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+                                     yaxis = list(title = paste("Compartimento:",compart_label)))
             
           } else {
             plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
             plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
-                                    yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+                                    yaxis = list(title = paste("Compartimento:",compart_label)))
           }
           
           
@@ -640,7 +666,7 @@ server <- function (input, output, session) {
           plot %>% add_trace(y = ~r, mode = "dotted", line=list(dash="dot"), type="scatter", yaxis = "y2", name = "Rt") %>%
                    layout(yaxis2 = list(overlaying = "y", side = "right"),
                    xaxis = list(title = "Fecha"),
-                   yaxis = list(title = paste("Compartimento:",input$compart_a_graficar)))
+                   yaxis = list(title = paste("Compartimento:", compart_label)))
           plot %>% add_trace(y=~rep(1,1100), mode = "dotted", line=list(dash="dash", color="#bdbdbd"), type="scatter", yaxis = "y2", name = "Rt = 1")
         } else (plot)
       }
@@ -1119,7 +1145,53 @@ server <- function (input, output, session) {
   } else {NULL}
   })
   
-
+  output$map <- renderLeaflet({
+    wm$show()
+    paste(input$country)
+    leaflet(subset(map, ADM0_A3 == iso_country),
+                   options = leafletOptions(attributionControl=FALSE,
+                                         zoomControl = FALSE)) %>% 
+      addPolygons(color = "#444444", 
+                  weight = 1, 
+                  smoothFactor = 0.5,
+                  opacity = 1.0, 
+                  fillOpacity = 0.1) %>%
+      addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+      addPolygons(stroke = T, color="#18BC9C", weight=0.4) %>%
+      setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
+              lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
+              zoom = 3)
+    
+    
+  })
+  
+  output$population <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="population"]})         
+  output$dailyCases <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="dailyCases"]})         
+  output$dailyDeaths <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="dailyDeaths"]})         
+  output$populationOver65 <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="populationOver65"]})         
+  output$totalCases <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="totalCases"]})                 
+  output$totalDeaths <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="totalDeaths"]})         
+  output$lifeExp <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="lifeExp"]})         
+  output$totalTestPerMillon <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="totalTestPerMillon"]})         
+  output$dailyTests <- renderText({
+    input$country
+    OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="dailyTests"]})          
 }
 
 shinyApp(ui = getUI(), server = server)
