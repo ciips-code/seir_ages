@@ -586,12 +586,12 @@ server <- function (input, output, session) {
     print("grafica")
     res_t()
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
-      # if ("compart_checkbox" %in% names(reactiveValuesToList(input))) {
+      if (mode=="basico") {
         col_id=str_trim(str_replace_all(substring(input$compart_checkbox,1,3),":",""))
         compart_label <- input$compart_checkbox
-      # } else {
-      #   col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
-      # }
+      } else {
+        col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+      }
       
       
       
