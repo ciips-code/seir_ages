@@ -10,6 +10,7 @@ archivo_dosis0 <- "output/producto88/vacunacion_fabricantes_edad_UnicaDosis.csv"
 
 # crea funcion para actualizar
 actualizaArchivo <- function (archivo,dosis) {
+
 shell("git switch master")
 shell("git pull")
 shell(paste0("git log --  ", archivo, " > hist.txt"))
@@ -33,7 +34,7 @@ hist$commit <- str_remove(hist$commit,"commit ")
 # crea lista con aplicaciones acumuladas
 Vacunas <- list()
 
-for (i in nrow(hist)) {
+for (i in 1:nrow(hist)) {
   commit <- hist[i,1]
   date <- hist[i,2]
   shell(paste("git checkout", commit))
