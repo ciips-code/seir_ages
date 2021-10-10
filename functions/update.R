@@ -698,13 +698,26 @@ update <-  function(pais,diasDeProyeccion) {
     
     # vacunas
     
-    Vacunas = casos 
-    Vacunas[,2:20] <- 0
-    Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
-    Vacunas2 <- Vacunas
-
+    # save project unit and directory
+    projDir <- getwd()
+    unit <- substring(projDir,1,2)
+    
+    # clone repository
+    shell('cd/ & git clone https://github.com/MinCiencia/Datos-COVID19', intern = F, wait = T)
+    
+    # source update code
+    setwd(paste0(unit,"/Datos-COVID19"))
+    source(paste0(projDir,"/functions/updateChile.R"))
+    
+    # delete temp repository
+    shell("echo S|cacls datos-COVID19 /P everyone:f & cd/ & rmdir /s /q Datos-COVID19")
+    
+    # set project directory as wd
+    setwd(projDir)
   }
 
+  ##### BRASIL #####
+  
   if (pais=="BRA") {
     url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
     html <- paste(readLines(url), collapse="\n")
@@ -1175,4 +1188,7 @@ updateDataOWD <- function (countries) {
 
 # agrupa edades
 # datosArg <- formatData("MEX", ageGroups = ageGroupsV)
+
+
+update(pais = "CHL", diasDeProyeccion = 1100)
 

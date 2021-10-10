@@ -154,8 +154,8 @@ distDias <- function (archivo) {
   archivo[,1:10]
 }
 
-Vacunas1 <- distDias(dosis1)
+Vacunas <- distDias(dosis1)
 Vacunas2 <- distDias(dosis2)
 Vacunas0 <- distDias(dosis0)
 
-save(Vacunas1,Vacunas2,Vacunas0, file="chile.Rdata")
+save(Vacunas,Vacunas2,Vacunas0, file="chile.Rdata")
