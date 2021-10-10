@@ -1189,6 +1189,3 @@ updateDataOWD <- function (countries) {
 # agrupa edades
 # datosArg <- formatData("MEX", ageGroups = ageGroupsV)
 
-
-update(pais = "CHL", diasDeProyeccion = 1100)
-
