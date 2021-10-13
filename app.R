@@ -29,7 +29,7 @@ options(dplyr.summarise.inform = FALSE)
 
 comp_table <<- list()
 output_list <<- c()
-countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru")
+countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Uruguay")
 
 flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
@@ -37,7 +37,8 @@ flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cl.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/co.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/mx.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg"
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/uy.svg"
 )
 
 # carga RData
@@ -91,6 +92,7 @@ server <- function (input, output, session) {
       if (input$country=="Brazil") {"BRA"} else
       if (input$country=="Colombia") {"COL"} else
       if (input$country=="Mexico") {"MEX"} else
+      if (input$country=="Uruguay") {"URY"} else
       if (input$country=="Chile") {"CHL"}
       # print(iso_country)
       
@@ -100,6 +102,7 @@ server <- function (input, output, session) {
                      if (input$country=="Peru") {2804} else
                      if (input$country=="Colombia") {13054} else
                      if (input$country=="Mexico") {11634} else
+                     if (input$country=="Uruguay") {0} else
                      if (input$country=="Chile") {4481}
       
     # empirical cm
@@ -136,9 +139,9 @@ server <- function (input, output, session) {
                         ncol=length(ageGroups))
       for (t in 1:length(vacArg)) {
         # TODO: Expandir a otras vacunas
-        
         vacArg[[t]][3,]  <<- as.numeric(dataPorEdad$FMTD$vac[t,2:ncol(dataPorEdad$FMTD$vac)])
         vacArg[[t]][4,]  <<- as.numeric(dataPorEdad$FMTD$vac2[t,2:ncol(dataPorEdad$FMTD$vac2)])
+        
       }
       vacArg <<- rapply(vacArg, f=function(x) ifelse(is.na(x),0,x), how="replace" )
       promedio <<- round(Reduce("+", vacArg) / length(vacArg),0)
