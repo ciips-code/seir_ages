@@ -527,8 +527,6 @@ server <- function (input, output, session) {
   
   data_graf <- reactive({
     w$show()
-    #browser()
-    
     proy <- proy()
     data_graf <- bind_rows(
       tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
@@ -546,7 +544,7 @@ server <- function (input, output, session) {
       tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
       tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
       tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
-      tibble(Compart = "yl", do.call(rbind, lapply(proy$`yl: Years lost`,colSums)) %>% as_tibble()),
+      tibble(Compart = "yl", do.call(rbind, lapply(proy$`yl: Years lost`,colSums)) %>% as_tibble()) %>% mutate_at(ageGroups, cumsum),
       tibble(Compart = "pV", do.call(rbind, lapply(planVacunacionFinalParam,colSums)) %>% as_tibble())) %>%
       dplyr::mutate(fecha = rep(1:length(proy$S),17)) %>%
       # TODO: Arreglar
