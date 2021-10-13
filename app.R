@@ -52,13 +52,13 @@ source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
-#source("functions/ui.R", encoding = "UTF-8")
-source("functions/ui_bid.R", encoding = "UTF-8")
+source("functions/ui.R", encoding = "UTF-8")
+#source("functions/ui_bid.R", encoding = "UTF-8")
 
 
 setParameters()
 
-mode = "basico"
+mode = "basicoNo"
 
 server <- function (input, output, session) {
   
@@ -489,7 +489,7 @@ server <- function (input, output, session) {
   })
   observe({
     if (primeraVez) {
-      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[-16],"pV: Vaccination plan"), selected="i: Daily infectious")
+      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[-17],"pV: Vaccination plan"), selected="i: Daily infectious")
       updateNumericInput(session, inputId = "t", value = tHoy)
       for (c in rev(str_trim(str_replace_all(substring(names(proy())[-16],1,3),":","")))) {
         insertUI("#content", "afterEnd",
@@ -546,8 +546,9 @@ server <- function (input, output, session) {
       tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
       tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
       tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
+      tibble(Compart = "yl", do.call(rbind, lapply(proy$`yl: Years lost`,colSums)) %>% as_tibble()),
       tibble(Compart = "pV", do.call(rbind, lapply(planVacunacionFinalParam,colSums)) %>% as_tibble())) %>%
-      dplyr::mutate(fecha = rep(1:length(proy$S),16)) %>%
+      dplyr::mutate(fecha = rep(1:length(proy$S),17)) %>%
       # TODO: Arreglar
       dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
     data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
@@ -585,15 +586,16 @@ server <- function (input, output, session) {
   })
   
   output$graficoUnico <- renderPlotly({
-    #browser()
     print("grafica")
     res_t()
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
+      # browser()
       if (mode=="basico") {
         col_id=str_trim(str_replace_all(substring(input$compart_checkbox,1,3),":",""))
         compart_label <- input$compart_checkbox
       } else {
         col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+        compart_label <- input$compart_a_graficar
       }
       
       

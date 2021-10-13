@@ -31,13 +31,14 @@ seir_ages <- function(dias,
                       relaxGoal,
                       relaxFactor,
                       country
+                      # tablaDeAnosDeVidaPerdidos
 ){
   
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   names = list(immunityStates,
                ageGroups)
   # cada columna es un grupo
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = beta = tot = lapply(1:dias, 
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = beta = tot = yl = lapply(1:dias, 
                                                                                         matrix, 
                                                                                         data= 0, 
                                                                                         nrow=length(immunityStates), 
@@ -128,6 +129,14 @@ seir_ages <- function(dias,
         d[[t]] = d[[t]] * 1
       }
     }
+    # Acá calculamos los años de vida perdidos
+    # Multiplicamos el total de muertos por grupo de edad
+    # Multiplicado por una matriz que tenga los años de vida perdidos para cada grupo para este pais y los mismos valores para todos los estados inmunitarios
+    # Esto tiene que venir de parametros (ver si el vector o todo)
+    tablaDeAnosDeVidaPerdidos = c(80,70,60,50,40,30,20,10)
+    matrizDeAnosDeVidaPerdidos = matrix(rep(tablaDeAnosDeVidaPerdidos,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
+    yl[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidos
+    
     D[[t]]      = D[[t-1]] + d[[t-1]]
     u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +
                   Ig[[t-1]]/duracionIg +
@@ -262,7 +271,8 @@ seir_ages <- function(dias,
                  "U: Survivors"=U,
                  "u: Daily survivors"=u,
                  "D: Deaths"=D,
-                 "d: Daily deaths"=d)
+                 "d: Daily deaths"=d,
+                 "yl: Years lost"=yl)
   
   Rt <- estimate_R(sapply(salida$`i: Daily infectious`,sum), 
                    method = "parametric_si",
