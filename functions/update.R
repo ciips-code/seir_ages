@@ -715,6 +715,8 @@ update <-  function(pais,diasDeProyeccion) {
     # set project directory as wd
     setwd(projDir)
   }
+
+
   ##### URUGUAY #####
   
   if (pais=="URY") {
@@ -797,14 +799,10 @@ update <-  function(pais,diasDeProyeccion) {
     Vacunas0 <- Vacunas
     
   }
-<<<<<<< HEAD
 
-  
-  ##### Brasil ##########
-=======
+
   ##### BRASIL #####
->>>>>>> 1f25f021b0544bac5f3cf8b7e93a7e3182e11fde
-  
+
   if (pais=="BRA") {
     url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
     html <- paste(readLines(url), collapse="\n")
@@ -885,10 +883,9 @@ update <-  function(pais,diasDeProyeccion) {
                                                substring(colnames(defBrz),1,1)<="9"], sum)
       
       def <- as.data.frame(def)
-      #Vacunas = casos
-      #Vacunas[,2:20] <- 0
-      #Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
-      #Vacunas2 <- Vacunas
+      
+      
+  ##### Vacunas Brazil #####    
       
       #defino lista vacia
       datos_vacunas_brasil <- c() 
