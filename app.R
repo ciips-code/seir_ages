@@ -102,7 +102,7 @@ server <- function (input, output, session) {
                      if (input$country=="Peru") {2804} else
                      if (input$country=="Colombia") {13054} else
                      if (input$country=="Mexico") {11634} else
-                     if (input$country=="Uruguay") {0} else
+                     if (input$country=="Uruguay") {822} else
                      if (input$country=="Chile") {4481}
       
     # empirical cm
