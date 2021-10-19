@@ -698,15 +698,112 @@ update <-  function(pais,diasDeProyeccion) {
     
     # vacunas
     
-    Vacunas = casos 
-    Vacunas[,2:20] <- 0
-    Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
-    Vacunas2 <- Vacunas
-
+    # save project unit and directory
+    projDir <- getwd()
+    unit <- substring(projDir,1,2)
+    
+    # clone repository
+    shell('cd/ & git clone https://github.com/MinCiencia/Datos-COVID19', intern = F, wait = T)
+    
+    # source update code
+    setwd(paste0(unit,"/Datos-COVID19"))
+    source(paste0(projDir,"/functions/updateChile.R"))
+    
+    # delete temp repository
+    shell("echo S|cacls datos-COVID19 /P everyone:f & cd/ & rmdir /s /q Datos-COVID19")
+    
+    # set project directory as wd
+    setwd(projDir)
   }
+  ##### URUGUAY #####
+  
+  if (pais=="URY") {
+    
+    def = read.csv2("https://github.com/GUIAD-COVID/datos-y-visualizaciones-GUIAD/raw/master/datos/estadisticasUY_fallecimientos.csv", sep=",")
+    def$fecha <- as.Date(def$fecha, "%d/%m/%Y")
+    str_def <- data.frame(fecha=as.Date(NA),
+                          `00-04`=NA,
+                          `05-09`=NA,
+                          `10-14`=NA,
+                          `15-17`=NA,
+                          `18-24`=NA,
+                          `25-29`=NA,
+                          `30-34`=NA,
+                          `35-39`=NA,
+                          `40-44`=NA,
+                          `45-49`=NA,
+                          `50-54`=NA,
+                          `55-59`=NA,
+                          `60-64`=NA,
+                          `65-69`=NA,
+                          `70-74`=NA,
+                          `75-79`=NA,
+                          `80-84`=NA,
+                          `85-89`=NA,
+                          `90-99`=NA
+                          )
+    colnames(str_def) <- c("fecha", "00-04", "05-09", "10-14", "15-17", "18-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54",
+                           "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90-99")
+                          
+    
+    
+    def <- def %>% dplyr::mutate(gredad=case_when(edad >= 0 & edad<= 4  ~ "00-04",
+                                                  edad>=5 & edad <=9 ~ "05-09",
+                                                  edad>=10 & edad <=14 ~ "10-14",
+                                                  edad>=15 & edad <=17 ~ "15-17",
+                                                  edad>=18 & edad <=24 ~ "18-24",
+                                                  edad>=25 & edad <=29 ~ "25-29",
+                                                  edad>=30 & edad <=34 ~ "30-34",
+                                                  edad>=35 & edad <=39 ~ "35-39",
+                                                  edad>=40 & edad <=44 ~ "40-44",
+                                                  edad>=45 & edad <=49 ~ "45-49",
+                                                  edad>=50 & edad <=54 ~ "50-54",
+                                                  edad>=55 & edad <=59 ~ "55-59",
+                                                  edad>=60 & edad <=64 ~ "60-64",
+                                                  edad>=65 & edad <=69 ~ "65-69",
+                                                  edad>=70 & edad <=74 ~ "70-74",
+                                                  edad>=75 & edad <=79 ~ "75-79",
+                                                  edad>=80 & edad <=84 ~ "80-84",
+                                                  edad>=85 & edad <=89 ~ "85-89",
+                                                  edad>=90 & edad <=110 ~ "90-99",
+                                                  TRUE ~ "S.I.")) %>%
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~gredad, sum) %>%
+      dplyr::select(-`S.I.`)
+      
+    
+    def <- data.frame(fecha=seq(as.Date('2020-03-01'),
+                                as.Date(max(def$fecha)),
+                                by=1)) %>% left_join(def) 
+    
+    def <- rbind.fill(str_def,def)[-1,]
+    def[is.na(def)] <- 0
+    
+    casos <- def
+    casos[,-1] <- 0
+    
+    Vacunas <- data.frame(fecha_aplicacion=casos[,1])
+    Vacunas$`00-17` <- 0
+    Vacunas$`18-29` <- 0
+    Vacunas$`30-39` <- 0
+    Vacunas$`40-49` <- 0
+    Vacunas$`50-59` <- 0
+    Vacunas$`60-69` <- 0
+    Vacunas$`70-79` <- 0
+    Vacunas$`80-89` <- 0
+    Vacunas$`90-99` <- 0
+    Vacunas <- Vacunas[Vacunas$fecha_aplicacion>="2021-01-01",]
+    Vacunas2 <- Vacunas
+    Vacunas0 <- Vacunas
+    
+  }
+<<<<<<< HEAD
 
   
   ##### Brasil ##########
+=======
+  ##### BRASIL #####
+>>>>>>> 1f25f021b0544bac5f3cf8b7e93a7e3182e11fde
   
   if (pais=="BRA") {
     url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
@@ -1326,11 +1423,11 @@ updateDataOWD <- function (countries) {
 }
 
 # actualiza OWD
-# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER"))
+# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY"))
 
 # actualiza argentina y guarda RData
-# update(pais = "MEX", diasDeProyeccion = 1100)
+# update(pais = "URY", diasDeProyeccion = 1100)
 
 # agrupa edades
-# datosArg <- formatData("MEX", ageGroups = ageGroupsV)
+# datosArg <- formatData("URY", ageGroups = ageGroupsV)
 
