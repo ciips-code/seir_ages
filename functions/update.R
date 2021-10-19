@@ -715,6 +715,8 @@ update <-  function(pais,diasDeProyeccion) {
     # set project directory as wd
     setwd(projDir)
   }
+
+
   ##### URUGUAY #####
   
   if (pais=="URY") {
@@ -797,8 +799,10 @@ update <-  function(pais,diasDeProyeccion) {
     Vacunas0 <- Vacunas
     
   }
+
+
   ##### BRASIL #####
-  
+
   if (pais=="BRA") {
     url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
     html <- paste(readLines(url), collapse="\n")
@@ -879,10 +883,9 @@ update <-  function(pais,diasDeProyeccion) {
                                                substring(colnames(defBrz),1,1)<="9"], sum)
       
       def <- as.data.frame(def)
-      #Vacunas = casos
-      #Vacunas[,2:20] <- 0
-      #Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
-      #Vacunas2 <- Vacunas
+      
+      
+  ##### Vacunas Brazil #####    
       
       #defino lista vacia
       datos_vacunas_brasil <- c() 
@@ -1091,7 +1094,162 @@ update <-  function(pais,diasDeProyeccion) {
       Vacunas0[is.na(Vacunas0)] <- 0
       
       
-    } 
+    } # cierra if de Brazil
+    
+
+        
+  ######## COSTA RICA ##########
+    
+    if (pais=="CRI") {
+      
+      
+      # Levanto los datos  
+      
+      library(readxl)
+      library('data.table')
+      
+      #2020
+      temp0 <- tempfile()
+      download.file("https://geovision.uned.ac.cr/oges/archivos_covid/baseanonimizada/BASE%20ANONIMIZADA%20CASOS%20COVID%202020.xlsx",
+                    temp0, 
+                    mode = "wb")
+      data20 = readxl::read_xlsx(temp0, sheet = "BASE")
+      data20 = setDT(data20)
+      
+      # Selecciono datos que necesito
+      datos20 = data20[, c("FECHA PUBLICACION", "EDAD","FALLECIDO")]
+      
+      # Cambio los Nombres 
+      setnames(datos20, c("FECHA PUBLICACION","EDAD","FALLECIDO"), c("fecha", "edad", "fallecido"))
+      
+      datos20$edad = as.numeric(datos20$edad)
+      datos20$fecha = as.character(datos20$fecha)
+      
+      #2021
+      temp <- tempfile()
+      download.file("http://geovision.uned.ac.cr/oges/archivos_covid/baseanonimizada/BASE%20ANONIMIZADA%20CASOS%20COVID%202021%20AL%2005%20SETIEMBRE.xlsx",
+                    temp, 
+                    mode = "wb")
+      data21 = readxl::read_xlsx(temp, sheet = "BASE")
+      
+      data21 = setDT(data21)
+      
+      # Selecciono datos que necesito
+      datos21 = data21[, c("FECHA PUBLICACION", "EDAD","FALLECIDO")]
+      
+      # Cambio los Nombres 
+      setnames(datos21, c("FECHA PUBLICACION","EDAD","FALLECIDO"), c("fecha", "edad", "fallecido"))
+      
+      datos21$edad = as.numeric(datos21$edad)
+      datos21$fecha = as.character(datos21$fecha)
+      
+      
+      # uno ambos datasets 2020 + 2021
+      datos = rbind(datos20, datos21)
+      
+
+      
+  ######## Casos Costa Rica #############  
+      
+      library(dplyr)
+      casos <- datos %>% 
+        
+        # filtro los casos que vienen sin edad cargada
+        dplyr::filter(!is.na(edad) & !is.na(fecha)) %>%
+        
+        #formato de fecha 
+        dplyr::mutate(fecha=as.character(fecha)) %>%
+        
+        # agrego variables agrupadas por edad  
+        dplyr::mutate(gredad=case_when(edad >=0 & edad <=4 ~ "00-04",
+                                       edad >=5 & edad <=9 ~ "05-09",
+                                       edad >=10 & edad <=14 ~ "10-14",
+                                       edad >=15 & edad <=17 ~ "15-17",
+                                       edad >=18 & edad <=24 ~ "18-24",
+                                       edad >=25 & edad <=29 ~ "25-29",
+                                       edad >=30 & edad <=34 ~ "30-34",
+                                       edad >=35 & edad <=39 ~ "35-39",
+                                       edad >=40 & edad <=44 ~ "40-44",
+                                       edad >=45 & edad <=49 ~ "45-49",
+                                       edad >=50 & edad <=54 ~ "50-54",
+                                       edad >=55 & edad <=59 ~ "55-59",
+                                       edad >=60 & edad <=64 ~ "60-64",
+                                       edad >=65 & edad <=69 ~ "65-69",
+                                       edad >=70 & edad <=74 ~ "70-74",
+                                       edad >=75 & edad <=79 ~ "75-79",
+                                       edad >=80 & edad <=84 ~ "80-84",
+                                       edad >=85 & edad <=89 ~ "85-89",
+                                       edad >=90 ~ "90-99")) %>%
+        
+        
+        dplyr::mutate(cuenta=1) %>% 
+        reshape::cast(fecha~gredad, sum)
+      
+      
+      casos <- data.frame(fecha=as.character(seq(as.Date('2020-03-01'),
+                                                 as.Date(max(casos$fecha)),
+                                                 by=1))) %>% left_join(casos) 
+      
+      casos[is.na(casos)] <- 0
+      
+      
+  ######## Defunciones Costa Rica #############
+      
+      
+      def <- datos %>% 
+        
+        # filtro los casos que vienen sin edad cargada
+        dplyr::filter(!is.na(edad) & !is.na(fecha) &
+                        fallecido=="SI") %>%
+        
+        #formato de fecha 
+        dplyr::mutate(fecha=as.character(fecha)) %>%
+        
+        # agrego variables agrupadas por edad  
+        dplyr::mutate(gredad=case_when(edad >=0 & edad <=4 ~ "00-04",
+                                       edad >=5 & edad <=9 ~ "05-09",
+                                       edad >=10 & edad <=14 ~ "10-14",
+                                       edad >=15 & edad <=17 ~ "15-17",
+                                       edad >=18 & edad <=24 ~ "18-24",
+                                       edad >=25 & edad <=29 ~ "25-29",
+                                       edad >=30 & edad <=34 ~ "30-34",
+                                       edad >=35 & edad <=39 ~ "35-39",
+                                       edad >=40 & edad <=44 ~ "40-44",
+                                       edad >=45 & edad <=49 ~ "45-49",
+                                       edad >=50 & edad <=54 ~ "50-54",
+                                       edad >=55 & edad <=59 ~ "55-59",
+                                       edad >=60 & edad <=64 ~ "60-64",
+                                       edad >=65 & edad <=69 ~ "65-69",
+                                       edad >=70 & edad <=74 ~ "70-74",
+                                       edad >=75 & edad <=79 ~ "75-79",
+                                       edad >=80 & edad <=84 ~ "80-84",
+                                       edad >=85 & edad <=89 ~ "85-89",
+                                       edad >=90 ~ "90-99")) %>%
+        
+        
+        dplyr::mutate(cuenta=1) %>% 
+        reshape::cast(fecha~gredad, sum)
+      
+      
+      def <- data.frame(fecha=as.character(seq(as.Date('2020-03-01'),
+                                               as.Date(max(def$fecha)),
+                                               by=1))) %>% left_join(def) 
+      
+      def[is.na(def)] <- 0
+      
+      
+      ########### Vacunas Costa Rica (PENDIENTE) #############
+      
+      
+      Vacunas = casos 
+      Vacunas[,2:20] <- 0
+      Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
+      Vacunas2 <- Vacunas
+      
+      
+    } # cierra if de CR
+    
+    
     
   }
   
