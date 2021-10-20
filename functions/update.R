@@ -924,7 +924,7 @@ update <-  function(pais,diasDeProyeccion) {
         
         # reemplazar caracteres raros
         datos_vacunas$tipo_dosis = gsub("ÂªÂ."," ",datos_vacunas$tipo_dosis)
-        datos_vacunas$tipo_dosis = gsub("Â ","",datos_vacunas$tipo_dosis)
+        datos_vacunas$tipo_dosis = gsub("Â.","",datos_vacunas$tipo_dosis)
         
         # Cambio el texto de tipo de dosis
         datos_vacunas[tipo_dosis == 'Dose', num_dosis:= 0] #monodosis
