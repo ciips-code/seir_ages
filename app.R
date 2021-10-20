@@ -29,13 +29,14 @@ options(dplyr.summarise.inform = FALSE)
 
 comp_table <<- list()
 output_list <<- c()
-countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Mexico", "Peru", "Uruguay")
+countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay")
 
 flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/br.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cl.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/co.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cr.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/mx.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/uy.svg"
@@ -87,11 +88,13 @@ server <- function (input, output, session) {
   
   # country customize
   observeEvent(input$country, { 
+    browser()
    iso_country <<- if (input$country=="Argentina") {"ARG"} else
       if (input$country=="Peru") {"PER"} else
       if (input$country=="Brazil") {"BRA"} else
       if (input$country=="Colombia") {"COL"} else
       if (input$country=="Mexico") {"MEX"} else
+      if (input$country=="Costa Rica") {"CRI"} else
       if (input$country=="Uruguay") {"URY"} else
       if (input$country=="Chile") {"CHL"}
       # print(iso_country)
@@ -102,6 +105,7 @@ server <- function (input, output, session) {
                      if (input$country=="Peru") {2804} else
                      if (input$country=="Colombia") {13054} else
                      if (input$country=="Mexico") {11634} else
+                     if (input$country=="Costa Rica") {245} else
                      if (input$country=="Uruguay") {822} else
                      if (input$country=="Chile") {4481}
       

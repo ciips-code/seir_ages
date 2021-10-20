@@ -803,305 +803,304 @@ update <-  function(pais,diasDeProyeccion) {
 
   ##### BRASIL #####
 
-  if (pais=="BRA") {
-    url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
-    html <- paste(readLines(url), collapse="\n")
-    links <- str_match_all(html, "<a href=\"(.*?)\"")
-    links <- str_subset(links[[1]],c("csv"))
-    links <- links[substring(links,1,1)!="<"] 
-    casesBrz <- data.frame()
-    defBrz <- data.frame()
-    
-    for (l in links) {
-      
-      file=str_replace_all(l,"https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/","")
-      
-      print(paste("Leyendo:",l))
-      df <- read.csv2(l) 
-      df <- df %>% dplyr::filter(substring(classificacaoFinal,1,6)=="Confir") %>%
-        dplyr::mutate(fechaRep=substring(dataNotificacao,1,10),
-                      fechaSintomas=substring(dataInicioSintomas,1,10),
-                      edad=as.numeric(idade)) %>%
-        dplyr::select(fechaRep,fechaSintomas,edad,evolucaoCaso) %>%
-        dplyr::mutate(gredad=case_when(edad>=1 & edad <=4 ~ "00-04",
-                                       edad>=5 & edad <=9 ~ "05-09",
-                                       edad>=10 & edad <=14 ~ "10-14",
-                                       edad>=15 & edad <=17 ~ "15-17",
-                                       edad>=18 & edad <=24 ~ "18-24",
-                                       edad>=25 & edad <=29 ~ "25-29",
-                                       edad>=30 & edad <=34 ~ "30-34",
-                                       edad>=35 & edad <=39 ~ "35-39",
-                                       edad>=40 & edad <=44 ~ "40-44",
-                                       edad>=45 & edad <=49 ~ "45-49",
-                                       edad>=50 & edad <=54 ~ "50-54",
-                                       edad>=55 & edad <=59 ~ "55-59",
-                                       edad>=60 & edad <=64 ~ "60-64",
-                                       edad>=65 & edad <=69 ~ "65-69",
-                                       edad>=70 & edad <=74 ~ "70-74",
-                                       edad>=75 & edad <=79 ~ "75-79",
-                                       edad>=80 & edad <=84 ~ "80-84",
-                                       edad>=85 & edad <=89 ~ "85-89",
-                                       edad>=90 & edad <=110 ~ "90-99",
-                                       TRUE ~ "S.I."))
-      df$fechaRep[df$fechaRep=="null"] <- NA
-      df$fechaRep[df$fechaRep=="undefined"] <- NA
-      df$fechaSintomas[df$fechaSintomas=="null"] <- NA
-      df$fechaSintomas[df$fechaSintomas=="undefined"] <- NA
-      df$fecha=coalesce(df$fechaSintomas,df$fechaRep)
-      df$fecha=as.Date(df$fecha)
-      df <- df %>% dplyr::select(fecha,gredad,evolucaoCaso)
-      casos <- df %>% dplyr::mutate(cuenta=1) %>%
-        reshape::cast(fecha~gredad, sum)
-      casos <- data.frame(fecha=as.Date(as.character(seq(as.Date("2020-01-01"),
-                                                         as.Date(Sys.Date()),
-                                                         by=1)))) %>% left_join(casos) 
-      casos[is.na(casos)] <- 0
-      casos$type <- "cases"
-      casos$file <- file
-      def <- df %>% dplyr::filter(evolucaoCaso=="Óbito") %>%
-        dplyr::mutate(cuenta=1) %>%
-        reshape::cast(fecha~gredad, sum) 
-      def <- data.frame(fecha=as.Date(as.character(seq(as.Date("2020-01-01"),
-                                                       as.Date(Sys.Date()),
-                                                       by=1)))) %>% left_join(def) 
-      def[is.na(def)] <- 0
-      def$type <- "def"
-      def$file <- file
-      casesBrz <- rbind.fill(casesBrz,casos)
-      defBrz <- rbind.fill(defBrz,def)
-      print(Sys.time())
-      print(paste("Agregado:",file))
-      print(paste("Archivos agregados:",grep(l,links)))
-      
-      casos <- casesBrz %>% dplyr::group_by(fecha) %>%
-        dplyr::summarise_at(colnames(casesBrz)[substring(colnames(casesBrz),1,1)>="0" &
-                                                 substring(colnames(casesBrz),1,1)<="9"], sum)
-      casos <- as.data.frame(casos)
-      defBrz[is.na(defBrz)] <- 0
-      def <- defBrz %>% dplyr::group_by(fecha) %>%
-        dplyr::summarise_at(colnames(defBrz)[substring(colnames(defBrz),1,1)>="0" &
-                                               substring(colnames(defBrz),1,1)<="9"], sum)
-      
-      def <- as.data.frame(def)
-      
-      
-  ##### Vacunas Brazil #####    
-      
-      #defino lista vacia
-      datos_vacunas_brasil <- c() 
-      
-      # lista de estados de Brasil
-      estados = c('AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO')
-      #estados = c('AC', 'TO')
-      
-      for (i in estados) {
-        
-        # levanto info de la url
-        print(paste0('Descargo el listado de vacunas del estado ', i, ' de Brasil'))
-        
-        url= paste0('https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/PNI/vacina/uf/2021-09-23/uf%3D', i, '/part-00000-a8e22644-5d59-4166-9357-5246241f143a.c000.csv')
-        print(url)
-        download.file(url, "vacunas_brasil_estado.csv") 
-        
-        # levanto datos en R
-        print(paste0('Guardo datos de vacunas en R del estado ', i, ' de Brasil'))
-        
-        library('data.table')
-        datos_vacunas = fread("vacunas_brasil_estado.csv",  sep=';')
-        
-        #Remuevo el csv
-        file.remove('vacunas_brasil_estado.csv')
-        
-        
-        print('Seleccion y Manipulacion de datos')
-        
-        # Selecciono datos que necesito
-        datos_vacunas = datos_vacunas[, c("paciente_idade", "paciente_enumsexobiologico","vacina_dataaplicacao","vacina_descricao_dose")]
-        
-        # Cambio los Nombres 
-        setnames(datos_vacunas, c("paciente_idade", "paciente_enumsexobiologico","vacina_dataaplicacao","vacina_descricao_dose"),
-                 c("edad", "genero","fecha_aplicacion","tipo_dosis"))
-        
-        # reemplazar caracteres raros
-        datos_vacunas$tipo_dosis = gsub("ÂªÂ."," ",datos_vacunas$tipo_dosis)
-        datos_vacunas$tipo_dosis = gsub("Â ","",datos_vacunas$tipo_dosis)
-        
-        # Cambio el texto de tipo de dosis
-        datos_vacunas[tipo_dosis == 'Dose', num_dosis:= 0] #monodosis
-        datos_vacunas[tipo_dosis == "1 Dose", num_dosis:= 1] #1° dosis
-        datos_vacunas[tipo_dosis == '2 Dose', num_dosis:= 2] #2° dosis
-        
-        
-        #uno las tablas que voy descargando
-        print('Append de las vacunas de los distintos estados de Brasil')
-        
-        datos_vacunas_brasil <- rbind(datos_vacunas_brasil, datos_vacunas)
-        remove(datos_vacunas)
-      }
-      
-      rm(i)
-      gc()
-      
-      
-      
-      ## Armo la estructura de vacunacion por grupo etario
-      
-      library(dplyr)
-      library(reshape2)
-      
-      Vacunas = setDF(datos_vacunas_brasil)
-      
-      
-      ########## 1° Dosis ###########
-      
-      Vacunas1 = Vacunas %>% dplyr::filter(num_dosis==1 ) %>%  
-        
-        # agrego variables agrupadas por edad  
-        dplyr::mutate(gr_edad=case_when(edad >=1 & edad <=4 ~ "00-04",
-                                        edad >=5 & edad <=9 ~ "05-09",
-                                        edad >=10 & edad <=14 ~ "10-14",
-                                        edad >=15 & edad <=17 ~ "15-17",
-                                        edad >=18 & edad <=24 ~ "18-24",
-                                        edad >=25 & edad <=29 ~ "25-29",
-                                        edad >=30 & edad <=34 ~ "30-34",
-                                        edad >=35 & edad <=39 ~ "35-39",
-                                        edad >=40 & edad <=44 ~ "40-44",
-                                        edad >=45 & edad <=49 ~ "45-49",
-                                        edad >=50 & edad <=54 ~ "50-54",
-                                        edad >=55 & edad <=59 ~ "55-59",
-                                        edad >=60 & edad <=64 ~ "60-64",
-                                        edad >=65 & edad <=69 ~ "65-69",
-                                        edad >=70 & edad <=74 ~ "70-74",
-                                        edad >=75 & edad <=79 ~ "75-79",
-                                        edad >=80 & edad <=84 ~ "80-84",
-                                        edad >=85 & edad <=89 ~ "85-89",
-                                        edad >=90 ~ "90-99")) %>%
-        
-        # agrupo por fecha y edad
-        dplyr::group_by(fecha_aplicacion, gr_edad) %>%
-        
-        # sumarizo 
-        dplyr::summarise(n=n()) %>%
-        
-        reshape::cast(fecha_aplicacion~gr_edad, mean) %>%
-        
-        dplyr::select(fecha_aplicacion,"00-04","05-09","10-14","15-17","18-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-99") %>%
-        dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
-      
-      
-      Vacunas1 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas1$fecha_aplicacion)),
-                                                  as.Date(max(Vacunas1$fecha_aplicacion)),
-                                                  by=1)) %>% left_join(Vacunas1) 
-      
-      #vacunas=setDT(Vacunas)
-      #Vacunas[,.N, by=gr_edad]
-      
-      # reemplazo nulos por cero
-      Vacunas[is.na(Vacunas)] <- 0
-      
-      
-      ########## 2° Dosis ###########
-      
-      #Vacunas2 = setDF(dataVacunas)
-      Vacunas2 = Vacunas %>% dplyr::filter(num_dosis==2 ) %>%   
-        
-        # agrego variables agrupadas por edad  
-        dplyr::mutate(gr_edad=case_when(edad >=1 & edad <=4 ~ "00-04",
-                                        edad >=5 & edad <=9 ~ "05-09",
-                                        edad >=10 & edad <=14 ~ "10-14",
-                                        edad >=15 & edad <=17 ~ "15-17",
-                                        edad >=18 & edad <=24 ~ "18-24",
-                                        edad >=25 & edad <=29 ~ "25-29",
-                                        edad >=30 & edad <=34 ~ "30-34",
-                                        edad >=35 & edad <=39 ~ "35-39",
-                                        edad >=40 & edad <=44 ~ "40-44",
-                                        edad >=45 & edad <=49 ~ "45-49",
-                                        edad >=50 & edad <=54 ~ "50-54",
-                                        edad >=55 & edad <=59 ~ "55-59",
-                                        edad >=60 & edad <=64 ~ "60-64",
-                                        edad >=65 & edad <=69 ~ "65-69",
-                                        edad >=70 & edad <=74 ~ "70-74",
-                                        edad >=75 & edad <=79 ~ "75-79",
-                                        edad >=80 & edad <=84 ~ "80-84",
-                                        edad >=85 & edad <=89 ~ "85-89",
-                                        edad >=90 ~ "90-99")) %>%
-        
-        # agrupo por fecha y edad
-        dplyr::group_by(fecha_aplicacion, gr_edad) %>%
-        
-        # sumarizo 
-        dplyr::summarise(n=n()) %>%
-        
-        reshape::cast(fecha_aplicacion~gr_edad, mean) %>%
-        
-        dplyr::select(fecha_aplicacion,"00-04","05-09","10-14","15-17","18-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-99") %>%
-        dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
-      
-      
-      Vacunas2 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas2$fecha_aplicacion)),
-                                                  as.Date(max(Vacunas2$fecha_aplicacion)),
-                                                  by=1)) %>% left_join(Vacunas2) 
-      
-      
-      # reemplazo nulos por cero
-      Vacunas2[is.na(Vacunas2)] <- 0
-      
-      
-      
-      ########## Monodosis ###########
-      
-      #Vacunas0 = setDF(dataVacunas)
-      Vacunas0 = Vacunas %>% dplyr::filter(num_dosis==0 ) %>%   
-        
-        # agrego variables agrupadas por edad  
-        dplyr::mutate(gr_edad=case_when(edad >=1 & edad <=4 ~ "00-04",
-                                        edad >=5 & edad <=9 ~ "05-09",
-                                        edad >=10 & edad <=14 ~ "10-14",
-                                        edad >=15 & edad <=17 ~ "15-17",
-                                        edad >=18 & edad <=24 ~ "18-24",
-                                        edad >=25 & edad <=29 ~ "25-29",
-                                        edad >=30 & edad <=34 ~ "30-34",
-                                        edad >=35 & edad <=39 ~ "35-39",
-                                        edad >=40 & edad <=44 ~ "40-44",
-                                        edad >=45 & edad <=49 ~ "45-49",
-                                        edad >=50 & edad <=54 ~ "50-54",
-                                        edad >=55 & edad <=59 ~ "55-59",
-                                        edad >=60 & edad <=64 ~ "60-64",
-                                        edad >=65 & edad <=69 ~ "65-69",
-                                        edad >=70 & edad <=74 ~ "70-74",
-                                        edad >=75 & edad <=79 ~ "75-79",
-                                        edad >=80 & edad <=84 ~ "80-84",
-                                        edad >=85 & edad <=89 ~ "85-89",
-                                        edad >=90 ~ "90-99")) %>%
-        
-        # agrupo por fecha y edad
-        dplyr::group_by(fecha_aplicacion, gr_edad) %>%
-        
-        # sumarizo 
-        dplyr::summarise(n=n()) %>%
-        
-        reshape::cast(fecha_aplicacion~gr_edad, mean) %>%
-        
-        dplyr::select(fecha_aplicacion,"00-04","05-09","10-14","15-17","18-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-99") %>%
-        dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
-      
-      
-      Vacunas0 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas0$fecha_aplicacion)),
-                                                  as.Date(max(Vacunas0$fecha_aplicacion)),
-                                                  by=1)) %>% left_join(Vacunas0) 
-      
-      # reemplazo nulos por cero
-      Vacunas0[is.na(Vacunas0)] <- 0
-      
-      
-    } # cierra if de Brazil
-    
+  # if (pais=="BRA") {
+  #   url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
+  #   html <- paste(readLines(url), collapse="\n")
+  #   links <- str_match_all(html, "<a href=\"(.*?)\"")
+  #   links <- str_subset(links[[1]],c("csv"))
+  #   links <- links[substring(links,1,1)!="<"] 
+  #   casesBrz <- data.frame()
+  #   defBrz <- data.frame()
+  #   
+  #   for (l in links) {
+  #     
+  #     file=str_replace_all(l,"https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/","")
+  #     
+  #     print(paste("Leyendo:",l))
+  #     df <- read.csv2(l) 
+  #     df <- df %>% dplyr::filter(substring(classificacaoFinal,1,6)=="Confir") %>%
+  #       dplyr::mutate(fechaRep=substring(dataNotificacao,1,10),
+  #                     fechaSintomas=substring(dataInicioSintomas,1,10),
+  #                     edad=as.numeric(idade)) %>%
+  #       dplyr::select(fechaRep,fechaSintomas,edad,evolucaoCaso) %>%
+  #       dplyr::mutate(gredad=case_when(edad>=1 & edad <=4 ~ "00-04",
+  #                                      edad>=5 & edad <=9 ~ "05-09",
+  #                                      edad>=10 & edad <=14 ~ "10-14",
+  #                                      edad>=15 & edad <=17 ~ "15-17",
+  #                                      edad>=18 & edad <=24 ~ "18-24",
+  #                                      edad>=25 & edad <=29 ~ "25-29",
+  #                                      edad>=30 & edad <=34 ~ "30-34",
+  #                                      edad>=35 & edad <=39 ~ "35-39",
+  #                                      edad>=40 & edad <=44 ~ "40-44",
+  #                                      edad>=45 & edad <=49 ~ "45-49",
+  #                                      edad>=50 & edad <=54 ~ "50-54",
+  #                                      edad>=55 & edad <=59 ~ "55-59",
+  #                                      edad>=60 & edad <=64 ~ "60-64",
+  #                                      edad>=65 & edad <=69 ~ "65-69",
+  #                                      edad>=70 & edad <=74 ~ "70-74",
+  #                                      edad>=75 & edad <=79 ~ "75-79",
+  #                                      edad>=80 & edad <=84 ~ "80-84",
+  #                                      edad>=85 & edad <=89 ~ "85-89",
+  #                                      edad>=90 & edad <=110 ~ "90-99",
+  #                                      TRUE ~ "S.I."))
+  #     df$fechaRep[df$fechaRep=="null"] <- NA
+  #     df$fechaRep[df$fechaRep=="undefined"] <- NA
+  #     df$fechaSintomas[df$fechaSintomas=="null"] <- NA
+  #     df$fechaSintomas[df$fechaSintomas=="undefined"] <- NA
+  #     df$fecha=coalesce(df$fechaSintomas,df$fechaRep)
+  #     df$fecha=as.Date(df$fecha)
+  #     df <- df %>% dplyr::select(fecha,gredad,evolucaoCaso)
+  #     casos <- df %>% dplyr::mutate(cuenta=1) %>%
+  #       reshape::cast(fecha~gredad, sum)
+  #     casos <- data.frame(fecha=as.Date(as.character(seq(as.Date("2020-01-01"),
+  #                                                        as.Date(Sys.Date()),
+  #                                                        by=1)))) %>% left_join(casos) 
+  #     casos[is.na(casos)] <- 0
+  #     casos$type <- "cases"
+  #     casos$file <- file
+  #     def <- df %>% dplyr::filter(evolucaoCaso=="Óbito") %>%
+  #       dplyr::mutate(cuenta=1) %>%
+  #       reshape::cast(fecha~gredad, sum) 
+  #     def <- data.frame(fecha=as.Date(as.character(seq(as.Date("2020-01-01"),
+  #                                                      as.Date(Sys.Date()),
+  #                                                      by=1)))) %>% left_join(def) 
+  #     def[is.na(def)] <- 0
+  #     def$type <- "def"
+  #     def$file <- file
+  #     casesBrz <- rbind.fill(casesBrz,casos)
+  #     defBrz <- rbind.fill(defBrz,def)
+  #     print(Sys.time())
+  #     print(paste("Agregado:",file))
+  #     print(paste("Archivos agregados:",grep(l,links)))
+  #     
+  #     casos <- casesBrz %>% dplyr::group_by(fecha) %>%
+  #       dplyr::summarise_at(colnames(casesBrz)[substring(colnames(casesBrz),1,1)>="0" &
+  #                                                substring(colnames(casesBrz),1,1)<="9"], sum)
+  #     casos <- as.data.frame(casos)
+  #     defBrz[is.na(defBrz)] <- 0
+  #     def <- defBrz %>% dplyr::group_by(fecha) %>%
+  #       dplyr::summarise_at(colnames(defBrz)[substring(colnames(defBrz),1,1)>="0" &
+  #                                              substring(colnames(defBrz),1,1)<="9"], sum)
+  #     
+  #     def <- as.data.frame(def)
+  #     
+  #     
+  # ##### Vacunas Brazil #####    
+  #     
+  #     #defino lista vacia
+  #     datos_vacunas_brasil <- c() 
+  #     
+  #     # lista de estados de Brasil
+  #     estados = c('AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO')
+  #     #estados = c('AC', 'TO')
+  #     
+  #     for (i in estados) {
+  #       
+  #       # levanto info de la url
+  #       print(paste0('Descargo el listado de vacunas del estado ', i, ' de Brasil'))
+  #       
+  #       url= paste0('https://s3-sa-east-1.amazonaws.com/ckan.saude.gov.br/PNI/vacina/uf/2021-09-23/uf%3D', i, '/part-00000-a8e22644-5d59-4166-9357-5246241f143a.c000.csv')
+  #       print(url)
+  #       download.file(url, "vacunas_brasil_estado.csv") 
+  #       
+  #       # levanto datos en R
+  #       print(paste0('Guardo datos de vacunas en R del estado ', i, ' de Brasil'))
+  #       
+  #       library('data.table')
+  #       datos_vacunas = fread("vacunas_brasil_estado.csv",  sep=';')
+  #       
+  #       #Remuevo el csv
+  #       file.remove('vacunas_brasil_estado.csv')
+  #       
+  #       
+  #       print('Seleccion y Manipulacion de datos')
+  #       
+  #       # Selecciono datos que necesito
+  #       datos_vacunas = datos_vacunas[, c("paciente_idade", "paciente_enumsexobiologico","vacina_dataaplicacao","vacina_descricao_dose")]
+  #       
+  #       # Cambio los Nombres 
+  #       setnames(datos_vacunas, c("paciente_idade", "paciente_enumsexobiologico","vacina_dataaplicacao","vacina_descricao_dose"),
+  #                c("edad", "genero","fecha_aplicacion","tipo_dosis"))
+  #       
+  #       # reemplazar caracteres raros
+  #       datos_vacunas$tipo_dosis = gsub("ÂªÂ."," ",datos_vacunas$tipo_dosis)
+  #       datos_vacunas$tipo_dosis = gsub("Â ","",datos_vacunas$tipo_dosis)
+  #       
+  #       # Cambio el texto de tipo de dosis
+  #       datos_vacunas[tipo_dosis == 'Dose', num_dosis:= 0] #monodosis
+  #       datos_vacunas[tipo_dosis == "1 Dose", num_dosis:= 1] #1° dosis
+  #       datos_vacunas[tipo_dosis == '2 Dose', num_dosis:= 2] #2° dosis
+  #       
+  #       
+  #       #uno las tablas que voy descargando
+  #       print('Append de las vacunas de los distintos estados de Brasil')
+  #       
+  #       datos_vacunas_brasil <- rbind(datos_vacunas_brasil, datos_vacunas)
+  #       remove(datos_vacunas)
+  #     }
+  #     
+  #     rm(i)
+  #     gc()
+  #     
+  #     
+  #     
+  #     ## Armo la estructura de vacunacion por grupo etario
+  #     
+  #     library(dplyr)
+  #     library(reshape2)
+  #     
+  #     Vacunas = setDF(datos_vacunas_brasil)
+  #     
+  #     
+  #     ########## 1° Dosis ###########
+  #     
+  #     Vacunas1 = Vacunas %>% dplyr::filter(num_dosis==1 ) %>%  
+  #       
+  #       # agrego variables agrupadas por edad  
+  #       dplyr::mutate(gr_edad=case_when(edad >=1 & edad <=4 ~ "00-04",
+  #                                       edad >=5 & edad <=9 ~ "05-09",
+  #                                       edad >=10 & edad <=14 ~ "10-14",
+  #                                       edad >=15 & edad <=17 ~ "15-17",
+  #                                       edad >=18 & edad <=24 ~ "18-24",
+  #                                       edad >=25 & edad <=29 ~ "25-29",
+  #                                       edad >=30 & edad <=34 ~ "30-34",
+  #                                       edad >=35 & edad <=39 ~ "35-39",
+  #                                       edad >=40 & edad <=44 ~ "40-44",
+  #                                       edad >=45 & edad <=49 ~ "45-49",
+  #                                       edad >=50 & edad <=54 ~ "50-54",
+  #                                       edad >=55 & edad <=59 ~ "55-59",
+  #                                       edad >=60 & edad <=64 ~ "60-64",
+  #                                       edad >=65 & edad <=69 ~ "65-69",
+  #                                       edad >=70 & edad <=74 ~ "70-74",
+  #                                       edad >=75 & edad <=79 ~ "75-79",
+  #                                       edad >=80 & edad <=84 ~ "80-84",
+  #                                       edad >=85 & edad <=89 ~ "85-89",
+  #                                       edad >=90 ~ "90-99")) %>%
+  #       
+  #       # agrupo por fecha y edad
+  #       dplyr::group_by(fecha_aplicacion, gr_edad) %>%
+  #       
+  #       # sumarizo 
+  #       dplyr::summarise(n=n()) %>%
+  #       
+  #       reshape::cast(fecha_aplicacion~gr_edad, mean) %>%
+  #       
+  #       dplyr::select(fecha_aplicacion,"00-04","05-09","10-14","15-17","18-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-99") %>%
+  #       dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+  #     
+  #     
+  #     Vacunas1 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas1$fecha_aplicacion)),
+  #                                                 as.Date(max(Vacunas1$fecha_aplicacion)),
+  #                                                 by=1)) %>% left_join(Vacunas1) 
+  #     
+  #     #vacunas=setDT(Vacunas)
+  #     #Vacunas[,.N, by=gr_edad]
+  #     
+  #     # reemplazo nulos por cero
+  #     Vacunas[is.na(Vacunas)] <- 0
+  #     
+  #     
+  #     ########## 2° Dosis ###########
+  #     
+  #     #Vacunas2 = setDF(dataVacunas)
+  #     Vacunas2 = Vacunas %>% dplyr::filter(num_dosis==2 ) %>%   
+  #       
+  #       # agrego variables agrupadas por edad  
+  #       dplyr::mutate(gr_edad=case_when(edad >=1 & edad <=4 ~ "00-04",
+  #                                       edad >=5 & edad <=9 ~ "05-09",
+  #                                       edad >=10 & edad <=14 ~ "10-14",
+  #                                       edad >=15 & edad <=17 ~ "15-17",
+  #                                       edad >=18 & edad <=24 ~ "18-24",
+  #                                       edad >=25 & edad <=29 ~ "25-29",
+  #                                       edad >=30 & edad <=34 ~ "30-34",
+  #                                       edad >=35 & edad <=39 ~ "35-39",
+  #                                       edad >=40 & edad <=44 ~ "40-44",
+  #                                       edad >=45 & edad <=49 ~ "45-49",
+  #                                       edad >=50 & edad <=54 ~ "50-54",
+  #                                       edad >=55 & edad <=59 ~ "55-59",
+  #                                       edad >=60 & edad <=64 ~ "60-64",
+  #                                       edad >=65 & edad <=69 ~ "65-69",
+  #                                       edad >=70 & edad <=74 ~ "70-74",
+  #                                       edad >=75 & edad <=79 ~ "75-79",
+  #                                       edad >=80 & edad <=84 ~ "80-84",
+  #                                       edad >=85 & edad <=89 ~ "85-89",
+  #                                       edad >=90 ~ "90-99")) %>%
+  #       
+  #       # agrupo por fecha y edad
+  #       dplyr::group_by(fecha_aplicacion, gr_edad) %>%
+  #       
+  #       # sumarizo 
+  #       dplyr::summarise(n=n()) %>%
+  #       
+  #       reshape::cast(fecha_aplicacion~gr_edad, mean) %>%
+  #       
+  #       dplyr::select(fecha_aplicacion,"00-04","05-09","10-14","15-17","18-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-99") %>%
+  #       dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+  #     
+  #     
+  #     Vacunas2 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas2$fecha_aplicacion)),
+  #                                                 as.Date(max(Vacunas2$fecha_aplicacion)),
+  #                                                 by=1)) %>% left_join(Vacunas2) 
+  #     
+  #     
+  #     # reemplazo nulos por cero
+  #     Vacunas2[is.na(Vacunas2)] <- 0
+  #     
+  #     
+  #     
+  #     ########## Monodosis ###########
+  #     
+  #     #Vacunas0 = setDF(dataVacunas)
+  #     Vacunas0 = Vacunas %>% dplyr::filter(num_dosis==0 ) %>%   
+  #       
+  #       # agrego variables agrupadas por edad  
+  #       dplyr::mutate(gr_edad=case_when(edad >=1 & edad <=4 ~ "00-04",
+  #                                       edad >=5 & edad <=9 ~ "05-09",
+  #                                       edad >=10 & edad <=14 ~ "10-14",
+  #                                       edad >=15 & edad <=17 ~ "15-17",
+  #                                       edad >=18 & edad <=24 ~ "18-24",
+  #                                       edad >=25 & edad <=29 ~ "25-29",
+  #                                       edad >=30 & edad <=34 ~ "30-34",
+  #                                       edad >=35 & edad <=39 ~ "35-39",
+  #                                       edad >=40 & edad <=44 ~ "40-44",
+  #                                       edad >=45 & edad <=49 ~ "45-49",
+  #                                       edad >=50 & edad <=54 ~ "50-54",
+  #                                       edad >=55 & edad <=59 ~ "55-59",
+  #                                       edad >=60 & edad <=64 ~ "60-64",
+  #                                       edad >=65 & edad <=69 ~ "65-69",
+  #                                       edad >=70 & edad <=74 ~ "70-74",
+  #                                       edad >=75 & edad <=79 ~ "75-79",
+  #                                       edad >=80 & edad <=84 ~ "80-84",
+  #                                       edad >=85 & edad <=89 ~ "85-89",
+  #                                       edad >=90 ~ "90-99")) %>%
+  #       
+  #       # agrupo por fecha y edad
+  #       dplyr::group_by(fecha_aplicacion, gr_edad) %>%
+  #       
+  #       # sumarizo 
+  #       dplyr::summarise(n=n()) %>%
+  #       
+  #       reshape::cast(fecha_aplicacion~gr_edad, mean) %>%
+  #       
+  #       dplyr::select(fecha_aplicacion,"00-04","05-09","10-14","15-17","18-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-99") %>%
+  #       dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
+  #     
+  #     
+  #     Vacunas0 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas0$fecha_aplicacion)),
+  #                                                 as.Date(max(Vacunas0$fecha_aplicacion)),
+  #                                                 by=1)) %>% left_join(Vacunas0) 
+  #     
+  #     # reemplazo nulos por cero
+  #     Vacunas0[is.na(Vacunas0)] <- 0
+  #     
+  #     
+  #   } # cierra if de Brazil
+  #   
 
         
   ######## COSTA RICA ##########
     
     if (pais=="CRI") {
-      
       
       # Levanto los datos  
       
@@ -1245,13 +1244,9 @@ update <-  function(pais,diasDeProyeccion) {
       Vacunas[,2:20] <- 0
       Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
       Vacunas2 <- Vacunas
-      
+      Vacunas0 <- Vacunas
       
     } # cierra if de CR
-    
-    
-    
-  }
   
   eval(parse(text=paste0('countryData$',
                          pais,
@@ -1423,7 +1418,7 @@ updateDataOWD <- function (countries) {
 # updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY"))
 
 # actualiza argentina y guarda RData
-# update(pais = "URY", diasDeProyeccion = 1100)
+# update(pais = "CRI", diasDeProyeccion = 1100)
 
 # agrupa edades
 # datosArg <- formatData("URY", ageGroups = ageGroupsV)
