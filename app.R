@@ -22,6 +22,7 @@ library(leaflet)
 library(rgdal)
 library(rgeos)
 library(shinythemes)
+library(lubridate)
 
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 
@@ -30,7 +31,8 @@ options(dplyr.summarise.inform = FALSE)
 comp_table <<- list()
 output_list <<- c()
 countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay")
-
+colores <<- rev(c("#FF2929","#FF7025","#FFB822",
+                "#FFFF1E","#8FFF26","#1EFF2D"))
 flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/br.svg",
@@ -53,15 +55,57 @@ source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
-source("functions/ui.R", encoding = "UTF-8")
-#source("functions/ui_bid.R", encoding = "UTF-8")
+source("functions/NPIInterface.R", encoding = "UTF-8")
+#source("functions/ui.R", encoding = "UTF-8")
+source("functions/ui_bid.R", encoding = "UTF-8")
 
 
 setParameters()
 
-mode = "basicoNo"
+mode = "basico"
+customMatrix <<- F
 
 server <- function (input, output, session) {
+  date1 <<- "01-01-2021"
+  date2 <<- "31-12-2022"
+  dates <<- seq(as.Date(date1, "%d-%m-%Y"), as.Date(date2, "%d-%m-%Y"), by = "month")
+  dateIndex <<- 1
+  if (primeraVez==T) {
+    customBeta <<- data.frame(start=NA,
+                             end=NA,
+                             beta=NA)
+  }
+  
+  observeEvent(input$npi1, {
+    addBox(1,"Baseline")
+    addBoxTable("BaseLine")
+    print(customBeta)  
+  })
+  observeEvent(input$npi2, {
+    addBox(2,"Self-isolation")
+    addBoxTable("Self-isolation")
+    print(customBeta)  
+  })
+  observeEvent(input$npi3, {
+    addBox(3,"Shielding older pop.")
+    addBoxTable("Shielding older pop.")
+    print(customBeta)
+  })
+  observeEvent(input$npi4, {
+    addBox(4,"Physical distancing")
+    addBoxTable("Physical distancing")
+    print(customBeta)
+  })
+  observeEvent(input$npi5, {
+    addBox(5,"School closures")
+    addBoxTable("School closures")
+    print(customBeta)
+  })
+  observeEvent(input$npi6, {
+    addBox(6,"Lockdown")
+    addBoxTable("Lockdown")
+    print(customBeta)
+  })
   
   observe({
     
@@ -88,7 +132,7 @@ server <- function (input, output, session) {
   
   # country customize
   observeEvent(input$country, { 
-    browser()
+    #browser()
    iso_country <<- if (input$country=="Argentina") {"ARG"} else
       if (input$country=="Peru") {"PER"} else
       if (input$country=="Brazil") {"BRA"} else
@@ -111,7 +155,6 @@ server <- function (input, output, session) {
       
     # empirical cm
     if(use_empirical_mc){
-      #browser()
       contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
       contact_matrix_home <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "home")
       contact_matrix_school <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "school")
@@ -588,7 +631,6 @@ server <- function (input, output, session) {
   })
   
   output$graficoUnico <- renderPlotly({
-    print("grafica")
     res_t()
     if (length(proy()) > 0 & input$compart_a_graficar != "") {
       # browser()

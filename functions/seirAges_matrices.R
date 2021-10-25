@@ -78,7 +78,6 @@ seir_ages <- function(dias,
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   # seir
-  
   tHoy <<- tVacunasCero
   factorModificadorBeta = NULL
   relaxValue = rep(1,dias)
@@ -103,7 +102,12 @@ seir_ages <- function(dias,
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
     if (coberturaMas60 > relaxationThreshold) {
       beta[[t]] = contact_matrix_relaxed * transmission_probability[[t]]
-    } else {
+    } else if (customMatrix==T) {
+      print(customBeta$beta[customBeta$start>=t & customBeta$start>=t])
+      beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
+    }
+      
+      else {
       beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
     }
     

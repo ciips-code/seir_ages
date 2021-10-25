@@ -148,6 +148,118 @@ getUI <- function () {
                      )
             ),
             
+            fluidRow(column(
+              width = 12,
+              fluidRow(
+                column(
+                  width = 6,
+                  sliderInput(
+                    "uptake",
+                    "Vaccine uptake:",
+                    width = "100%",
+                    min = 0,
+                    max = 100,
+                    step = 10,
+                    value = 50
+                  ),
+                  tags$small("% of population with complete schemas in the end of 2021")
+                ),
+                column(
+                  width = 6,
+                  sliderTextInput(
+                    inputId = "mySliderText",
+                    label = "Vaccine effectiveness:",
+                    width = "100%",
+                    choices = c("Low",
+                                "Middle",
+                                "High"),
+                    selected = "Middle"
+                  ),
+                  tags$small(
+                    "* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 50%, 50%"
+                  )
+                )
+              ),
+              br(),
+              p("Cofigure NPIs (Non Pharmaceutical Interventions) during 2021:"),
+              fluidRow(column(
+                3,
+                div(
+                  actionButton(
+                    "npi1",
+                    HTML("<b>Baseline</b>"),
+                    style = paste0(
+                      "color: #222426; background-color: ",
+                      colores[1],
+                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                    )
+                  ),
+                  br(),
+                  actionButton(
+                    "npi2",
+                    HTML("<b>Self-isolation</b>"),
+                    style = paste0(
+                      "color: #222426; background-color: ",
+                      colores[2],
+                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                    )
+                  ),
+                  br(),
+                  actionButton(
+                    "npi3",
+                    HTML("<b>Shielding older pop.</b>"),
+                    style = paste0(
+                      "color: #222426; background-color: ",
+                      colores[3],
+                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                    )
+                  ),
+                  br(),
+                  actionButton(
+                    "npi4",
+                    HTML("<b>Physical distancing</b>"),
+                    style = paste0(
+                      "color: #222426; background-color: ",
+                      colores[4],
+                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                    )
+                  ),
+                  br(),
+                  actionButton(
+                    "npi5",
+                    HTML("<b>School closures</b>"),
+                    style = paste0(
+                      "color: #222426; background-color: ",
+                      colores[5],
+                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                    )
+                  ),
+                  br(),
+                  actionButton(
+                    "npi6",
+                    HTML("<b>Lockdown</b>"),
+                    style = paste0(
+                      "color: #222426; background-color: ",
+                      colores[6],
+                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                    )
+                  ),
+                ),
+              ),
+              column(
+                9,
+                fluidRow(
+                  tags$small(
+                    "Click on the NPIs levels to add the interventions for the first month (January 2021), keep adding for each following month or leave empty with no changes"
+                  ),
+                ),
+                fluidRow(id = "npis-output",
+                         div(id = "tail", p("Add NPIs levels..."))),
+              ))
+              
+            )
+           ),
+            
             br(),
             br(),
             br(),

@@ -9,6 +9,7 @@
 
 library(shiny)
 library(shinyWidgets)
+library(bslib)
 
 # Define UI for application that draws a histogram
 
@@ -86,7 +87,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "cerulean"),
                         div(id="tail",p("Add NPIs levels..."))
                ),
            )
-        ),
+        )
        
     )
 )
