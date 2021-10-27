@@ -82,28 +82,28 @@ server <- function (input, output, session) {
   }
   
   observeEvent(input$npi1, {
-    addBox(1,"Physical distancing")
+    addBox(1,"<br>Physical distancing<br><br><br>")
     addBoxTable("Physical distancing",input$country)
     print(customBeta)  
   })
   observeEvent(input$npi2, {
-    addBox(2,"Physical distancing + Shielding of older people")
+    addBox(2,"<br>Physical distancing +<br>Shielding of older people<br><br>")
     addBoxTable("Physical distancing + Shielding of older people",input$country)
     print(customBeta)  
   })
   observeEvent(input$npi3, {
-    addBox(3,"Physical distancing + Shielding of older people + Self isolation")
+    addBox(3,"Physical distancing +<br>Shielding of older people +<br>Self isolation<br><br>")
     addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
     print(customBeta)
   })
   observeEvent(input$npi4, {
-    addBox(4,"Physical distancing + Shielding of older people + Self isolation + School closures")
+    addBox(4,"Physical distancing +<br>Shielding of older people +<br>Self isolation +<br>School closures")
     addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
     print(customBeta)
   })
   observeEvent(input$npi5, {
-    addBox(5,"Physical distancing + Shielding of older people + Lockdown + School closures")
-    addBoxTable("School closures",input$country)
+    addBox(5,"Physical distancing +<br>Shielding of older people +<br>Lockdown +<br>School closures")
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
     print(customBeta)
   })
   # observeEvent(input$npi6, {

@@ -181,9 +181,9 @@ getUI <- function () {
                 )
               ),
               br(),
-              p("Cofigure NPIs (Non Pharmaceutical Interventions) during 2021:"),
+              p("Cofigure NPIs (Non Pharmaceutical Interventions) during 2021 and 2022:"),
               fluidRow(column(
-                3,
+                4, style = "padding-right: 15px;",
                 div(
                   actionButton(
                     "npi1",
@@ -191,7 +191,7 @@ getUI <- function () {
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[1],
-                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                      "; border-color: #2e6da4; margin: 5px; width: 100%;"
                     )
                   ),
                   br(),
@@ -201,37 +201,37 @@ getUI <- function () {
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[2],
-                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                      "; border-color: #2e6da4; margin: 5px; width: 100%;"
                     )
                   ),
                   br(),
                   actionButton(
                     "npi3",
-                    HTML("<b>Physical distancing + Shielding of older people + Self isolation</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people +<br>Self isolation</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[3],
-                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                      "; border-color: #2e6da4; margin: 5px; width: 100%;"
                     )
                   ),
                   br(),
                   actionButton(
                     "npi4",
-                    HTML("<b>Physical distancing + Shielding of older people + Self isolation + School closures</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people +<br>Self isolation + School closures</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[4],
-                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                      "; border-color: #2e6da4; margin: 5px; width: 100%;"
                     )
                   ),
                   br(),
                   actionButton(
                     "npi5",
-                    HTML("<b>Physical distancing + Shielding of older people + Lockdown + School closures</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people +<br>Lockdown + School closures</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[5],
-                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                      "; border-color: #2e6da4; margin: 5px; width: 100%;"
                     )
                   ),
                   br(),
@@ -247,14 +247,15 @@ getUI <- function () {
                 ),
               ),
               column(
-                9,
+                8,
                 fluidRow(
                   tags$small(
                     "Click on the NPIs levels to add the interventions for the first month (January 2021), keep adding for each following month or leave empty with no changes"
                   ),
                 ),
                 fluidRow(id = "npis-output",
-                         div(id = "tail", p("Add NPIs levels..."))),
+                         div(id = "tail", tags$span("Add NPIs levels..."), style = 'float:left;')
+                 ),
               ))
               
             )

@@ -5,18 +5,18 @@ addBox = function(npiIndex,text) {
     where = "beforeEnd",
     ui = div(align="center",
              tags$span(HTML(paste0(format(dates[dateIndex],"%m"),"/",format(dates[dateIndex],"%Y"),"<br><b>",text,"</b>"))),
-             style=paste0("color: #222426; background-color: ",colores[npiIndex],"; border: 1px solid ; border-radius: 5px; margin: 5px; padding: 5px;")
+             style=paste0("color: #222426; background-color: ",colores[npiIndex],"; border: 1px solid ; border-radius: 5px; margin: 5px; padding: 5px; float: left;")
     )
   )
   insertUI(
     selector = "#npis-output",
     where = "beforeEnd",
-    ui =  tags$span(icon("arrow-right"), style=("margin-top: 15px;"))
+    ui =  tags$span(icon("arrow-right"), style=("margin-top: 15px; float: left;"))
   )
   insertUI(
     selector = "#npis-output",
     where = "beforeEnd",
-    ui = div(id="tail", style=("margin-top: 15px;"),
+    ui = div(id="tail", style=("margin-top: 15px; float: left;"),
              tags$span(HTML(paste0("No changes up to ",format(as.Date(date2, "%d-%m-%Y"),"%m"),"/",format(as.Date(date2, "%d-%m-%Y"),"%Y"))), style=("margin-top: 15px;")),
     )
   )
@@ -25,7 +25,7 @@ addBox = function(npiIndex,text) {
 
 
 addBoxTable <- function (matrixName,country) {
-  browser()
+  # browser()
   #`Physical distancing` <<- contact_matrix_scenario * trans_prob_param 
   `Physical distancing` <<- get_custom_matrix(scenario = "Physical distancing",
                                               matrix_list = list(
