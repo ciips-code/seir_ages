@@ -1,5 +1,4 @@
 generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac) {
-  # browser()
   intervaloInterDosis = 30
   # TODO: Obtener intervalo inter dosis de paramvac
   coverage = getUptakeCoverage(uptake)
@@ -47,18 +46,24 @@ generaPlanVacunacion <- function(metas, N, dias, tVacunasCero, AvArg, intervaloI
 
 applyPriority <- function(priorities, AvArg) {
   if (priorities == "Current priorities") {
+    
     return(AvArg)
   } else {
     priorityValues <- getPriorityDetails(priorities)
     AvArgParam <- lapply(AvArg, function(dia) {
+      
       totalDia <- sum(dia)
+      
       for (i in 1:ncol(dia)) {
         for (j in 3:length(immunityStates)) {
-          dia[j,i] <- totalDia * priorityValues[i]/sum(priorityValues)    
+          dia[j,i] <- totalDia * priorityValues[i]/sum(priorityValues) 
+          
         }
       }
+      browser(expr={iso_country=="CRI"})
       return(dia)
     })
+    
     return(AvArgParam)
   }
 }

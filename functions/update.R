@@ -1415,7 +1415,7 @@ updateDataOWD <- function (countries) {
 }
 
 # actualiza OWD
-# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY"))
+# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI"))
 
 # actualiza argentina y guarda RData
 # update(pais = "CRI", diasDeProyeccion = 1100)

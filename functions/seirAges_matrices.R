@@ -37,32 +37,32 @@ seir_ages <- function(dias,
   names = list(immunityStates,
                ageGroups)
   # cada columna es un grupo
-  contact_matrix <- lapply(1:dias, 
-                           matrix, 
-                           data= contact_matrix, 
-                           nrow=length(ageGroupsV), 
-                           ncol=length(ageGroupsV), 
-                           dimnames = list(ageGroupsV,
-                                           ageGroupsV))
-
-  transmission_probability <- lapply(1:dias, 
-                                     matrix, 
-                                     data= transmission_probability, 
-                                     nrow=length(ageGroupsV), 
-                                     ncol=length(ageGroupsV), 
-                                     dimnames = list(ageGroupsV,
-                                                     ageGroupsV))
-  
-  beta <- lapply(1:dias, 
-                 matrix, 
-                 data= transmission_probability[[1]] * contact_matrix[[1]], 
-                 nrow=length(ageGroupsV), 
-                 ncol=length(ageGroupsV), 
-                 dimnames = list(ageGroupsV,
-                                 ageGroupsV))
-  
+  # contact_matrix <- lapply(1:dias, 
+  #                          matrix, 
+  #                          data= contact_matrix, 
+  #                          nrow=length(ageGroupsV), 
+  #                          ncol=length(ageGroupsV), 
+  #                          dimnames = list(ageGroupsV,
+  #                                          ageGroupsV))
+  # 
+  # transmission_probability <- lapply(1:dias, 
+  #                                    matrix, 
+  #                                    data= transmission_probability, 
+  #                                    nrow=length(ageGroupsV), 
+  #                                    ncol=length(ageGroupsV), 
+  #                                    dimnames = list(ageGroupsV,
+  #                                                    ageGroupsV))
+  # 
+  # beta <- lapply(1:dias, 
+  #                matrix, 
+  #                data= transmission_probability[[1]] * contact_matrix[[1]], 
+  #                nrow=length(ageGroupsV), 
+  #                ncol=length(ageGroupsV), 
+  #                dimnames = list(ageGroupsV,
+  #                                ageGroupsV))
+  # 
             
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = beta = tot = yl = lapply(1:dias, 
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = tot = yl = lapply(1:dias, 
                                                                                                         matrix, 
                                                                                                         data= 0, 
                                                                                                         nrow=length(immunityStates), 
@@ -100,16 +100,28 @@ seir_ages <- function(dias,
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
     poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
-    if (coberturaMas60 > relaxationThreshold) {
-      beta[[t]] = contact_matrix_relaxed * transmission_probability[[t]]
-    } else if (customMatrix==T) {
-      print(customBeta$beta[customBeta$start>=t & customBeta$start>=t])
-      beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
-    }
-      
-      else {
-      beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
-    }
+    if (customMatrix & t>tHoy+3) {
+      rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
+      beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
+      } else {
+      beta = contact_matrix * transmission_probability
+      }
+    # if (coberturaMas60 > relaxationThreshold) {
+    #   beta[[t]] = contact_matrix_relaxed * transmission_probability[[t]]
+    # 
+    #   } else if (customMatrix==T & t>tHoy+3) {
+    #   rn <- rownames(customBeta[customBeta$start<=t & customBeta$end>=t,])
+    #   beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
+    #   #beta[[t]] = eval(parse(text=(customBeta$beta[as.numeric(rn)])))
+    # 
+    #   
+    #   }
+    #   else {
+    #   beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
+    # }
+    
+    
+    
     
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
@@ -126,8 +138,8 @@ seir_ages <- function(dias,
       e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
-      beta[[t]]       = beta[[t]] * relaxValue[t]
-      e[[t-1]] = S[[t-1]] * matrix((beta[[t]]) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      beta       = beta * relaxValue[t]
+      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
     }
     
     # resto seir
@@ -263,6 +275,7 @@ seir_ages <- function(dias,
     S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
     S[[t]] =  S[[t]] + VquedaEnS
     for (iAge in c(1:length(ageGroups))) {
+      #browser(expr = {t==338})
       if (segundasDosisHoyS3[iAge] < S[[t]][3,iAge]) {
         S[[t]][3,iAge] = S[[t]][3,iAge] - segundasDosisHoyS3[iAge]
         S[[t]][4,iAge] = S[[t]][4,iAge] + segundasDosisHoyS3[iAge]

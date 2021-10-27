@@ -31,8 +31,7 @@ options(dplyr.summarise.inform = FALSE)
 comp_table <<- list()
 output_list <<- c()
 countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay")
-colores <<- rev(c("#FF2929","#FF7025","#FFB822",
-                "#FFFF1E","#8FFF26","#1EFF2D"))
+colores <<- rev(tmaptools::get_brewer_pal("RdYlGn", n=5))
 flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/br.svg",
@@ -66,10 +65,16 @@ mode = "basico"
 customMatrix <<- F
 
 server <- function (input, output, session) {
+  
+  observeEvent(input$go, {
+    customMatrix <<- T
+  })
+  
   date1 <<- "01-01-2021"
   date2 <<- "31-12-2022"
   dates <<- seq(as.Date(date1, "%d-%m-%Y"), as.Date(date2, "%d-%m-%Y"), by = "month")
   dateIndex <<- 1
+  
   if (primeraVez==T) {
     customBeta <<- data.frame(start=NA,
                              end=NA,
@@ -77,38 +82,37 @@ server <- function (input, output, session) {
   }
   
   observeEvent(input$npi1, {
-    addBox(1,"Baseline")
-    addBoxTable("BaseLine")
+    addBox(1,"Physical distancing")
+    addBoxTable("Physical distancing",input$country)
     print(customBeta)  
   })
   observeEvent(input$npi2, {
-    addBox(2,"Self-isolation")
-    addBoxTable("Self-isolation")
+    addBox(2,"Physical distancing + Shielding of older people")
+    addBoxTable("Physical distancing + Shielding of older people",input$country)
     print(customBeta)  
   })
   observeEvent(input$npi3, {
-    addBox(3,"Shielding older pop.")
-    addBoxTable("Shielding older pop.")
+    addBox(3,"Physical distancing + Shielding of older people + Self isolation")
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
     print(customBeta)
   })
   observeEvent(input$npi4, {
-    addBox(4,"Physical distancing")
-    addBoxTable("Physical distancing")
+    addBox(4,"Physical distancing + Shielding of older people + Self isolation + School closures")
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
     print(customBeta)
   })
   observeEvent(input$npi5, {
-    addBox(5,"School closures")
-    addBoxTable("School closures")
+    addBox(5,"Physical distancing + Shielding of older people + Lockdown + School closures")
+    addBoxTable("School closures",input$country)
     print(customBeta)
   })
-  observeEvent(input$npi6, {
-    addBox(6,"Lockdown")
-    addBoxTable("Lockdown")
-    print(customBeta)
-  })
-  
+  # observeEvent(input$npi6, {
+  #   addBox(6,"Lockdown")
+  #   addBoxTable("Lockdown",input$country)
+  #   print(customBeta)
+  # })
+  # 
   observe({
-    
     if (is.null(output_list)) {hide("del_scenarios")}
   })
   
@@ -132,7 +136,6 @@ server <- function (input, output, session) {
   
   # country customize
   observeEvent(input$country, { 
-    #browser()
    iso_country <<- if (input$country=="Argentina") {"ARG"} else
       if (input$country=="Peru") {"PER"} else
       if (input$country=="Brazil") {"BRA"} else
@@ -180,7 +183,6 @@ server <- function (input, output, session) {
       vacPre <<- lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
                         nrow=length(immunityStates),
                         ncol=length(ageGroups))
-      
       vacArg <<- lapply(1:nrow(dataPorEdad$FMTD$vac), matrix,  data=0,
                         nrow=length(immunityStates),
                         ncol=length(ageGroups))
@@ -205,7 +207,6 @@ server <- function (input, output, session) {
       })
       
       rm(temp)
-      
       loessCols <<- which(colnames(dataPorEdad$FMTD$def) %in% grep("loess",colnames(dataPorEdad$FMTD$def), value = TRUE))
       def_p <<- dataPorEdad$FMTD$def[,loessCols]
       def_p <<- def_p[1:(nrow(def_p)-15),]
@@ -402,6 +403,7 @@ server <- function (input, output, session) {
   proy <- reactive({
     #browser()
     # paste activa reactive (no comentar)
+    paste(input$go)
     paste(input$paramVac_cell_edit)
     paste(input$ifrt_cell_edit)
     paste(input$transprob_cell_edit)
@@ -443,7 +445,7 @@ server <- function (input, output, session) {
     planVacunacionFinalParam <<- planVacunacionFinalParam 
     
     ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
-    trans_prob_param <- transprob_edit * ajuste
+    trans_prob_param <<- transprob_edit * ajuste
     
     relaxNpi = FALSE
     relaxGoal = NULL
@@ -458,7 +460,7 @@ server <- function (input, output, session) {
     }
     
     # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
-    contact_matrix_scenario <- get_npi_cm_scenario(scenario = input$npiScenario,
+    contact_matrix_scenario <<- get_npi_cm_scenario(scenario = input$npiScenario,
                                                    matrix_list = list(
                                                      contact_matrix = contact_matrix,
                                                      contact_matrix_work = contact_matrix_work,
@@ -466,7 +468,7 @@ server <- function (input, output, session) {
                                                      contact_matrix_school = contact_matrix_school,
                                                      contact_matrix_other = contact_matrix_other),
                                                    ages= as.numeric(ageGroupsV))
-    contact_matrix_relaxed <- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
+    contact_matrix_relaxed <<- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
                                                    matrix_list = list(
                                                      contact_matrix = contact_matrix,
                                                      contact_matrix_work = contact_matrix_work,
@@ -797,29 +799,39 @@ server <- function (input, output, session) {
                    sum(x[4, ])
                  }))
     ) / sum(N) *100
-
+    
+    years_lost <- c(sum(sapply(proy()[["yl: Years lost"]][1:tFechas[1]],simplify = T,sum)),
+                    sum(sapply(proy()[["yl: Years lost"]][1:tFechas[2]],simplify = T,sum)),
+                    sum(sapply(proy()[["yl: Years lost"]][1:tFechas[3]],simplify = T,sum)))
+    
+                  
+    
     var=c("Cumulative deaths",
           "Cumulative infections",
           "Vaccines applied",
           "Vaccination coverage dose #1 (%)",
-          "Vaccination coverage dose #2 (%)")
+          "Vaccination coverage dose #2 (%)",
+          "Life expectancy years lost")
     C1 = c(def_ac[1],
            casos_ac[1],
            vacunas_ac[1],
            poblacion_vac[1],
-           poblacion_vac2[1])
+           poblacion_vac2[1],
+           years_lost[1])
     
     C2 = c(def_ac[2],
            casos_ac[2],
            vacunas_ac[2],
            poblacion_vac[2],
-           poblacion_vac2[2])
+           poblacion_vac2[2],
+           years_lost[2])
     
     C3 = c(def_ac[3],
            casos_ac[3],
            vacunas_ac[3],
            poblacion_vac[3],
-           poblacion_vac2[3])
+           poblacion_vac2[3],
+           years_lost[3])
     
     tabla <- cbind(var,
                    format(round(C1,0), big.mark = ','),

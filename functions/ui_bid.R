@@ -187,7 +187,7 @@ getUI <- function () {
                 div(
                   actionButton(
                     "npi1",
-                    HTML("<b>Baseline</b>"),
+                    HTML("<b>Physical distancing</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[1],
@@ -197,7 +197,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi2",
-                    HTML("<b>Self-isolation</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[2],
@@ -207,7 +207,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi3",
-                    HTML("<b>Shielding older pop.</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people + Self isolation</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[3],
@@ -217,7 +217,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi4",
-                    HTML("<b>Physical distancing</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people + Self isolation + School closures</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[4],
@@ -227,7 +227,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi5",
-                    HTML("<b>School closures</b>"),
+                    HTML("<b>Physical distancing + Shielding of older people + Lockdown + School closures</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[5],
@@ -235,15 +235,15 @@ getUI <- function () {
                     )
                   ),
                   br(),
-                  actionButton(
-                    "npi6",
-                    HTML("<b>Lockdown</b>"),
-                    style = paste0(
-                      "color: #222426; background-color: ",
-                      colores[6],
-                      "; border-color: #2e6da4; margin: 5px; width: 80%;"
-                    )
-                  ),
+                  # actionButton(
+                  #   "npi6",
+                  #   HTML("<b>Lockdown</b>"),
+                  #   style = paste0(
+                  #     "color: #222426; background-color: ",
+                  #     colores[6],
+                  #     "; border-color: #2e6da4; margin: 5px; width: 80%;"
+                  #   )
+                  # ),
                 ),
               ),
               column(
@@ -259,6 +259,7 @@ getUI <- function () {
               
             )
            ),
+           actionButton(inputId = "go", label = "Go!"),
             
             br(),
             br(),
