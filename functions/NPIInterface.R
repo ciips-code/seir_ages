@@ -1,4 +1,5 @@
 addBox = function(npiIndex,text) {
+  enable("go")
   removeUI(selector = "#tail")
   insertUI(
     selector = "#npis-output",
@@ -45,7 +46,7 @@ addBoxTable <- function (matrixName,country) {
                                                                             contact_matrix_other = contact_matrix_other),
                                                                           ages= as.numeric(ageGroupsV)) * trans_prob_param
   
-  `Physical distancing + Shielding of older people + Self isolation` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people",
+  `Physical distancing + Shielding of older people + Self isolation` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Self isolation",
                                                                           matrix_list = list(
                                                                             contact_matrix = contact_matrix,
                                                                             contact_matrix_work = contact_matrix_work,
@@ -55,7 +56,7 @@ addBoxTable <- function (matrixName,country) {
                                                                           ages= as.numeric(ageGroupsV)) * trans_prob_param
   
   
-  `Physical distancing + Shielding of older people + Self isolation` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people",
+  `Physical distancing + Shielding of older people + Self isolation` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Self isolation",
                                                                                            matrix_list = list(
                                                                                              contact_matrix = contact_matrix,
                                                                                              contact_matrix_work = contact_matrix_work,
@@ -64,7 +65,7 @@ addBoxTable <- function (matrixName,country) {
                                                                                              contact_matrix_other = contact_matrix_other),
                                                                                            ages= as.numeric(ageGroupsV)) * trans_prob_param
   
-  `Physical distancing + Shielding of older people + Self isolation + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people",
+  `Physical distancing + Shielding of older people + Self isolation + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Self isolation + School closures",
                                                                                            matrix_list = list(
                                                                                              contact_matrix = contact_matrix,
                                                                                              contact_matrix_work = contact_matrix_work,
@@ -74,7 +75,7 @@ addBoxTable <- function (matrixName,country) {
                                                                                            ages= as.numeric(ageGroupsV)) * trans_prob_param
   
   
-  `Physical distancing + Shielding of older people + Lockdown + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people",
+  `Physical distancing + Shielding of older people + Lockdown + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Lockdown + School closures",
                                                                                                              matrix_list = list(
                                                                                                                contact_matrix = contact_matrix,
                                                                                                                contact_matrix_work = contact_matrix_work,

@@ -153,21 +153,32 @@ getUI <- function () {
               fluidRow(
                 column(
                   width = 6,
-                  sliderInput(
-                    "uptake",
-                    "Vaccine uptake:",
+                  # sliderInput(
+                  #   "uptakeSlider",
+                  #   "Vaccine uptake:",
+                  #   width = "100%",
+                  #   min = 0,
+                  #   max = 100,
+                  #   step = 10,
+                  #   value = 50
+                  # ),
+                  sliderTextInput(
+                    inputId = "uptakeSlider",
+                    label = "Vaccine uptake:",
                     width = "100%",
-                    min = 0,
-                    max = 100,
-                    step = 10,
-                    value = 50
+                    choices = c("0%",
+                                "20%",
+                                "50%",
+                                "80%",
+                                "95%"),
+                    selected = "50%"
                   ),
                   tags$small("% of population with complete schemas in the end of 2021")
                 ),
                 column(
                   width = 6,
                   sliderTextInput(
-                    inputId = "mySliderText",
+                    inputId = "effectivenessSlider",
                     label = "Vaccine effectiveness:",
                     width = "100%",
                     choices = c("Low",
@@ -176,7 +187,7 @@ getUI <- function () {
                     selected = "Middle"
                   ),
                   tags$small(
-                    "* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 80%, 80%, 50%; Low: 80%, 50%, 50%"
+                    "* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 100%, 80%, 50%; Low: 80%, 50%, 50%"
                   )
                 )
               ),
@@ -246,7 +257,7 @@ getUI <- function () {
                   # ),
                 ),
               ),
-              column(
+              column(id="npis-col",
                 8,
                 fluidRow(
                   tags$small(
@@ -261,7 +272,8 @@ getUI <- function () {
             )
            ),
            actionButton(inputId = "go", label = "Go!"),
-            
+           actionButton(inputId = "reset", label = "Reset NPIs"),
+           
             br(),
             br(),
             br(),

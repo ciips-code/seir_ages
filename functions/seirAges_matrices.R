@@ -101,11 +101,13 @@ seir_ages <- function(dias,
     poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
     if (customMatrix & t>tHoy+3) {
+      # browser()
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
-      } else {
+    } else {
       beta = contact_matrix * transmission_probability
-      }
+      # print(beta)
+    }
     # if (coberturaMas60 > relaxationThreshold) {
     #   beta[[t]] = contact_matrix_relaxed * transmission_probability[[t]]
     # 

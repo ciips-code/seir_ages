@@ -60,7 +60,7 @@ applyPriority <- function(priorities, AvArg) {
           
         }
       }
-      browser(expr={iso_country=="CRI"})
+      # browser(expr={iso_country=="CRI"})
       return(dia)
     })
     

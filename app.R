@@ -65,9 +65,51 @@ mode = "basico"
 customMatrix <<- F
 
 server <- function (input, output, session) {
+  disable("go")
   
   observeEvent(input$go, {
     customMatrix <<- T
+    if (input$uptakeSlider == "0%") {
+      updateSelectInput(session, "vacUptake", selected = "No vaccination")
+    } else if (input$uptakeSlider == "20%") {
+      updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
+    } else if (input$uptakeSlider == "50%") {
+      updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
+    } else if (input$uptakeSlider == "80%") {
+      updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
+    } else if (input$uptakeSlider == "95%") {
+      updateSelectInput(session, "vacUptake", selected = "High uptake: 95%")
+    }
+    
+    if (input$effectivenessSlider == 'Low') {
+      updateSelectInput(session, "vacEfficacy", selected = "C2. 80%, 50%, 50%")
+    } else if (input$effectivenessSlider  == 'Middle') {
+      updateSelectInput(session, "vacEfficacy", selected = "B2. 100%, 80%, 50%")
+    } else if (input$effectivenessSlider ==  'High') {
+      updateSelectInput(session, "vacEfficacy", selected = "B1. 100%, 80%, 80%")
+    }
+    
+    # choices = c("A. 100% all",
+    #             "B1. 100%, 80%, 80%",
+    #             "B2. 100%, 80%, 50%",
+    #             "C1. 80%, 80%, 50%",
+    #             "C2. 80%, 50%, 50%")
+    
+  })
+  
+  observeEvent(input$reset, {
+    disable("go")
+    dateIndex <<- 1
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    removeUI(selector = "#npis-output")
+    insertUI(selector = "#npis-col",
+             where = "beforeEnd",
+             fluidRow(id = "npis-output",
+                      div(id = "tail", tags$span("Add NPIs levels..."), style = 'float:left;')
+             )
+           )
   })
   
   date1 <<- "01-01-2021"
@@ -84,27 +126,27 @@ server <- function (input, output, session) {
   observeEvent(input$npi1, {
     addBox(1,"<br>Physical distancing<br><br><br>")
     addBoxTable("Physical distancing",input$country)
-    print(customBeta)  
+    # print(customBeta)  
   })
   observeEvent(input$npi2, {
     addBox(2,"<br>Physical distancing +<br>Shielding of older people<br><br>")
     addBoxTable("Physical distancing + Shielding of older people",input$country)
-    print(customBeta)  
+    # print(customBeta)  
   })
   observeEvent(input$npi3, {
     addBox(3,"Physical distancing +<br>Shielding of older people +<br>Self isolation<br><br>")
     addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
-    print(customBeta)
+    # print(customBeta)
   })
   observeEvent(input$npi4, {
     addBox(4,"Physical distancing +<br>Shielding of older people +<br>Self isolation +<br>School closures")
     addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
-    print(customBeta)
+    # print(customBeta)
   })
   observeEvent(input$npi5, {
     addBox(5,"Physical distancing +<br>Shielding of older people +<br>Lockdown +<br>School closures")
     addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
-    print(customBeta)
+    # print(customBeta)
   })
   # observeEvent(input$npi6, {
   #   addBox(6,"Lockdown")
@@ -173,6 +215,10 @@ server <- function (input, output, session) {
       # population data
       load("data/population.RData")
       N <<- population[[input$country]]
+      if (input$country == "Costa Rica") {
+        N <<- c(1506015, 875391,  833249,  622362,  497209,  358716,  172118,  87377)
+      }
+      print(N)
         
       # epi data
       
