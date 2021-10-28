@@ -34,7 +34,7 @@ seir_ages <- function(dias,
                       # tablaDeAnosDeVidaPerdidos
 ){
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
-  names = list(immunityStates,
+  matrixNames = list(immunityStates,
                ageGroups)
   # cada columna es un grupo
   # contact_matrix <- lapply(1:dias, 
@@ -67,14 +67,14 @@ seir_ages <- function(dias,
                                                                                                         data= 0, 
                                                                                                         nrow=length(immunityStates), 
                                                                                                         ncol=length(ageGroups), 
-                                                                                                        dimnames = names)
+                                                                                                        dimnames = matrixNames)
   
   S[[1]][1,] = N
   
   N = S[[1]]
   
   I[[1]] = matrix(0,length(immunityStates),length(ageGroups), byrow = T,
-                    dimnames = names)
+                    dimnames = matrixNames)
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   # seir
@@ -131,11 +131,11 @@ seir_ages <- function(dias,
       expuestosTotalesHoy = as.numeric(defunciones_reales[t+17+round(periodoPreinfPromedio,0),]) / ifr
       # distribuir segun filas en S[[t-1]]
       apor = matrix(rbind(rep(expuestosTotalesHoy,3)),length(immunityStates),length(ageGroups), byrow = T,
-                 dimnames = names)
+                 dimnames = matrixNames)
       bpor <- S[[t-1]]
       bpor <- pmax(bpor,0)
       cpor <- matrix(rbind(rep(colSums(bpor),3)),length(immunityStates),length(ageGroups), byrow = T,
-                 dimnames = names)
+                 dimnames = matrixNames)
       e[[t-1]] = apor*bpor/cpor
       e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
@@ -186,7 +186,7 @@ seir_ages <- function(dias,
     U[[t]]      = U[[t-1]] + u[[t-1]]
     # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
     losQueHoyPierdenImunidad = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
-                                      dimnames = names)
+                                      dimnames = matrixNames)
     if (t>duracion_inmunidad+1) {
       losQueHoyPierdenImunidad = u[[t-duracion_inmunidad]]
       U[[t]] = U[[t]] - losQueHoyPierdenImunidad
@@ -195,7 +195,7 @@ seir_ages <- function(dias,
     
     # Pasajes S-V-S y U-S
     Vin = VquedaEnS =  Vout = vacunasDelDia = vacunasDelDia2 = vacunadosVacunaDia = vacunadosVacunaDia2 = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
-                   dimnames = names)
+                   dimnames = matrixNames)
     
     vacuna = 3
     latencia = as.numeric(paramVac[vacuna,1])

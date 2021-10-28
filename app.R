@@ -399,7 +399,7 @@ server <- function (input, output, session) {
       porc_cr_edit[as.numeric(input$porc_cr_cell_edit[1]),
                    as.numeric(input$porc_cr_cell_edit[2])+1] <- as.numeric(input$porc_cr_cell_edit[3])
       porc_cr_edit <<- porc_cr_edit
-      porcentajeCasosCriticos <<- matrix(rep(porc_cr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = names)
+      porcentajeCasosCriticos <<- matrix(rep(porc_cr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = )
     }
   })
   
@@ -424,7 +424,7 @@ server <- function (input, output, session) {
       porc_gr_edit[as.numeric(input$porc_gr_cell_edit[1]),
                    as.numeric(input$porc_gr_cell_edit[2])+1] <- as.numeric(input$porc_gr_cell_edit[3])
       porc_gr_edit <<- porc_gr_edit
-      porcentajeCasosGraves <<- matrix(rep(porc_gr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = names)
+      porcentajeCasosGraves <<- matrix(rep(porc_gr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = )
     }
   })
   
