@@ -215,11 +215,7 @@ server <- function (input, output, session) {
       # population data
       load("data/population.RData")
       N <<- population[[input$country]]
-      if (input$country == "Costa Rica") {
-        N <<- c(1506015, 875391,  833249,  622362,  497209,  358716,  172118,  87377)
-      }
-      print(N)
-        
+  
       # epi data
       
       load(paste0("data/data", iso_country, ".RData"), envir = .GlobalEnv)
