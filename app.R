@@ -55,13 +55,13 @@ source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
 source("functions/NPIInterface.R", encoding = "UTF-8")
-#source("functions/ui.R", encoding = "UTF-8")
-source("functions/ui_bid.R", encoding = "UTF-8")
+source("functions/ui.R", encoding = "UTF-8")
+# source("functions/ui_bid.R", encoding = "UTF-8")
 
 
 setParameters()
 
-mode = "basico"
+mode = "Nobasico"
 customMatrix <<- F
 
 server <- function (input, output, session) {
