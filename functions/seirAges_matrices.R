@@ -168,7 +168,7 @@ seir_ages <- function(dias,
       } else if (country == "Mexico") {
         d[[t]] = d[[t]] * 1.25
       } else if (country == "Brazil") {
-        d[[t]] = d[[t]] * 1
+        d[[t]] = d[[t]] * 0.60
       }
     }
     # Acá calculamos los años de vida perdidos

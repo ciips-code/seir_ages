@@ -209,6 +209,64 @@ getUI <- function () {
                                                         )
                                                       )
                                              ),
+                                             tabPanel("Sensitivity analysis",
+                                                      fluidRow(
+                                                        column(12,
+                                                               fluidRow(
+                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(8,
+                                                                        sliderInput("transmissionEffectivenessSens", "Transmission effectiveness:",
+                                                                                    min = -1, max = 1, 
+                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    width = "100%"
+                                                                        ),
+                                                                 ),
+                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                               ),
+                                                               fluidRow(
+                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(8,
+                                                                        sliderInput("ifrSens", "IFR:",
+                                                                                    min = -1, max = 1, 
+                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    width = "100%"
+                                                                        ),
+                                                                      ),
+                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                               ),
+                                                               fluidRow(
+                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(8,
+                                                                        sliderInput("complicacionesSens", "Complication rates:",
+                                                                                    min = -1, max = 1, 
+                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    width = "100%"
+                                                                        ),
+                                                                 ),
+                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                               ),
+                                                               fluidRow(
+                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(8,
+                                                                        sliderInput("wainingSens", "Immunity duration periods:",
+                                                                                    min = -1, max = 1, 
+                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    width = "100%"
+                                                                        ),
+                                                                 ),
+                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                               ),
+                                                               fluidRow(
+                                                                 column(12,align="center",
+                                                                        actionButton("runWithSens", 
+                                                                                     label = "Run projection with sensitivity", 
+                                                                                     # icon = icon("chevron-right"), 
+                                                                                     class = "btn-primary", style = "margin: 5px;")
+                                                                 ),
+                                                               ),
+                                                        )
+                                                      )
+                                             ),
                                              tabPanel("Topic II - Question 1",
                                                       div(
                                                         p("In which order should the following groups beprioritized for COVID-19 
