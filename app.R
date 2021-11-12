@@ -676,8 +676,8 @@ server <- function (input, output, session) {
   
   output$graficoUnico <- renderPlotly({
     res_t()
-    if (length(proy()) > 0 & input$compart_a_graficar != "") {
-      # browser()
+    if (length(proy()) > 0 & (input$compart_a_graficar != "" | mode=="basico")) {
+      
       if (mode=="basico") {
         col_id=str_trim(str_replace_all(substring(input$compart_checkbox,1,3),":",""))
         compart_label <- input$compart_checkbox
@@ -742,7 +742,6 @@ server <- function (input, output, session) {
             plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
                                     yaxis = list(title = paste("Compartimento:",compart_label)))
           }
-          
           
         }
         
