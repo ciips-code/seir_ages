@@ -30,7 +30,8 @@ seir_ages <- function(dias,
                       relaxNpi,
                       relaxGoal,
                       relaxFactor,
-                      country
+                      country,
+                      modificador_tiempoP = NULL
                       # tablaDeAnosDeVidaPerdidos
 ){
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
@@ -178,7 +179,8 @@ seir_ages <- function(dias,
     tiempoV = as.numeric(paramVac[vacuna,3])
     porcProt = as.numeric(paramVac[vacuna,4])
     # agregar if escenarios hi y low
-    tiempoP = as.numeric(paramVac[vacuna,5])
+    
+
     
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
@@ -267,7 +269,12 @@ seir_ages <- function(dias,
     # Vuelve a No inmunes los que terminan su tiempo de proteccion
 
     for (vacuna in c(3:nrow(paramVac))) {
-      tiempoP = as.numeric(paramVac[vacuna,5])
+      if (is.null(modificador_tiempoP)==F) {
+        tiempoP = modificador_tiempoP  
+      } else {
+        tiempoP = as.numeric(paramVac[vacuna,5])  
+      }
+      
       S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[t]][vacuna,]/tiempoP
       S[[t]][1,]=S[[t]][1,] + S[[t]][vacuna,]/tiempoP
     }

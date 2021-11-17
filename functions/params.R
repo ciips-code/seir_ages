@@ -104,5 +104,8 @@ setParameters <- function () {
   modif_porcentajeCasosCriticosRow_hi <<- c(1.565217391,1.564499484,1.235294118,1.166666667,1.282051282,1.304319716,1.375,3.299919468)
   modif_porcentajeCasosCriticos_hi <<- matrix(rep(modif_porcentajeCasosCriticosRow_hi,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = matrixNames)
   
+  tiempoP_mean <<- 360
+  tiempoP_sens_low <<- 320
+  tiempoP_sens_hi <<- 400
   
 }

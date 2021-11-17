@@ -24,7 +24,6 @@ library(rgeos)
 library(shinythemes)
 library(lubridate)
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
-
 options(dplyr.summarise.inform = FALSE)
 
 comp_table <<- list()
@@ -1403,6 +1402,12 @@ server <- function (input, output, session) {
     slider_low_critic <- input$complicacionesSensCritic[1]
     modif_comp_critic = 1- (slider_low_critic * -1 * (1-modif_porcentajeCasosCriticos_low))
     
+    transmission_probability_low <<- trans_prob_param * modif_effectiveness
+    
+    slider_tiempoP <- input$tiempoPSens[1]*-1
+    modificador_tiempoP <- tiempoP_mean - (tiempoP_mean - tiempoP_sens_low) * slider_tiempoP 
+    
+    
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -1414,7 +1419,7 @@ server <- function (input, output, session) {
                       contact_matrix = contact_matrix_scenario,
                       relaxationThreshold = input$relaxationThreshold,
                       contact_matrix_relaxed = contact_matrix_relaxed,
-                      transmission_probability = trans_prob_param * modif_effectiveness,
+                      transmission_probability = transmission_probability_low ,
                       N = N,
                       defunciones_reales=def_p,
                       modif_beta=efficacy$modif_beta,
@@ -1434,7 +1439,8 @@ server <- function (input, output, session) {
                       relaxNpi=relaxNpi,
                       relaxGoal=relaxGoal,
                       relaxFactor=input$relaxationFactor,
-                      country=input$country
+                      country=input$country,
+                      modificador_tiempoP = modificador_tiempoP
     )
     
     return(proy)
@@ -1550,6 +1556,10 @@ server <- function (input, output, session) {
     slider_hi_critic <- input$complicacionesSensCritic[2]
     modif_comp_critic = 1 + slider_hi_critic * (modif_porcentajeCasosCriticos_hi-1)
     
+    transmission_probability_hi <<- trans_prob_param * modif_effectiveness
+    
+    slider_tiempoP <- input$tiempoPSens[2]
+    modificador_tiempoP <- (tiempoP_sens_hi - tiempoP_mean) * slider_tiempoP + tiempoP_mean
     
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
@@ -1562,7 +1572,7 @@ server <- function (input, output, session) {
                       contact_matrix = contact_matrix_scenario,
                       relaxationThreshold = input$relaxationThreshold,
                       contact_matrix_relaxed = contact_matrix_relaxed,
-                      transmission_probability = trans_prob_param * modif_effectiveness,
+                      transmission_probability = transmission_probability_hi,
                       N = N,
                       defunciones_reales=def_p,
                       modif_beta=efficacy$modif_beta,
@@ -1582,7 +1592,8 @@ server <- function (input, output, session) {
                       relaxNpi=relaxNpi,
                       relaxGoal=relaxGoal,
                       relaxFactor=input$relaxationFactor,
-                      country=input$country
+                      country=input$country,
+                      modificador_tiempoP = modificador_tiempoP
     )
     
     return(proy)
@@ -1705,8 +1716,8 @@ server <- function (input, output, session) {
   })
   
   output$plotWithSens <- renderPlotly({
-    print(data_graf_hi())
-    print(data_graf_low())
+    # print(data_graf_hi())
+    # print(data_graf_low())
     res_t()
     
     col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
@@ -1748,6 +1759,38 @@ server <- function (input, output, session) {
     updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
   if (input$transmissionEffectivenessSens[2]<=0) {
     updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
+    
+  })
+  
+    
+  output$transEffSens_low <- renderUI({
+    slider_low_effectiveness <- input$transmissionEffectivenessSens[1]
+    modif_effectiveness = 1- (slider_low_effectiveness * -1 * (1-sens_transmission_low))
+    tabla <- transprob_edit * modif_effectiveness
+    HTML(as.character(round(mean(tabla), digits = 2)))
+    
+
+  })
+  
+  output$transEffSens_hi <- renderUI({
+    slider_hi_effectiveness <- input$transmissionEffectivenessSens[1]
+    modif_effectiveness = 1- (slider_hi_effectiveness * -1 * (1-sens_transmission_hi))
+    tabla <- transprob_edit * modif_effectiveness
+    HTML(as.character(round(mean(tabla), digits = 2)))
+    
+  })
+  
+  output$tiempoPSens_low <- renderUI({
+    slider_tiempoP <- input$tiempoPSens[1]*-1
+    modificador_tiempoP <- tiempoP_mean - (tiempoP_mean - tiempoP_sens_low) * slider_tiempoP 
+    HTML(as.character(round(modificador_tiempoP, digits = 0)))
+    
+  })
+  
+  output$tiempoPSens_hi <- renderUI({
+    slider_tiempoP <- input$tiempoPSens[2]
+    modificador_tiempoP <- (tiempoP_sens_hi - tiempoP_mean) * slider_tiempoP + tiempoP_mean
+    HTML(as.character(round(modificador_tiempoP, digits = 0)))
     
   })
 }
