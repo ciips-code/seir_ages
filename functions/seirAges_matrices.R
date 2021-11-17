@@ -36,31 +36,6 @@ seir_ages <- function(dias,
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   matrixNames = list(immunityStates,
                ageGroups)
-  # cada columna es un grupo
-  # contact_matrix <- lapply(1:dias, 
-  #                          matrix, 
-  #                          data= contact_matrix, 
-  #                          nrow=length(ageGroupsV), 
-  #                          ncol=length(ageGroupsV), 
-  #                          dimnames = list(ageGroupsV,
-  #                                          ageGroupsV))
-  # 
-  # transmission_probability <- lapply(1:dias, 
-  #                                    matrix, 
-  #                                    data= transmission_probability, 
-  #                                    nrow=length(ageGroupsV), 
-  #                                    ncol=length(ageGroupsV), 
-  #                                    dimnames = list(ageGroupsV,
-  #                                                    ageGroupsV))
-  # 
-  # beta <- lapply(1:dias, 
-  #                matrix, 
-  #                data= transmission_probability[[1]] * contact_matrix[[1]], 
-  #                nrow=length(ageGroupsV), 
-  #                ncol=length(ageGroupsV), 
-  #                dimnames = list(ageGroupsV,
-  #                                ageGroupsV))
-  # 
             
   e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = tot = yl = lapply(1:dias, 
                                                                                                         matrix, 
@@ -202,7 +177,9 @@ seir_ages <- function(dias,
     porcV = as.numeric(paramVac[vacuna,2])
     tiempoV = as.numeric(paramVac[vacuna,3])
     porcProt = as.numeric(paramVac[vacuna,4])
+    # agregar if escenarios hi y low
     tiempoP = as.numeric(paramVac[vacuna,5])
+    
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
       prioridadesHoy <- selectedPriority

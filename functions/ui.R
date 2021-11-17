@@ -217,7 +217,7 @@ getUI <- function () {
                                                                  column(8,
                                                                         sliderInput("transmissionEffectivenessSens", "Transmission effectiveness:",
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
@@ -228,7 +228,7 @@ getUI <- function () {
                                                                  column(8,
                                                                         sliderInput("ifrSens", "IFR:",
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    value = c(-0.25,0.25), step = 0.05, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                       ),
@@ -237,9 +237,20 @@ getUI <- function () {
                                                                fluidRow(
                                                                  column(2,align="right", br(), br(), p(0.65)),
                                                                  column(8,
-                                                                        sliderInput("complicacionesSens", "Complication rates:",
+                                                                        sliderInput("complicacionesSensSevere", "Complication rates (severe):",
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    width = "100%"
+                                                                        ),
+                                                                 ),
+                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                               ),
+                                                               fluidRow(
+                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(8,
+                                                                        sliderInput("complicacionesSensCritic", "Complication rates (critic):",
+                                                                                    min = -1, max = 1, 
+                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
@@ -250,7 +261,7 @@ getUI <- function () {
                                                                  column(8,
                                                                         sliderInput("wainingSens", "Immunity duration periods:",
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-0.5,0.5), step = 0.1, dragRange = T,
+                                                                                    value = c(-0.25,0.25), step = 0.05, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
@@ -264,6 +275,11 @@ getUI <- function () {
                                                                                      class = "btn-primary", style = "margin: 5px;")
                                                                  ),
                                                                ),
+                                                               fluidRow(
+                                                                 column(12,align="center",
+                                                                        plotlyOutput("plotWithSens")
+                                                                 ),
+                                                               )
                                                         )
                                                       )
                                              ),

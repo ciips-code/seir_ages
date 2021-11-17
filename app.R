@@ -23,7 +23,6 @@ library(rgdal)
 library(rgeos)
 library(shinythemes)
 library(lubridate)
-
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 
 options(dplyr.summarise.inform = FALSE)
@@ -57,7 +56,6 @@ source("functions/params.R", encoding = "UTF-8")
 source("functions/NPIInterface.R", encoding = "UTF-8")
 source("functions/ui.R", encoding = "UTF-8")
 # source("functions/ui_bid.R", encoding = "UTF-8")
-
 
 setParameters()
 
@@ -1294,6 +1292,462 @@ server <- function (input, output, session) {
   output$dailyTests <- renderText({
     input$country
     OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="dailyTests"]})          
+  
+  proy_low <- reactive({
+    #paste activa reactive (no comentar)
+    paste(input$go)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
+    paste(input$transprob_cell_edit)
+    paste(input$mbeta_cell_edit)
+    paste(input$mgraves_cell_edit)
+    paste(input$mcriticos_cell_edit)
+    paste(input$mifr_cell_edit)
+    paste(input$porc_cr_cell_edit)
+    paste(input$porc_gr_cell_edit)
+    paste(input$country)
+
+    duracion_inmunidad = input$duracionInm
+    
+    
+    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, planVacDosis1
+    shinyjs::show("vacDateGoal")
+    shinyjs::show("vacStrat")
+    shinyjs::show("vacEfficacy")
+    # shinyjs::show("immunityDuration")
+    if (input$vacUptake == "Current uptake") {
+      shinyjs::hide("vacDateGoal")
+    } else if (input$vacUptake == "No vaccination") {
+      shinyjs::hide("vacDateGoal")
+      shinyjs::hide("vacStrat")
+      shinyjs::hide("vacEfficacy")
+      # shinyjs::hide("immunityDuration")
+    }
+    diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+    selectedPriority <- getPrioritiesV2(input$vacStrat)
+    selectedUptake <- getUptake(input$vacUptake)
+    cantidadVacunasTotal = selectedUptake * sum(N)
+    ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+    
+    planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                                    planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
+    
+    planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
+    return(dia)})
+    
+    planVacunacionFinalParam <<- planVacunacionFinalParam 
+    
+    ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+    trans_prob_param <<- transprob_edit * ajuste
+    
+    relaxNpi = FALSE
+    relaxGoal = NULL
+    if (input$npiStrat == "cont") {
+      shinyjs::hide("relaxationDateGoal")
+      shinyjs::hide("relaxationFactor")
+    } else {
+      shinyjs::show("relaxationDateGoal")
+      shinyjs::show("relaxationFactor")
+      relaxNpi = TRUE
+      relaxGoal = which(fechas_master == input$relaxationDateGoal)
+    }
+    
+    # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
+    contact_matrix_scenario <<- get_npi_cm_scenario(scenario = input$npiScenario,
+                                                    matrix_list = list(
+                                                      contact_matrix = contact_matrix,
+                                                      contact_matrix_work = contact_matrix_work,
+                                                      contact_matrix_home = contact_matrix_home,
+                                                      contact_matrix_school = contact_matrix_school,
+                                                      contact_matrix_other = contact_matrix_other),
+                                                    ages= as.numeric(ageGroupsV))
+    contact_matrix_relaxed <<- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
+                                                   matrix_list = list(
+                                                     contact_matrix = contact_matrix,
+                                                     contact_matrix_work = contact_matrix_work,
+                                                     contact_matrix_home = contact_matrix_home,
+                                                     contact_matrix_school = contact_matrix_school,
+                                                     contact_matrix_other = contact_matrix_other),
+                                                   ages= as.numeric(ageGroupsV))
+    efficacy = applyVaccineEfficacy(input$vacEfficacy)
+    
+    # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
+    
+    # print(porcentajeCasosGraves)
+    # print(porcentajeCasosCriticos)
+    #browser()
+    tVacunasCero = 303
+    ifrProy = ifr_edit[1,]
+    if (input$country == "Argentina") {
+      ifrProy = ifrProy * 2.4
+    } else if (input$country == "Peru") {
+      ifrProy = ifrProy * 3.55
+    } else if (input$country == "Colombia") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Chile") {
+      ifrProy = ifrProy * 1
+    } else if (input$country == "Mexico") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Brazil") {
+      ifrProy = ifrProy * 1
+    }
+    
+    
+    slider_low_effectiveness <- input$transmissionEffectivenessSens[1]
+    modif_effectiveness = 1- (slider_low_effectiveness * -1 * (1-sens_transmission_low))
+    
+    slider_low_severe <- input$complicacionesSensSevere[1]
+    modif_comp_severe = 1- (slider_low_severe * -1 * (1-modif_porcentajeCasosGraves_low))
+    
+    slider_low_critic <- input$complicacionesSensCritic[1]
+    modif_comp_critic = 1- (slider_low_critic * -1 * (1-modif_porcentajeCasosCriticos_low))
+    
+    proy <- seir_ages(dias=diasDeProyeccion,
+                      duracionE = periodoPreinfPromedio,
+                      duracionIi = duracionMediaInf,
+                      porc_gr = porcentajeCasosGraves * modif_comp_severe,
+                      porc_cr = porcentajeCasosCriticos * modif_comp_critic,
+                      duracionIg = diasHospCasosGraves,
+                      duracionIc = diasHospCasosCriticos,
+                      ifr = ifrProy*.75,
+                      contact_matrix = contact_matrix_scenario,
+                      relaxationThreshold = input$relaxationThreshold,
+                      contact_matrix_relaxed = contact_matrix_relaxed,
+                      transmission_probability = trans_prob_param * modif_effectiveness,
+                      N = N,
+                      defunciones_reales=def_p,
+                      modif_beta=efficacy$modif_beta,
+                      modif_porc_gr=efficacy$modif_porc_gr,
+                      modif_porc_cr=efficacy$modif_porc_cr,
+                      modif_ifr=efficacy$modif_ifr,
+                      planVacunacionFinal=planVacunacionFinalParam,
+                      selectedPriority=selectedPriority,
+                      selectedUptake=selectedUptake,
+                      ritmoVacunacion=ritmoVacunacion,
+                      diasVacunacion=diasVacunacion,
+                      immunityStates=immunityStates,
+                      ageGroups=ageGroups,
+                      paramVac=paramVac_edit,
+                      duracion_inmunidad=duracion_inmunidad_low,
+                      tVacunasCero=tVacunasCero,
+                      relaxNpi=relaxNpi,
+                      relaxGoal=relaxGoal,
+                      relaxFactor=input$relaxationFactor,
+                      country=input$country
+    )
+    
+    return(proy)
+    
+  })
+
+  proy_hi <- reactive({
+    # paste activa reactive (no comentar)
+    paste(input$go)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
+    paste(input$transprob_cell_edit)
+    paste(input$mbeta_cell_edit)
+    paste(input$mgraves_cell_edit)
+    paste(input$mcriticos_cell_edit)
+    paste(input$mifr_cell_edit)
+    paste(input$porc_cr_cell_edit)
+    paste(input$porc_gr_cell_edit)
+    paste(input$country)
+    duracion_inmunidad = input$duracionInm
+    
+    
+    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, planVacDosis1
+    shinyjs::show("vacDateGoal")
+    shinyjs::show("vacStrat")
+    shinyjs::show("vacEfficacy")
+    # shinyjs::show("immunityDuration")
+    if (input$vacUptake == "Current uptake") {
+      shinyjs::hide("vacDateGoal")
+    } else if (input$vacUptake == "No vaccination") {
+      shinyjs::hide("vacDateGoal")
+      shinyjs::hide("vacStrat")
+      shinyjs::hide("vacEfficacy")
+      # shinyjs::hide("immunityDuration")
+    }
+    diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+    selectedPriority <- getPrioritiesV2(input$vacStrat)
+    selectedUptake <- getUptake(input$vacUptake)
+    cantidadVacunasTotal = selectedUptake * sum(N)
+    ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+    
+    planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                                    planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
+    
+    planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
+    return(dia)})
+    
+    planVacunacionFinalParam <<- planVacunacionFinalParam 
+    
+    ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+    trans_prob_param <<- transprob_edit * ajuste
+    
+    relaxNpi = FALSE
+    relaxGoal = NULL
+    if (input$npiStrat == "cont") {
+      shinyjs::hide("relaxationDateGoal")
+      shinyjs::hide("relaxationFactor")
+    } else {
+      shinyjs::show("relaxationDateGoal")
+      shinyjs::show("relaxationFactor")
+      relaxNpi = TRUE
+      relaxGoal = which(fechas_master == input$relaxationDateGoal)
+    }
+    
+    # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
+    contact_matrix_scenario <<- get_npi_cm_scenario(scenario = input$npiScenario,
+                                                    matrix_list = list(
+                                                      contact_matrix = contact_matrix,
+                                                      contact_matrix_work = contact_matrix_work,
+                                                      contact_matrix_home = contact_matrix_home,
+                                                      contact_matrix_school = contact_matrix_school,
+                                                      contact_matrix_other = contact_matrix_other),
+                                                    ages= as.numeric(ageGroupsV))
+    contact_matrix_relaxed <<- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
+                                                   matrix_list = list(
+                                                     contact_matrix = contact_matrix,
+                                                     contact_matrix_work = contact_matrix_work,
+                                                     contact_matrix_home = contact_matrix_home,
+                                                     contact_matrix_school = contact_matrix_school,
+                                                     contact_matrix_other = contact_matrix_other),
+                                                   ages= as.numeric(ageGroupsV))
+    efficacy = applyVaccineEfficacy(input$vacEfficacy)
+    
+    # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
+    
+    # print(porcentajeCasosGraves)
+    # print(porcentajeCasosCriticos)
+    #browser()
+    tVacunasCero = 303
+    ifrProy = ifr_edit[1,]
+    if (input$country == "Argentina") {
+      ifrProy = ifrProy * 2.4
+    } else if (input$country == "Peru") {
+      ifrProy = ifrProy * 3.55
+    } else if (input$country == "Colombia") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Chile") {
+      ifrProy = ifrProy * 1
+    } else if (input$country == "Mexico") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Brazil") {
+      ifrProy = ifrProy * 1
+    }
+    
+    
+    slider_hi_effectiveness <- input$transmissionEffectivenessSens[2]
+    modif_effectiveness = 1 + slider_hi_effectiveness * (sens_transmission_hi-1)
+    
+    slider_hi_severe <- input$complicacionesSensSevere[2]
+    modif_comp_severe = 1 + slider_hi_severe * (modif_porcentajeCasosGraves_hi-1)
+    
+    slider_hi_critic <- input$complicacionesSensCritic[2]
+    modif_comp_critic = 1 + slider_hi_critic * (modif_porcentajeCasosCriticos_hi-1)
+    
+    
+    proy <- seir_ages(dias=diasDeProyeccion,
+                      duracionE = periodoPreinfPromedio,
+                      duracionIi = duracionMediaInf,
+                      porc_gr = porcentajeCasosGraves * modif_comp_severe,
+                      porc_cr = porcentajeCasosCriticos * modif_comp_critic,
+                      duracionIg = diasHospCasosGraves,
+                      duracionIc = diasHospCasosCriticos,
+                      ifr = ifrProy*1.25,
+                      contact_matrix = contact_matrix_scenario,
+                      relaxationThreshold = input$relaxationThreshold,
+                      contact_matrix_relaxed = contact_matrix_relaxed,
+                      transmission_probability = trans_prob_param * modif_effectiveness,
+                      N = N,
+                      defunciones_reales=def_p,
+                      modif_beta=efficacy$modif_beta,
+                      modif_porc_gr=efficacy$modif_porc_gr,
+                      modif_porc_cr=efficacy$modif_porc_cr,
+                      modif_ifr=efficacy$modif_ifr,
+                      planVacunacionFinal=planVacunacionFinalParam,
+                      selectedPriority=selectedPriority,
+                      selectedUptake=selectedUptake,
+                      ritmoVacunacion=ritmoVacunacion,
+                      diasVacunacion=diasVacunacion,
+                      immunityStates=immunityStates,
+                      ageGroups=ageGroups,
+                      paramVac=paramVac_edit,
+                      duracion_inmunidad=duracion_inmunidad_hi,
+                      tVacunasCero=tVacunasCero,
+                      relaxNpi=relaxNpi,
+                      relaxGoal=relaxGoal,
+                      relaxFactor=input$relaxationFactor,
+                      country=input$country
+    )
+    
+    return(proy)
+    
+  })
+  
+    
+  data_graf_low <- eventReactive(input$runWithSens, {
+    proy <- proy_low()
+    data_graf <- bind_rows(
+      tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
+      tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
+      tibble(Compart = "vA", do.call(rbind, lapply(proy$`vA: Daily vaccinations`,colSums)) %>% as_tibble()),
+      tibble(Compart = "E", do.call(rbind, lapply(proy$`E: Exposed`,colSums)) %>% as_tibble()),
+      tibble(Compart = "e", do.call(rbind, lapply(proy$`e: Daily exposed`,colSums)) %>% as_tibble()),
+      tibble(Compart = "I", do.call(rbind, lapply(proy$`I: Infectious`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ii", do.call(rbind, lapply(proy$`Ii: Infectious (mild)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ic", do.call(rbind, lapply(proy$`Ic: Infectious (severe)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ig", do.call(rbind, lapply(proy$`Ig: Infectious (moderate)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "i", do.call(rbind, lapply(proy$`i: Daily infectious`,colSums)) %>% as_tibble()),
+      tibble(Compart = "D", do.call(rbind, lapply(proy$`D: Deaths`,colSums)) %>% as_tibble()),
+      tibble(Compart = "d", do.call(rbind, lapply(proy$`d: Daily deaths`,colSums)) %>% as_tibble()),
+      tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
+      tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
+      tibble(Compart = "yl", do.call(rbind, lapply(proy$`yl: Years lost`,colSums)) %>% as_tibble()) %>% mutate_at(ageGroups, cumsum),
+      tibble(Compart = "pV", do.call(rbind, lapply(planVacunacionFinalParam,colSums)) %>% as_tibble())) %>%
+      dplyr::mutate(fecha = rep(1:length(proy$S),17)) %>%
+      # TODO: Arreglar
+      dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
+    data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
+    
+    #casos reales
+    
+    Compart=rep("casos_registrados",nrow(dataPorEdad$FMTD$casos))
+    fecha=seq(1,nrow(dataPorEdad$FMTD$casos),by=1)
+    casos=dataPorEdad$FMTD$casos[-1]
+    total=rowSums(casos)
+    casos=cbind(Compart,casos,fecha,total) 
+    colnames(casos)=colnames(data_graf)
+    casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos, by = "fecha")
+    
+    #casos[is.na(casos)] <- 0
+    casos$Compart <- "casos_registrados"
+    
+    data_graf=union_all(data_graf,casos)
+    
+    #muertes reales
+    
+    Compart=rep("muertes_registradas",nrow(dataPorEdad$FMTD$def))
+    fecha=seq(1,nrow(dataPorEdad$FMTD$def),by=1)
+    muertes=dataPorEdad$FMTD$def[2:(length(ageGroups)+1)]
+    total=rowSums(muertes)
+    muertes=cbind(Compart,muertes,fecha,total) 
+    colnames(muertes)=colnames(data_graf)
+    muertes <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(muertes, by = "fecha")
+    #muertes[is.na(muertes)] <- 0
+    muertes$Compart <- "muertes_registradas"
+    
+    data_graf=union_all(data_graf,muertes)
+    data_graf
+    
+  })
+  
+  data_graf_hi <- eventReactive(input$runWithSens, {
+    proy <- proy_hi()
+    data_graf <- bind_rows(
+      tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
+      tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
+      tibble(Compart = "vA", do.call(rbind, lapply(proy$`vA: Daily vaccinations`,colSums)) %>% as_tibble()),
+      tibble(Compart = "E", do.call(rbind, lapply(proy$`E: Exposed`,colSums)) %>% as_tibble()),
+      tibble(Compart = "e", do.call(rbind, lapply(proy$`e: Daily exposed`,colSums)) %>% as_tibble()),
+      tibble(Compart = "I", do.call(rbind, lapply(proy$`I: Infectious`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ii", do.call(rbind, lapply(proy$`Ii: Infectious (mild)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ic", do.call(rbind, lapply(proy$`Ic: Infectious (severe)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "Ig", do.call(rbind, lapply(proy$`Ig: Infectious (moderate)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "i", do.call(rbind, lapply(proy$`i: Daily infectious`,colSums)) %>% as_tibble()),
+      tibble(Compart = "D", do.call(rbind, lapply(proy$`D: Deaths`,colSums)) %>% as_tibble()),
+      tibble(Compart = "d", do.call(rbind, lapply(proy$`d: Daily deaths`,colSums)) %>% as_tibble()),
+      tibble(Compart = "R", do.call(rbind, lapply(proy$`R: Recovered (survivors + deaths)`,colSums)) %>% as_tibble()),
+      tibble(Compart = "U", do.call(rbind, lapply(proy$`U: Survivors`,colSums)) %>% as_tibble()),
+      tibble(Compart = "u", do.call(rbind, lapply(proy$`u: Daily survivors`,colSums)) %>% as_tibble()),
+      tibble(Compart = "yl", do.call(rbind, lapply(proy$`yl: Years lost`,colSums)) %>% as_tibble()) %>% mutate_at(ageGroups, cumsum),
+      tibble(Compart = "pV", do.call(rbind, lapply(planVacunacionFinalParam,colSums)) %>% as_tibble())) %>%
+      dplyr::mutate(fecha = rep(1:length(proy$S),17)) %>%
+      # TODO: Arreglar
+      dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
+    data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
+    
+    #casos reales
+    
+    Compart=rep("casos_registrados",nrow(dataPorEdad$FMTD$casos))
+    fecha=seq(1,nrow(dataPorEdad$FMTD$casos),by=1)
+    casos=dataPorEdad$FMTD$casos[-1]
+    total=rowSums(casos)
+    casos=cbind(Compart,casos,fecha,total) 
+    colnames(casos)=colnames(data_graf)
+    casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos, by = "fecha")
+    
+    #casos[is.na(casos)] <- 0
+    casos$Compart <- "casos_registrados"
+    
+    data_graf=union_all(data_graf,casos)
+    
+    #muertes reales
+    
+    Compart=rep("muertes_registradas",nrow(dataPorEdad$FMTD$def))
+    fecha=seq(1,nrow(dataPorEdad$FMTD$def),by=1)
+    muertes=dataPorEdad$FMTD$def[2:(length(ageGroups)+1)]
+    total=rowSums(muertes)
+    muertes=cbind(Compart,muertes,fecha,total) 
+    colnames(muertes)=colnames(data_graf)
+    muertes <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(muertes, by = "fecha")
+    #muertes[is.na(muertes)] <- 0
+    muertes$Compart <- "muertes_registradas"
+    
+    data_graf=union_all(data_graf,muertes)
+    data_graf
+    
+  })
+  
+  output$plotWithSens <- renderPlotly({
+    print(data_graf_hi())
+    print(data_graf_low())
+    res_t()
+    
+    col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
+    compart_label <- input$compart_a_graficar
+    
+    serie_fecha = data_graf_hi() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(fecha)
+    serie = data_graf() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
+    serie_hi = data_graf_hi() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
+    serie_low = data_graf_low() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
+    
+    
+    valx = serie_fecha$fecha[input$t]
+    #maxy = max(serie_hi)
+    
+    data <- data.frame(serie_fecha,
+                       serie_hi,
+                       serie_low,
+                       serie) 
+    colnames(data) <- c("fecha","hi","lo","serie")
+    
+    plot <- plot_ly(data = data,
+                    x = data$fecha,
+                    y = data$hi,
+                    type = "scatter",
+                    mode = "lines",
+                    name= "hi",
+                    line = list(color = '#fc9272', dash = 'dot')
+                    )
+    plot <- plot %>% add_trace(y=data$lo, name = 'lo', line = list(color = '#addd8e', dash = 'dot'))
+    plot <- plot %>% add_trace(y=data$serie, name = 'original', line = list(color = '#1F77B4', dash = 'line'))
+    plot
+  })
+  
+  
+  observeEvent(input$transmissionEffectivenessSens, {
+  if (input$transmissionEffectivenessSens[1]>=0) {
+    updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
+  if (input$transmissionEffectivenessSens[2]<=0) {
+    updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
+    
+  })
 }
 
 shinyApp(ui = getUI(), server = server)
