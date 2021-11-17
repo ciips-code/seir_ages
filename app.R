@@ -1742,6 +1742,8 @@ server <- function (input, output, session) {
   
   
   observeEvent(input$transmissionEffectivenessSens, {
+  
+  
   if (input$transmissionEffectivenessSens[1]>=0) {
     updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
   if (input$transmissionEffectivenessSens[2]<=0) {

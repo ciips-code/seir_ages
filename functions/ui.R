@@ -213,7 +213,7 @@ getUI <- function () {
                                                       fluidRow(
                                                         column(12,
                                                                fluidRow(
-                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(2,align="right", br(), br(), p("Min")),
                                                                  column(8,
                                                                         sliderInput("transmissionEffectivenessSens", "Transmission effectiveness:",
                                                                                     min = -1, max = 1, 
@@ -221,10 +221,10 @@ getUI <- function () {
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
-                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                                 column(2,align="left",br(), br(), p("Max")),
                                                                ),
                                                                fluidRow(
-                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(2,align="right", br(), br(), p("Min")),
                                                                  column(8,
                                                                         sliderInput("ifrSens", "IFR:",
                                                                                     min = -1, max = 1, 
@@ -232,10 +232,10 @@ getUI <- function () {
                                                                                     width = "100%"
                                                                         ),
                                                                       ),
-                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                                 column(2,align="left",br(), br(), p("Max")),
                                                                ),
                                                                fluidRow(
-                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(2,align="right", br(), br(), p("Min")),
                                                                  column(8,
                                                                         sliderInput("complicacionesSensSevere", "Complication rates (severe):",
                                                                                     min = -1, max = 1, 
@@ -243,10 +243,10 @@ getUI <- function () {
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
-                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                                 column(2,align="left",br(), br(), p("Max")),
                                                                ),
                                                                fluidRow(
-                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(2,align="right", br(), br(), p("Min")),
                                                                  column(8,
                                                                         sliderInput("complicacionesSensCritic", "Complication rates (critic):",
                                                                                     min = -1, max = 1, 
@@ -254,10 +254,10 @@ getUI <- function () {
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
-                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                                 column(2,align="left",br(), br(), p("Max")),
                                                                ),
                                                                fluidRow(
-                                                                 column(2,align="right", br(), br(), p(0.65)),
+                                                                 column(2,align="right", br(), br(), p("Min")),
                                                                  column(8,
                                                                         sliderInput("wainingSens", "Immunity duration periods:",
                                                                                     min = -1, max = 1, 
@@ -265,7 +265,7 @@ getUI <- function () {
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
-                                                                 column(2,align="left",br(), br(), p(1.20)),
+                                                                 column(2,align="left",br(), br(), p("Max")),
                                                                ),
                                                                fluidRow(
                                                                  column(12,align="center",
