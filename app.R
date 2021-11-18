@@ -26,6 +26,7 @@ library(lubridate)
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 options(dplyr.summarise.inform = FALSE)
 
+
 comp_table <<- list()
 output_list <<- c()
 countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay")
@@ -61,7 +62,11 @@ setParameters()
 mode = "Nobasico"
 customMatrix <<- F
 
+
+
+
 server <- function (input, output, session) {
+  
   disable("go")
   
   observeEvent(input$go, {
@@ -1292,6 +1297,8 @@ server <- function (input, output, session) {
     input$country
     OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="dailyTests"]})          
   
+  ##### PROY_LOW #####
+  
   proy_low <- reactive({
     #paste activa reactive (no comentar)
     paste(input$go)
@@ -1406,20 +1413,26 @@ server <- function (input, output, session) {
     
     slider_tiempoP <- input$tiempoPSens[1]*-1
     modificador_tiempoP <- tiempoP_mean - (tiempoP_mean - tiempoP_sens_low) * slider_tiempoP 
-    
+
+    if (input$check_complicacionesSensSevere) {porc_gr = porcentajeCasosGraves * modif_comp_severe} else {porc_gr = porcentajeCasosGraves}
+    if (input$check_complicacionesSensCritic) {porc_cr = porcentajeCasosCriticos * modif_comp_critic} else {porc_cr = porcentajeCasosCriticos}
+    if (input$check_ifrSens) {ifr = ifrProy*.75} else {ifr = ifrProy}
+    if (input$check_transmissionEffectivenessSens) {transmission_probability = transmission_probability_low} else {transmission_probability = trans_prob_param}
+    if (input$check_tiempoPSens) {modificador_tiempoP = modificador_tiempoP} else {modificador_tiempoP = NULL}
+    if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_low} else {duracion_inmunidad = duracion_inmunidad}
     
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
-                      porc_gr = porcentajeCasosGraves * modif_comp_severe,
-                      porc_cr = porcentajeCasosCriticos * modif_comp_critic,
+                      porc_gr = porc_gr,
+                      porc_cr = porc_cr,
                       duracionIg = diasHospCasosGraves,
                       duracionIc = diasHospCasosCriticos,
-                      ifr = ifrProy*.75,
+                      ifr = ifr,
                       contact_matrix = contact_matrix_scenario,
                       relaxationThreshold = input$relaxationThreshold,
                       contact_matrix_relaxed = contact_matrix_relaxed,
-                      transmission_probability = transmission_probability_low ,
+                      transmission_probability = transmission_probability ,
                       N = N,
                       defunciones_reales=def_p,
                       modif_beta=efficacy$modif_beta,
@@ -1434,7 +1447,7 @@ server <- function (input, output, session) {
                       immunityStates=immunityStates,
                       ageGroups=ageGroups,
                       paramVac=paramVac_edit,
-                      duracion_inmunidad=duracion_inmunidad_low,
+                      duracion_inmunidad=duracion_inmunidad,
                       tVacunasCero=tVacunasCero,
                       relaxNpi=relaxNpi,
                       relaxGoal=relaxGoal,
@@ -1561,18 +1574,28 @@ server <- function (input, output, session) {
     slider_tiempoP <- input$tiempoPSens[2]
     modificador_tiempoP <- (tiempoP_sens_hi - tiempoP_mean) * slider_tiempoP + tiempoP_mean
     
+    
+    if (input$check_complicacionesSensSevere) {porc_gr = porcentajeCasosGraves * modif_comp_severe} else {porc_gr = porcentajeCasosGraves}
+    if (input$check_complicacionesSensCritic) {porc_cr = porcentajeCasosCriticos * modif_comp_critic} else {porc_cr = porcentajeCasosCriticos}
+    if (input$check_ifrSens) {ifr = ifrProy*1.25} else {ifr = ifrProy}
+    if (input$check_transmissionEffectivenessSens) {transmission_probability = transmission_probability_hi} else {transmission_probability = trans_prob_param}
+    if (input$check_tiempoPSens) {modificador_tiempoP = modificador_tiempoP} else {modificador_tiempoP = NULL}
+    if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_hi} else {duracion_inmunidad = duracion_inmunidad}
+    
+    
+    
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
-                      porc_gr = porcentajeCasosGraves * modif_comp_severe,
-                      porc_cr = porcentajeCasosCriticos * modif_comp_critic,
+                      porc_gr = porc_gr,
+                      porc_cr = porc_cr,
                       duracionIg = diasHospCasosGraves,
                       duracionIc = diasHospCasosCriticos,
-                      ifr = ifrProy*1.25,
+                      ifr = ifr,
                       contact_matrix = contact_matrix_scenario,
                       relaxationThreshold = input$relaxationThreshold,
                       contact_matrix_relaxed = contact_matrix_relaxed,
-                      transmission_probability = transmission_probability_hi,
+                      transmission_probability = transmission_probability,
                       N = N,
                       defunciones_reales=def_p,
                       modif_beta=efficacy$modif_beta,
@@ -1587,7 +1610,7 @@ server <- function (input, output, session) {
                       immunityStates=immunityStates,
                       ageGroups=ageGroups,
                       paramVac=paramVac_edit,
-                      duracion_inmunidad=duracion_inmunidad_hi,
+                      duracion_inmunidad=duracion_inmunidad,
                       tVacunasCero=tVacunasCero,
                       relaxNpi=relaxNpi,
                       relaxGoal=relaxGoal,
@@ -1767,18 +1790,58 @@ server <- function (input, output, session) {
     slider_low_effectiveness <- input$transmissionEffectivenessSens[1]
     modif_effectiveness = 1- (slider_low_effectiveness * -1 * (1-sens_transmission_low))
     tabla <- transprob_edit * modif_effectiveness
-    HTML(as.character(round(mean(tabla), digits = 2)))
+    HTML(as.character(round(mean(tabla), digits = 3)))
     
 
   })
   
   output$transEffSens_hi <- renderUI({
-    slider_hi_effectiveness <- input$transmissionEffectivenessSens[1]
-    modif_effectiveness = 1- (slider_hi_effectiveness * -1 * (1-sens_transmission_hi))
+    slider_hi_effectiveness <- input$transmissionEffectivenessSens[2]
+    modif_effectiveness = 1 + slider_hi_effectiveness * (sens_transmission_hi-1)
     tabla <- transprob_edit * modif_effectiveness
-    HTML(as.character(round(mean(tabla), digits = 2)))
+    HTML(as.character(round(mean(tabla), digits = 3)))
     
   })
+  
+  output$transEffSens_low <- renderUI({
+    slider_low_effectiveness <- input$transmissionEffectivenessSens[1]
+    modif_effectiveness = 1- (slider_low_effectiveness * -1 * (1-sens_transmission_low))
+    tabla <- transprob_edit * modif_effectiveness
+    HTML(as.character(round(mean(tabla), digits = 3)))
+    
+    
+  })
+  
+  output$complicacionesSensSevere_hi <- renderUI({
+    slider_hi_severe <- input$complicacionesSensSevere[2]
+    modif_comp_severe = 1 + slider_hi_severe * (modif_porcentajeCasosGraves_hi-1)
+    as.character(round(mean(porcentajeCasosGraves * modif_comp_severe), digits=3))
+  })
+  
+  
+
+  output$complicacionesSensSevere_low <- renderUI({
+    slider_low_severe <- input$complicacionesSensSevere[1]
+    modif_comp_severe = 1- (slider_low_severe * -1 * (1-modif_porcentajeCasosGraves_low))
+    as.character(round(mean(porcentajeCasosGraves * modif_comp_severe), digits=3))
+  })
+
+  output$complicacionesSensCritic_hi <- renderUI({
+    slider_hi_critic <- input$complicacionesSensCritic[2]
+    modif_comp_critic = 1 + slider_hi_critic * (modif_porcentajeCasosCriticos_hi-1)
+    as.character(round(mean(porcentajeCasosCriticos * modif_comp_critic), digits=3))
+  })
+  
+  output$complicacionesSensCritic_low <- renderUI({
+    slider_low_critic <- input$complicacionesSensCritic[1]
+    modif_comp_critic = 1- (slider_low_critic * -1 * (1-modif_porcentajeCasosCriticos_low))
+    as.character(round(mean(porcentajeCasosCriticos * modif_comp_critic), digits=3))
+  })
+  
+  
+  
+  
+  
   
   output$tiempoPSens_low <- renderUI({
     slider_tiempoP <- input$tiempoPSens[1]*-1
@@ -1793,6 +1856,84 @@ server <- function (input, output, session) {
     HTML(as.character(round(modificador_tiempoP, digits = 0)))
     
   })
+  
+  observeEvent(input$check_transmissionEffectivenessSens, {
+    if (input$check_transmissionEffectivenessSens) {
+      enable("transmissionEffectivenessSens")
+      } else {
+      disable("transmissionEffectivenessSens")}
+    
+  })
+  
+  observeEvent(input$check_ifrSens, {
+    if (input$check_ifrSens) {
+      enable("ifrSens")
+    } else {
+      disable("ifrSens")}
+    
+  })
+  
+  observeEvent(input$check_complicacionesSensSevere, {
+    if (input$check_complicacionesSensSevere) {
+      enable("complicacionesSensSevere")
+    } else {
+      disable("complicacionesSensSevere")}
+    
+  })
+  
+  observeEvent(input$check_complicacionesSensCritic, {
+    if (input$check_complicacionesSensCritic) {
+      enable("complicacionesSensCritic")
+    } else {
+      disable("complicacionesSensCritic")}
+    
+  })
+  
+  observeEvent(input$check_tiempoPSens, {
+    if (input$check_tiempoPSens) {
+      enable("tiempoPSens")
+    } else {
+      disable("tiempoPSens")}
+    
+  })
+  
+  observeEvent(input$check_wainingSens, {
+    if (input$check_wainingSens) {
+      enable("wainingSens")
+    } else {
+      disable("wainingSens")}
+    
+  })
+  
+  output$base_transmissionEffectivenessSens <- renderUI({
+    paste0("Transmission effectiveness (base value: ",
+           as.character(round(mean(transprob_edit),digits=3)),
+           ")")
+    
+    })
+  
+  output$base_complicacionesSensCritic <- renderUI({
+    paste0("Complication rates (critic) (base value: ",
+           as.character(round(mean(porcentajeCasosCriticos),digits=3)),
+           ")")
+    
+  })
+  
+  output$base_complicacionesSensSevere <- renderUI({
+    paste0("Complication rates (severe) (base value: ",
+           as.character(round(mean(porcentajeCasosGraves),digits=3)),
+           ")")
+    
+  })
+  
+  output$base_tiempoPSens <- renderUI({
+    paste0("Vaccine protection duration periods (base value: ",
+           as.character(tiempoP_mean,digits=0),
+           ")")
+    
+  })
+  
+
 }
 
 shinyApp(ui = getUI(), server = server)
