@@ -57,13 +57,17 @@ setParameters <- function () {
   modif_porc_cr <<-  modif_porc_cr_param <<- matrix(rep(c(1,.1,.03,.02),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
   modif_ifr <<-  modif_ifr_param <<- matrix(rep(c(1,.05,.01,.005),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
   duracion_inmunidad <<- 180
-  duracion_proteccion <<- 360 # TODO: Implementar, Cuanto?
+  duracion_proteccion <<- 360
   
-  duracion_inmunidad_hi <<- 180 * .75
-  duracion_proteccion_hi <<- 360 * .75
+  duracion_inmunidad_hi <<- 345
+  duracion_proteccion_hi <<- 420
   
-  duracion_inmunidad_low <<- 180 * 1.25
-  duracion_proteccion_low <<- 360 * 1.25
+  duracion_inmunidad_low <<- 90
+  duracion_proteccion_low <<- 240
+  
+  tiempoP_mean <<- duracion_proteccion
+  tiempoP_sens_low <<- duracion_proteccion_low
+  tiempoP_sens_hi <<- duracion_proteccion_hi
   
   namesVac <<- list(immunityStates,
                   c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP", "intervaloInterDosis", "idVacuna", "dosis"))
@@ -104,8 +108,5 @@ setParameters <- function () {
   modif_porcentajeCasosCriticosRow_hi <<- c(1.565217391,1.564499484,1.235294118,1.166666667,1.282051282,1.304319716,1.375,3.299919468)
   modif_porcentajeCasosCriticos_hi <<- matrix(rep(modif_porcentajeCasosCriticosRow_hi,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = matrixNames)
   
-  tiempoP_mean <<- 360
-  tiempoP_sens_low <<- 320
-  tiempoP_sens_hi <<- 400
   
 }
