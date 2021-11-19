@@ -1419,12 +1419,15 @@ server <- function (input, output, session) {
     slider_ifrSens <- input$ifrSens[1]*-1
     modificador_ifrSens <- ifrProy -  slider_ifrSens * 0.25 * ifrProy 
     
+    slider_wainingSens <- input$wainingSens[1]*-1
+    modificador_wainingSens <- + duracion_inmunidad - slider_wainingSens * (duracion_inmunidad-duracion_inmunidad_low) 
+    
     if (input$check_complicacionesSensSevere) {porc_gr = porcentajeCasosGraves * modif_comp_severe} else {porc_gr = porcentajeCasosGraves}
     if (input$check_complicacionesSensCritic) {porc_cr = porcentajeCasosCriticos * modif_comp_critic} else {porc_cr = porcentajeCasosCriticos}
     if (input$check_ifrSens) {ifr = modificador_ifrSens} else {ifr = ifrProy}
     if (input$check_transmissionEffectivenessSens) {transmission_probability = transmission_probability_low} else {transmission_probability = trans_prob_param}
     if (input$check_tiempoPSens) {modificador_tiempoP = modificador_tiempoP} else {modificador_tiempoP = NULL}
-    if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_low} else {duracion_inmunidad = duracion_inmunidad}
+    if (input$check_wainingSens) {duracion_inmunidad = modificador_wainingSens} else {duracion_inmunidad = duracion_inmunidad}
     
     
     
@@ -1584,13 +1587,16 @@ server <- function (input, output, session) {
     slider_ifrSens <- input$ifrSens[2]
     modificador_ifrSens <- ifrProy +  slider_ifrSens * 0.25 * ifrProy 
     
+    slider_wainingSens <- input$wainingSens[2]
+    modificador_wainingSens <- slider_wainingSens * (duracion_inmunidad_hi-duracion_inmunidad) + duracion_inmunidad
+    
     
     if (input$check_complicacionesSensSevere) {porc_gr = porcentajeCasosGraves * modif_comp_severe} else {porc_gr = porcentajeCasosGraves}
     if (input$check_complicacionesSensCritic) {porc_cr = porcentajeCasosCriticos * modif_comp_critic} else {porc_cr = porcentajeCasosCriticos}
     if (input$check_ifrSens) {ifr = modificador_ifrSens} else {ifr = ifrProy}
     if (input$check_transmissionEffectivenessSens) {transmission_probability = transmission_probability_hi} else {transmission_probability = trans_prob_param}
     if (input$check_tiempoPSens) {modificador_tiempoP = modificador_tiempoP} else {modificador_tiempoP = NULL}
-    if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_hi} else {duracion_inmunidad = duracion_inmunidad}
+    if (input$check_wainingSens) {duracion_inmunidad = modificador_wainingSens} else {duracion_inmunidad = duracion_inmunidad}
     
     
     
@@ -1764,8 +1770,7 @@ server <- function (input, output, session) {
     
     valx = serie_fecha$fecha[input$t]
     #maxy = max(serie_hi)
-    
-    data <- data.frame(serie_fecha,
+    data <- data.frame(fechas_master,
                        serie_hi,
                        serie_low,
                        serie) 
@@ -1776,26 +1781,55 @@ server <- function (input, output, session) {
                     y = data$hi,
                     type = "scatter",
                     mode = "lines",
-                    name= "hi",
+                    name= "Best scenario",
                     line = list(color = '#fc9272', dash = 'dot')
                     )
-    plot <- plot %>% add_trace(y=data$lo, name = 'lo', line = list(color = '#addd8e', dash = 'dot'))
+    plot <- plot %>% add_trace(y=data$lo, name = 'Worst scenario', line = list(color = '#addd8e', dash = 'dot'))
     plot <- plot %>% add_trace(y=data$serie, name = 'original', line = list(color = '#1F77B4', dash = 'line'))
     plot
   })
   
   
+  slider_range_control <- function (input_name) {
+    observeEvent(input[[input_name]], {
+      if (input[[input_name]][1]>=0) {
+        updateSliderInput(session,input_name, value = c(-0.01))
+        
+      }
+      if (input[[input_name]][2]<=0) {
+        value_min <<- input[[input_name]][1]
+        updateSliderInput(session,input_name, value = c(value_min,0.01))}
+    })
+  }
+  
   observeEvent(input$transmissionEffectivenessSens, {
-  
-  
-  if (input$transmissionEffectivenessSens[1]>=0) {
-    updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
-  if (input$transmissionEffectivenessSens[2]<=0) {
-    updateSliderInput(session,"transmissionEffectivenessSens", value = c(-1,1))}
-    
+    slider_range_control("transmissionEffectivenessSens")  
   })
   
-    
+  observeEvent(input$transmissionEffectivenessSens, {
+    slider_range_control("transmissionEffectivenessSens")  
+  })
+
+  observeEvent(input$ifrSens, {
+    slider_range_control("ifrSens")  
+  })
+
+  observeEvent(input$complicacionesSensSevere, {
+    slider_range_control("complicacionesSensSevere")  
+  })
+
+  observeEvent(input$complicacionesSensCritic, {
+    slider_range_control("complicacionesSensCritic")  
+  })
+
+  observeEvent(input$tiempoPSens, {
+    slider_range_control("tiempoPSens")  
+  })
+
+  observeEvent(input$wainingSens, {
+    slider_range_control("wainingSens")  
+  })
+  
   output$transEffSens_low <- renderUI({
     slider_low_effectiveness <- input$transmissionEffectivenessSens[1]
     modif_effectiveness = 1- (slider_low_effectiveness * -1 * (1-sens_transmission_low))
@@ -1882,6 +1916,20 @@ server <- function (input, output, session) {
   })
   
   
+  output$wainingSens_low <- renderUI({
+    slider_wainingSens <- input$wainingSens[1]*-1
+    modificador_wainingSens <- + duracion_inmunidad - slider_wainingSens * (duracion_inmunidad-duracion_inmunidad_low) 
+    HTML(as.character(round(modificador_wainingSens, digits = 0)))
+    
+  })
+  
+  output$wainingSens_hi <- renderUI({
+    slider_wainingSens <- input$wainingSens[2]
+    modificador_wainingSens <- slider_wainingSens * (duracion_inmunidad_hi-duracion_inmunidad) + duracion_inmunidad
+    HTML(as.character(round(modificador_wainingSens, digits = 0)))
+    
+  })
+  
   
   observeEvent(input$check_transmissionEffectivenessSens, {
     if (input$check_transmissionEffectivenessSens) {
@@ -1946,14 +1994,14 @@ server <- function (input, output, session) {
   })
   
   output$base_complicacionesSensCritic <- renderUI({
-    paste0("Complication rates (critic) (base value: ",
+    paste0("UCI rates (base value: ",
            as.character(round(mean(porcentajeCasosCriticos),digits=3)),
            ")")
     
   })
   
   output$base_complicacionesSensSevere <- renderUI({
-    paste0("Complication rates (severe) (base value: ",
+    paste0("Hospitalization rates (base value: ",
            as.character(round(mean(porcentajeCasosGraves),digits=3)),
            ")")
     

@@ -252,7 +252,7 @@ getUI <- function () {
                                                                  column(6,
                                                                         sliderInput("transmissionEffectivenessSens", htmlOutput("base_transmissionEffectivenessSens"),
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                         br(),
@@ -279,7 +279,7 @@ getUI <- function () {
                                                                  column(6,
                                                                         sliderInput("ifrSens", htmlOutput("base_ifrSens"),
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                       ),
@@ -306,7 +306,7 @@ getUI <- function () {
                                                                         sliderInput("complicacionesSensSevere", 
                                                                                     htmlOutput("base_complicacionesSensSevere"),
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
@@ -333,7 +333,7 @@ getUI <- function () {
                                                                         sliderInput("complicacionesSensCritic", 
                                                                                     htmlOutput("base_complicacionesSensCritic"),
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
@@ -360,7 +360,7 @@ getUI <- function () {
                                                                         sliderInput("tiempoPSens", 
                                                                                     htmlOutput("base_tiempoPSens"),
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
@@ -381,15 +381,18 @@ getUI <- function () {
                                                                  ),
                                                                  column(2, align="right",
                                                                         br(),br(),
-                                                                        p("Min")),
+                                                                        htmlOutput("wainingSens_low", 
+                                                                                   style="color: red; font-weight: bold;")),
                                                                  column(6,
                                                                         sliderInput("wainingSens", "Immunity duration periods:",
                                                                                     min = -1, max = 1, 
-                                                                                    value = c(-1,1), step = 0.05, dragRange = T,
+                                                                                    value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                  ),
-                                                                 column(2,align="left",br(),br(), p("Max")),
+                                                                 column(2,align="left",br(),br(), 
+                                                                        htmlOutput("wainingSens_hi", 
+                                                                                   style="color: green; font-weight: bold;")),
                                                                ),
                                                                fluidRow(
                                                                  column(12,align="center",
