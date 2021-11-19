@@ -1781,10 +1781,10 @@ server <- function (input, output, session) {
                     y = data$hi,
                     type = "scatter",
                     mode = "lines",
-                    name= "Best case scenario",
+                    name= "Worst case scenario",
                     line = list(color = '#fc9272', dash = 'dot')
                     )
-    plot <- plot %>% add_trace(y=data$lo, name = 'Worst case scenario', line = list(color = '#addd8e', dash = 'dot'))
+    plot <- plot %>% add_trace(y=data$lo, name = 'Best case scenario', line = list(color = '#addd8e', dash = 'dot'))
     plot <- plot %>% add_trace(y=data$serie, name = 'Base scenario', line = list(color = '#1F77B4', dash = 'line'))
     plot
   })
