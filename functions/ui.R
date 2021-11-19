@@ -273,15 +273,19 @@ getUI <- function () {
                                                                                       value = TRUE),
                                                                         )
                                                                  ),
-                                                                 column(2,align="right", br(), br(),p("Min")),
+                                                                 column(2,align="right", br(), br(),
+                                                                        htmlOutput("ifrSens_low", 
+                                                                                   style="color: green; font-weight: bold;")),
                                                                  column(6,
-                                                                        sliderInput("ifrSens", "IFR:",
+                                                                        sliderInput("ifrSens", htmlOutput("base_ifrSens"),
                                                                                     min = -1, max = 1, 
                                                                                     value = c(-1,1), step = 0.05, dragRange = T,
                                                                                     width = "100%"
                                                                         ),
                                                                       ),
-                                                                 column(2,align="left",br(),br(), p("Max")),
+                                                                 column(2,align="left",br(),br(),
+                                                                        htmlOutput("ifrSens_hi", 
+                                                                                   style="color: red; font-weight: bold;")),
                                                                ),
                                                                fluidRow(
                                                                  column(2, align="right",

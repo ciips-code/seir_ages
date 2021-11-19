@@ -543,6 +543,8 @@ server <- function (input, output, session) {
     } else if (input$country == "Brazil") {
       ifrProy = ifrProy * 1
     }
+    
+    ifr_base <<- ifrProy
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -1414,12 +1416,17 @@ server <- function (input, output, session) {
     slider_tiempoP <- input$tiempoPSens[1]*-1
     modificador_tiempoP <- tiempoP_mean - (tiempoP_mean - tiempoP_sens_low) * slider_tiempoP 
 
+    slider_ifrSens <- input$ifrSens[1]*-1
+    modificador_ifrSens <- ifrProy -  slider_ifrSens * 0.25 * ifrProy 
+    
     if (input$check_complicacionesSensSevere) {porc_gr = porcentajeCasosGraves * modif_comp_severe} else {porc_gr = porcentajeCasosGraves}
     if (input$check_complicacionesSensCritic) {porc_cr = porcentajeCasosCriticos * modif_comp_critic} else {porc_cr = porcentajeCasosCriticos}
-    if (input$check_ifrSens) {ifr = ifrProy*.75} else {ifr = ifrProy}
+    if (input$check_ifrSens) {ifr = modificador_ifrSens} else {ifr = ifrProy}
     if (input$check_transmissionEffectivenessSens) {transmission_probability = transmission_probability_low} else {transmission_probability = trans_prob_param}
     if (input$check_tiempoPSens) {modificador_tiempoP = modificador_tiempoP} else {modificador_tiempoP = NULL}
     if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_low} else {duracion_inmunidad = duracion_inmunidad}
+    
+    
     
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
@@ -1573,11 +1580,14 @@ server <- function (input, output, session) {
     
     slider_tiempoP <- input$tiempoPSens[2]
     modificador_tiempoP <- (tiempoP_sens_hi - tiempoP_mean) * slider_tiempoP + tiempoP_mean
+
+    slider_ifrSens <- input$ifrSens[2]
+    modificador_ifrSens <- ifrProy +  slider_ifrSens * 0.25 * ifrProy 
     
     
     if (input$check_complicacionesSensSevere) {porc_gr = porcentajeCasosGraves * modif_comp_severe} else {porc_gr = porcentajeCasosGraves}
     if (input$check_complicacionesSensCritic) {porc_cr = porcentajeCasosCriticos * modif_comp_critic} else {porc_cr = porcentajeCasosCriticos}
-    if (input$check_ifrSens) {ifr = ifrProy*1.25} else {ifr = ifrProy}
+    if (input$check_ifrSens) {ifr = modificador_ifrSens} else {ifr = ifrProy}
     if (input$check_transmissionEffectivenessSens) {transmission_probability = transmission_probability_hi} else {transmission_probability = trans_prob_param}
     if (input$check_tiempoPSens) {modificador_tiempoP = modificador_tiempoP} else {modificador_tiempoP = NULL}
     if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_hi} else {duracion_inmunidad = duracion_inmunidad}
@@ -1857,6 +1867,22 @@ server <- function (input, output, session) {
     
   })
   
+  output$ifrSens_low <- renderUI({
+    slider_ifrSens <- input$ifrSens[1]*-1
+    modificador_ifrSens <- ifr_base -  slider_ifrSens * 0.25 * ifr_base 
+    HTML(as.character(round(mean(modificador_ifrSens), digits = 3)))
+    
+  })
+  
+  output$ifrSens_hi <- renderUI({
+    slider_ifrSens <- input$ifrSens[2]
+    modificador_ifrSens <- ifr_base +  slider_ifrSens * 0.25 * ifr_base 
+    HTML(as.character(round(mean(modificador_ifrSens), digits = 3)))
+    
+  })
+  
+  
+  
   observeEvent(input$check_transmissionEffectivenessSens, {
     if (input$check_transmissionEffectivenessSens) {
       enable("transmissionEffectivenessSens")
@@ -1911,6 +1937,13 @@ server <- function (input, output, session) {
            ")")
     
     })
+  
+  output$base_ifrSens <- renderUI({
+    paste0("IFR (base value: ",
+           as.character(round(mean(ifr_base),digits=3)),
+           ")")
+    
+  })
   
   output$base_complicacionesSensCritic <- renderUI({
     paste0("Complication rates (critic) (base value: ",
