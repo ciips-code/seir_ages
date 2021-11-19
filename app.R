@@ -2014,6 +2014,13 @@ server <- function (input, output, session) {
     
   })
   
+  output$base_wainingSens <- renderUI({
+    paste0("Immunity duration periods (base value: ",
+           as.character(duracion_inmunidad,digits=0),
+           ")")
+    
+  })
+  
 
 }
 

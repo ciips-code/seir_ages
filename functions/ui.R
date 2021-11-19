@@ -384,7 +384,7 @@ getUI <- function () {
                                                                         htmlOutput("wainingSens_low", 
                                                                                    style="color: red; font-weight: bold;")),
                                                                  column(6,
-                                                                        sliderInput("wainingSens", "Immunity duration periods:",
+                                                                        sliderInput("wainingSens", htmlOutput("base_wainingSens"),
                                                                                     min = -1, max = 1, 
                                                                                     value = c(-1,1), step = 0.01, dragRange = T,
                                                                                     width = "100%"
