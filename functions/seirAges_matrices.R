@@ -38,12 +38,12 @@ seir_ages <- function(dias,
   matrixNames = list(immunityStates,
                ageGroups)
             
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = tot = yl = lapply(1:dias, 
-                                                                                                        matrix, 
-                                                                                                        data= 0, 
-                                                                                                        nrow=length(immunityStates), 
-                                                                                                        ncol=length(ageGroups), 
-                                                                                                        dimnames = matrixNames)
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = tot = yl = ylq = yld = ylqd = lapply(1:dias, 
+                                                                                                                      matrix, 
+                                                                                                                      data= 0, 
+                                                                                                                      nrow=length(immunityStates), 
+                                                                                                                      ncol=length(ageGroups), 
+                                                                                                                      dimnames = matrixNames)
   
   S[[1]][1,] = N
   
@@ -151,9 +151,27 @@ seir_ages <- function(dias,
     # Multiplicamos el total de muertos por grupo de edad
     # Multiplicado por una matriz que tenga los años de vida perdidos para cada grupo para este pais y los mismos valores para todos los estados inmunitarios
     # Esto tiene que venir de parametros (ver si el vector o todo)
-    tablaDeAnosDeVidaPerdidos = c(80,70,60,50,40,30,20,10)
+    tablaDeAnosDeVidaPerdidos = yearsLost[yearsLost$country==iso_country,"yearsLost"]
     matrizDeAnosDeVidaPerdidos = matrix(rep(tablaDeAnosDeVidaPerdidos,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
+    
+    tablaDeAnosDeVidaPerdidosQualy = yearsLost[yearsLost$country==iso_country,"yearsLostQualy"]
+    matrizDeAnosDeVidaPerdidosQualy = matrix(rep(tablaDeAnosDeVidaPerdidosQualy,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
+    
+    tablaDeAnosDeVidaPerdidosDesc = yearsLost[yearsLost$country==iso_country,"yearsLostDisc"]
+    matrizDeAnosDeVidaPerdidosDesc = matrix(rep(tablaDeAnosDeVidaPerdidosDesc,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
+    
+    tablaDeAnosDeVidaPerdidosQualyDesc = yearsLost[yearsLost$country==iso_country,"yearsLostQualyDisc"]
+    matrizDeAnosDeVidaPerdidosQualyDesc = matrix(rep(tablaDeAnosDeVidaPerdidosQualyDesc,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
+    
+    
     yl[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidos
+    ylq[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidosQualy
+    yld[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidosDesc
+    ylqd[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidosQualyDesc
+    
+    
+    
+    
     
     D[[t]]      = D[[t-1]] + d[[t-1]]
     u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +
@@ -299,7 +317,10 @@ seir_ages <- function(dias,
                  "u: Daily survivors"=u,
                  "D: Deaths"=D,
                  "d: Daily deaths"=d,
-                 "yl: Years lost"=yl)
+                 "yl: Years lost"=yl,
+                 "ylq: Years lost Qualy"=ylq,
+                 "yld: Years lost Disc"=yld,
+                 "ylqd: Years lost Qualy Disc"=ylqd)
   
   Rt <- estimate_R(sapply(salida$`i: Daily infectious`,sum), 
                    method = "parametric_si",

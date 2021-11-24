@@ -402,6 +402,14 @@ getUI <- function () {
                                                                                      class = "btn-primary", style = "margin: 5px;")
                                                                  ),
                                                                ),
+                                                               # fluidRow(
+                                                               #   column(12,align="center",
+                                                               #          actionButton("exportSens", 
+                                                               #                       label = "Export projection with sensitivity", 
+                                                               #                       # icon = icon("chevron-right"), 
+                                                               #                       class = "btn-primary", style = "margin: 5px;")
+                                                               #   ),
+                                                               # ),
                                                                fluidRow(
                                                                  column(12,align="center",
                                                                         plotlyOutput("plotWithSens")
@@ -410,6 +418,14 @@ getUI <- function () {
                                                         )
                                                       )
                                              ),
+                                             tabPanel("EE",
+                                                      br(),
+                                                      fluidRow(
+                                                        column(3),
+                                                        column(6,dataTableOutput("eeTable")),
+                                                        column(3)
+                                                        )
+                                                      ),
                                              tabPanel("Topic II - Question 1",
                                                       div(
                                                         p("In which order should the following groups beprioritized for COVID-19 

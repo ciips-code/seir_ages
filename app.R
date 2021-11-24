@@ -46,6 +46,7 @@ flags <<- c(
 
 load("data/parameters.RData", envir = .GlobalEnv)
 load("data/map.RData", envir = .GlobalEnv)
+load("data/yearsLost.RData", envir = .GlobalEnv)
 load("data/OWDSummaryData.RData", envir = .GlobalEnv)
 
 # lee funciones
@@ -66,6 +67,8 @@ customMatrix <<- F
 
 
 server <- function (input, output, session) {
+  
+  sensScenarios <<- data.frame()
   
   disable("go")
   
@@ -1466,6 +1469,25 @@ server <- function (input, output, session) {
                       modificador_tiempoP = modificador_tiempoP
     )
     
+    pais <- input$country
+    paramSens <- "" 
+    scenario <- "low"
+    dValue <- sum(proy$`D: Deaths`[[671]])
+    
+    if (input$check_complicacionesSensSevere) {paramSens <- paste(paramSens,"hospitalizations")}
+    if (input$check_complicacionesSensCritic) {paramSens <- paste(paramSens,"UCI")}
+    if (input$check_ifrSens) {paramSens <- paste(paramSens,"IFR")}
+    if (input$check_transmissionEffectivenessSens) {paramSens <- paste(paramSens,"transm")}
+    if (input$check_tiempoPSens) {paramSens <- paste(paramSens,"protection")}
+    if (input$check_wainingSens) {paramSens <- paste(paramSens,"natural inmunity")}
+    
+    insertDF <- data.frame(country=pais,
+                           scenario=scenario,
+                           param=paramSens,
+                           value=dValue)
+    
+    sensScenarios <<- union_all(sensScenarios,insertDF)
+    print(sensScenarios)
     return(proy)
     
   })
@@ -2021,6 +2043,148 @@ server <- function (input, output, session) {
     
   })
   
+  output$eeTable <- renderDataTable({
+    fechas <- c("2021-06-30",
+                "2021-12-31",
+                "2022-06-30")
+    
+    tFechas <- c(which(fechas_master == "2021-06-30"),
+                 which(fechas_master == "2021-12-31"),
+                 which(fechas_master == "2022-06-30"))
+    
+    years_lost <- c(sum(sapply(proy()[["yl: Years lost"]][1:tFechas[1]],simplify = T,sum)),
+                    sum(sapply(proy()[["yl: Years lost"]][1:tFechas[2]],simplify = T,sum)),
+                    sum(sapply(proy()[["yl: Years lost"]][1:tFechas[3]],simplify = T,sum)))
+    
+    years_lost_qualy <- c(sum(sapply(proy()[["ylq: Years lost Qualy"]][1:tFechas[1]],simplify = T,sum)),
+                          sum(sapply(proy()[["ylq: Years lost Qualy"]][1:tFechas[2]],simplify = T,sum)),
+                          sum(sapply(proy()[["ylq: Years lost Qualy"]][1:tFechas[3]],simplify = T,sum)))
+    
+    years_lost_disc <- c(sum(sapply(proy()[["yld: Years lost Disc"]][1:tFechas[1]],simplify = T,sum)),
+                         sum(sapply(proy()[["yld: Years lost Disc"]][1:tFechas[2]],simplify = T,sum)),
+                         sum(sapply(proy()[["yld: Years lost Disc"]][1:tFechas[3]],simplify = T,sum)))
+    
+    years_lost_qualy_disc <- c(sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][1:tFechas[1]],simplify = T,sum)),
+                               sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][1:tFechas[2]],simplify = T,sum)),
+                               sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][1:tFechas[3]],simplify = T,sum)))
+    
+    table <- rbind(round(years_lost, digit = 1),
+                   round(years_lost_qualy, digit = 1),
+                   round(years_lost_disc, digit = 1),
+                   round(years_lost_qualy_disc, digit = 1)
+                   )
+    colnames(table) <- fechas
+    rownames(table) <- c("yl: Years lost",
+                         "ylq: Years lost Qualy",
+                         "yld: Years lost Disc",
+                         "ylqd: Years lost Qualy Disc"
+                         )
+    DT::datatable(table,
+                  caption = 'Years lost', 
+                  options = list(ordering=F, searching=F, paging=F, info=F))
+  })
+
+  # observeEvent(input$exportSens, {
+  #   sensScenarios <- data.frame()
+  #   loop_checks <- c("check_transmissionEffectivenessSens",
+  #                    "check_ifrSens",
+  #                    "check_complicacionesSensSevere",
+  #                    "check_complicacionesSensCritic",
+  #                    "check_tiempoPSens",
+  #                    "check_wainingSens")
+  #   for (c in countries){
+  #     for (p in loop_checks) {
+  #       updateSwitchInput(session,loop_checks[1],value=F)
+  #       updateSwitchInput(session,loop_checks[2],value=F)
+  #       updateSwitchInput(session,loop_checks[3],value=F)
+  #       updateSwitchInput(session,loop_checks[4],value=F)
+  #       updateSwitchInput(session,loop_checks[5],value=F)
+  #       updateSwitchInput(session,loop_checks[6],value=F)
+  #       updateSwitchInput(session,p,value=T)
+  #       
+  #       ifrProy = ifr_edit[1,]
+  #       if (input$country == "Argentina") {
+  #         ifrProy = ifrProy * 2.4
+  #       } else if (input$country == "Peru") {
+  #         ifrProy = ifrProy * 3.55
+  #       } else if (input$country == "Colombia") {
+  #         ifrProy = ifrProy * 1.8
+  #       } else if (input$country == "Chile") {
+  #         ifrProy = ifrProy * 1
+  #       } else if (input$country == "Mexico") {
+  #         ifrProy = ifrProy * 1.8
+  #       } else if (input$country == "Brazil") {
+  #         ifrProy = ifrProy * 1
+  #       }
+  #       
+  #       
+  #       if (input$check_complicacionesSensSevere) {porc_gr = modif_porcentajeCasosGraves_low} else {porc_gr = porcentajeCasosGraves}
+  #       if (input$check_complicacionesSensCritic) {porc_cr = modif_porcentajeCasosCriticos_low} else {porc_cr = porcentajeCasosCriticos}
+  #       if (input$check_ifrSens) {ifr = ifrProy*.75} else {ifr = ifrProy}
+  #       if (input$check_transmissionEffectivenessSens) {transmission_probability = sens_transmission_low} else {transmission_probability = trans_prob_param}
+  #       if (input$check_tiempoPSens) {modificador_tiempoP = tiempoP_sens_low} else {modificador_tiempoP = NULL}
+  #       if (input$check_wainingSens) {duracion_inmunidad = duracion_inmunidad_low} else {duracion_inmunidad = duracion_inmunidad}
+  #       browser()
+  #       
+  #       efficacy <- applyVaccineEfficacy(input$vacEfficacy)
+  #       selectedPriority <- getPrioritiesV2(input$vacStrat)
+  #       selectedUptake <- getUptake(input$vacUptake)
+  #       cantidadVacunasTotal = selectedUptake * sum(N)
+  #       diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+  #       ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+  #       planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+  #                                                       planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
+  #       
+  #       planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
+  #       return(dia)})
+  #       
+  #       planVacunacionFinalParam <<- planVacunacionFinalParam 
+  #       
+  #       ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+  #       trans_prob_param <<- transprob_edit * ajuste
+  #       
+  #       proySensLow <- seir_ages(dias=diasDeProyeccion,
+  #                                duracionE = periodoPreinfPromedio,
+  #                                 duracionIi = duracionMediaInf,
+  #                                 porc_gr = porc_gr,
+  #                                 porc_cr = porc_cr,
+  #                                 duracionIg = diasHospCasosGraves,
+  #                                 duracionIc = diasHospCasosCriticos,
+  #                                 ifr = ifr,
+  #                                 contact_matrix = contact_matrix_scenario,
+  #                                 relaxationThreshold = input$relaxationThreshold,
+  #                                 contact_matrix_relaxed = contact_matrix_relaxed,
+  #                                 transmission_probability = transmission_probability ,
+  #                                 N = N,
+  #                                 defunciones_reales=def_p,
+  #                                 modif_beta=efficacy$modif_beta,
+  #                                 modif_porc_gr=efficacy$modif_porc_gr,
+  #                                 modif_porc_cr=efficacy$modif_porc_cr,
+  #                                 modif_ifr=efficacy$modif_ifr,
+  #                                 planVacunacionFinal=planVacunacionFinalParam,
+  #                                 selectedPriority=selectedPriority,
+  #                                 selectedUptake=selectedUptake,
+  #                                 ritmoVacunacion=ritmoVacunacion,
+  #                                 diasVacunacion=as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01')),
+  #                                 immunityStates=immunityStates,
+  #                                 ageGroups=ageGroups,
+  #                                 paramVac=paramVac_edit,
+  #                                 duracion_inmunidad=duracion_inmunidad,
+  #                                 tVacunasCero=tVacunasCero,
+  #                                 relaxNpi=F,
+  #                                 relaxGoal=NULL,
+  #                                 relaxFactor=input$relaxationFactor,
+  #                                 country=input$country,
+  #                                 modificador_tiempoP = modificador_tiempoP
+  #       )
+  #       
+  #     }
+  #   }
+  # 
+  #   
+  #   
+  #   
+  # })
 
 }
 
