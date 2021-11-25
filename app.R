@@ -587,7 +587,7 @@ server <- function (input, output, session) {
   })
   observe({
     if (primeraVez) {
-      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[-17],"pV: Vaccination plan"), selected="i: Daily infectious")
+      updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[0:16],"pV: Vaccination plan"), selected="i: Daily infectious")
       updateNumericInput(session, inputId = "t", value = tHoy)
       for (c in rev(str_trim(str_replace_all(substring(names(proy())[-16],1,3),":","")))) {
         insertUI("#content", "afterEnd",
