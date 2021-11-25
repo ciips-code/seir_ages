@@ -1657,6 +1657,26 @@ server <- function (input, output, session) {
                       modificador_tiempoP = modificador_tiempoP
     )
     
+    pais <- input$country
+    paramSens <- "" 
+    scenario <- "hi"
+    dValue <- sum(proy$`D: Deaths`[[671]])
+    
+    if (input$check_complicacionesSensSevere) {paramSens <- paste(paramSens,"hospitalizations")}
+    if (input$check_complicacionesSensCritic) {paramSens <- paste(paramSens,"UCI")}
+    if (input$check_ifrSens) {paramSens <- paste(paramSens,"IFR")}
+    if (input$check_transmissionEffectivenessSens) {paramSens <- paste(paramSens,"transm")}
+    if (input$check_tiempoPSens) {paramSens <- paste(paramSens,"protection")}
+    if (input$check_wainingSens) {paramSens <- paste(paramSens,"natural inmunity")}
+    
+    insertDF <- data.frame(country=pais,
+                           scenario=scenario,
+                           param=paramSens,
+                           value=dValue)
+    
+    sensScenarios <<- union_all(sensScenarios,insertDF)
+    print(sensScenarios)
+    
     return(proy)
     
   })
@@ -2185,6 +2205,164 @@ server <- function (input, output, session) {
   #   
   #   
   # })
+  
+  observeEvent(input$runWithSens, {
+    #browser()
+    # paste activa reactive (no comentar)
+    paste(input$go)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
+    paste(input$transprob_cell_edit)
+    paste(input$mbeta_cell_edit)
+    paste(input$mgraves_cell_edit)
+    paste(input$mcriticos_cell_edit)
+    paste(input$mifr_cell_edit)
+    paste(input$porc_cr_cell_edit)
+    paste(input$porc_gr_cell_edit)
+    paste(input$country)
+    duracion_inmunidad = input$duracionInm
+    
+    
+    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, planVacDosis1
+    shinyjs::show("vacDateGoal")
+    shinyjs::show("vacStrat")
+    shinyjs::show("vacEfficacy")
+    # shinyjs::show("immunityDuration")
+    if (input$vacUptake == "Current uptake") {
+      shinyjs::hide("vacDateGoal")
+    } else if (input$vacUptake == "No vaccination") {
+      shinyjs::hide("vacDateGoal")
+      shinyjs::hide("vacStrat")
+      shinyjs::hide("vacEfficacy")
+      # shinyjs::hide("immunityDuration")
+    }
+    diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+    selectedPriority <- getPrioritiesV2(input$vacStrat)
+    selectedUptake <- getUptake(input$vacUptake)
+    cantidadVacunasTotal = selectedUptake * sum(N)
+    ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+    
+    planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                                    planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
+    
+    planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
+    return(dia)})
+    
+    planVacunacionFinalParam <<- planVacunacionFinalParam 
+    
+    ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+    trans_prob_param <<- transprob_edit * ajuste
+    
+    relaxNpi = FALSE
+    relaxGoal = NULL
+    if (input$npiStrat == "cont") {
+      shinyjs::hide("relaxationDateGoal")
+      shinyjs::hide("relaxationFactor")
+    } else {
+      shinyjs::show("relaxationDateGoal")
+      shinyjs::show("relaxationFactor")
+      relaxNpi = TRUE
+      relaxGoal = which(fechas_master == input$relaxationDateGoal)
+    }
+    
+    # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
+    contact_matrix_scenario <<- get_npi_cm_scenario(scenario = input$npiScenario,
+                                                    matrix_list = list(
+                                                      contact_matrix = contact_matrix,
+                                                      contact_matrix_work = contact_matrix_work,
+                                                      contact_matrix_home = contact_matrix_home,
+                                                      contact_matrix_school = contact_matrix_school,
+                                                      contact_matrix_other = contact_matrix_other),
+                                                    ages= as.numeric(ageGroupsV))
+    contact_matrix_relaxed <<- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
+                                                   matrix_list = list(
+                                                     contact_matrix = contact_matrix,
+                                                     contact_matrix_work = contact_matrix_work,
+                                                     contact_matrix_home = contact_matrix_home,
+                                                     contact_matrix_school = contact_matrix_school,
+                                                     contact_matrix_other = contact_matrix_other),
+                                                   ages= as.numeric(ageGroupsV))
+    efficacy = applyVaccineEfficacy(input$vacEfficacy)
+    
+    # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
+    
+    # print(porcentajeCasosGraves)
+    # print(porcentajeCasosCriticos)
+    #browser()
+    tVacunasCero = 303
+    ifrProy = ifr_edit[1,]
+    if (input$country == "Argentina") {
+      ifrProy = ifrProy * 2.4
+    } else if (input$country == "Peru") {
+      ifrProy = ifrProy * 3.55
+    } else if (input$country == "Colombia") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Chile") {
+      ifrProy = ifrProy * 1
+    } else if (input$country == "Mexico") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Brazil") {
+      ifrProy = ifrProy * 1
+    }
+    
+    ifr_base <<- ifrProy
+    proy <- seir_ages(dias=diasDeProyeccion,
+                      duracionE = periodoPreinfPromedio,
+                      duracionIi = duracionMediaInf,
+                      porc_gr = porcentajeCasosGraves,
+                      porc_cr = porcentajeCasosCriticos,
+                      duracionIg = diasHospCasosGraves,
+                      duracionIc = diasHospCasosCriticos,
+                      ifr = ifrProy,
+                      contact_matrix = contact_matrix_scenario,
+                      relaxationThreshold = input$relaxationThreshold,
+                      contact_matrix_relaxed = contact_matrix_relaxed,
+                      transmission_probability = trans_prob_param,
+                      N = N,
+                      defunciones_reales=def_p,
+                      modif_beta=efficacy$modif_beta,
+                      modif_porc_gr=efficacy$modif_porc_gr,
+                      modif_porc_cr=efficacy$modif_porc_cr,
+                      modif_ifr=efficacy$modif_ifr,
+                      planVacunacionFinal=planVacunacionFinalParam,
+                      selectedPriority=selectedPriority,
+                      selectedUptake=selectedUptake,
+                      ritmoVacunacion=ritmoVacunacion,
+                      diasVacunacion=diasVacunacion,
+                      immunityStates=immunityStates,
+                      ageGroups=ageGroups,
+                      paramVac=paramVac_edit,
+                      duracion_inmunidad=duracion_inmunidad,
+                      tVacunasCero=tVacunasCero,
+                      relaxNpi=relaxNpi,
+                      relaxGoal=relaxGoal,
+                      relaxFactor=input$relaxationFactor,
+                      country=input$country
+    )
+    pais <- input$country
+    paramSens <- "" 
+    scenario <- "base"
+    dValue <- sum(proy$`D: Deaths`[[671]])
+    
+    if (input$check_complicacionesSensSevere) {paramSens <- paste(paramSens,"hospitalizations")}
+    if (input$check_complicacionesSensCritic) {paramSens <- paste(paramSens,"UCI")}
+    if (input$check_ifrSens) {paramSens <- paste(paramSens,"IFR")}
+    if (input$check_transmissionEffectivenessSens) {paramSens <- paste(paramSens,"transm")}
+    if (input$check_tiempoPSens) {paramSens <- paste(paramSens,"protection")}
+    if (input$check_wainingSens) {paramSens <- paste(paramSens,"natural inmunity")}
+    
+    insertDF <- data.frame(country=pais,
+                           scenario=scenario,
+                           param=paramSens,
+                           value=dValue)
+    
+    sensScenarios <<- union_all(sensScenarios,insertDF)
+    print(sensScenarios)
+    
+    return(proy)
+    
+  })
 
 }
 
