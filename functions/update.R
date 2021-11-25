@@ -1248,6 +1248,174 @@ update <-  function(pais,diasDeProyeccion) {
       
     } # cierra if de CR
   
+  
+  
+  ##### PARAGUAY #####
+  
+  if (pais=="PRY") {
+    
+    
+    ############ Casos Paraguay ###############
+    
+    # Levanto los datos  
+    
+    library(readxl)
+    library('data.table')
+    
+    
+    url= ('https://public.tableau.com/vizql/w/COVID19PY-Registros/v/Descargardatos/vudcsv/sessions/E2ACCEE4FBB54BB9A92ED8D2E878B709-0:0/views/7713620505763405234_2641841674343653269?underlying_table_id=Migrated%20Data&underlying_table_caption=Datos%20completos.csv')
+    print(url)
+    download.file(url, "Casos_Confirmados.csv") 
+    
+    
+    casos_confirmados = fread("Casos_Confirmados.csv",  sep=';') 
+    
+    
+    # Selecciono datos que necesito
+    datos = casos_confirmados[, c("Fecha Confirmacion", "Edad")]
+    
+    # Cambio los Nombres 
+    setnames(datos, c("Fecha Confirmacion", "Edad"), c("fecha", "edad"))
+    
+    datos$edad = as.numeric(datos$edad)
+    datos$fecha = as.Date(datos$fecha, format="%d/%m/%Y")
+    datos$fecha = as.character(datos$fecha)
+    
+    #names(datos)[sapply(datos, class)=='character']
+    #names(datos)[sapply(datos, class)=='numeric']
+    
+    dim(datos)  #462283      2
+    
+    ###data[,.N, by='EC PARTE 1.Fecha_Aplicacion_Primer_Dosis'] # todos nulos
+    
+    
+    library(dplyr)
+    casos <- datos %>% 
+      
+      # filtro los casos que vienen sin edad cargada
+      dplyr::filter(!is.na(edad) & !is.na(fecha)) %>%
+      
+      #formato de fecha 
+      dplyr::mutate(fecha=as.character(fecha)) %>%
+      
+      # agrego variables agrupadas por edad  
+      dplyr::mutate(gredad=case_when(edad >=0 & edad <=4 ~ "00-04",
+                                     edad >=5 & edad <=9 ~ "05-09",
+                                     edad >=10 & edad <=14 ~ "10-14",
+                                     edad >=15 & edad <=17 ~ "15-17",
+                                     edad >=18 & edad <=24 ~ "18-24",
+                                     edad >=25 & edad <=29 ~ "25-29",
+                                     edad >=30 & edad <=34 ~ "30-34",
+                                     edad >=35 & edad <=39 ~ "35-39",
+                                     edad >=40 & edad <=44 ~ "40-44",
+                                     edad >=45 & edad <=49 ~ "45-49",
+                                     edad >=50 & edad <=54 ~ "50-54",
+                                     edad >=55 & edad <=59 ~ "55-59",
+                                     edad >=60 & edad <=64 ~ "60-64",
+                                     edad >=65 & edad <=69 ~ "65-69",
+                                     edad >=70 & edad <=74 ~ "70-74",
+                                     edad >=75 & edad <=79 ~ "75-79",
+                                     edad >=80 & edad <=84 ~ "80-84",
+                                     edad >=85 & edad <=89 ~ "85-89",
+                                     edad >=90 ~ "90-99")) %>%
+      
+      
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~gredad, sum)
+    
+    
+    casos <- data.frame(fecha=as.character(seq(as.Date('2020-03-01'),
+                                               as.Date(max(casos$fecha)),
+                                               by=1))) %>% left_join(casos) 
+    
+    casos[is.na(casos)] <- 0
+    
+    
+    ######## Defunciones Paraguay #############
+    
+    # Levanto los datos de Fallecidos
+    
+    url= ('https://public.tableau.com/vizql/w/COVID19PY-Registros/v/FALLECIDOS/vudcsv/sessions/E2ACCEE4FBB54BB9A92ED8D2E878B709-0:0/views/7713620505763405234_5043410824490810379?underlying_table_id=Migrated%20Data&underlying_table_caption=Datos%20completos.csv')
+    print(url)
+    download.file(url, "datos_fallecidos.csv") 
+    
+    
+    datos_fallecidos = fread("datos_fallecidos.csv",  sep=';') 
+    
+    # Selecciono datos que necesito
+    datos = datos_fallecidos[, c("Fecha Obito", "Sexo","Edad")]
+    
+    # Cambio los Nombres 
+    setnames(datos, c("Fecha Obito", "Sexo","Edad"), c("fecha", "sexo", "edad"))
+    
+    datos$edad = as.numeric(datos$edad)
+    datos$fecha = as.Date(datos$fecha, format="%d/%m/%Y")
+    datos$fecha = as.character(datos$fecha)
+    
+    
+    
+    def <- datos %>% 
+      
+      
+      # filtro los casos que vienen sin edad cargada
+      dplyr::filter(!is.na(edad) & !is.na(fecha)) %>%
+      
+      #formato de fecha 
+      dplyr::mutate(fecha=as.character(fecha)) %>%
+      
+      # agrego variables agrupadas por edad  
+      dplyr::mutate(gredad=case_when(edad >=0 & edad <=4 ~ "00-04",
+                                     edad >=5 & edad <=9 ~ "05-09",
+                                     edad >=10 & edad <=14 ~ "10-14",
+                                     edad >=15 & edad <=17 ~ "15-17",
+                                     edad >=18 & edad <=24 ~ "18-24",
+                                     edad >=25 & edad <=29 ~ "25-29",
+                                     edad >=30 & edad <=34 ~ "30-34",
+                                     edad >=35 & edad <=39 ~ "35-39",
+                                     edad >=40 & edad <=44 ~ "40-44",
+                                     edad >=45 & edad <=49 ~ "45-49",
+                                     edad >=50 & edad <=54 ~ "50-54",
+                                     edad >=55 & edad <=59 ~ "55-59",
+                                     edad >=60 & edad <=64 ~ "60-64",
+                                     edad >=65 & edad <=69 ~ "65-69",
+                                     edad >=70 & edad <=74 ~ "70-74",
+                                     edad >=75 & edad <=79 ~ "75-79",
+                                     edad >=80 & edad <=84 ~ "80-84",
+                                     edad >=85 & edad <=89 ~ "85-89",
+                                     edad >=90 ~ "90-99")) %>%
+      
+      
+      dplyr::mutate(cuenta=1) %>% 
+      reshape::cast(fecha~gredad, sum)
+    
+    
+    def <- data.frame(fecha=as.character(seq(as.Date('2020-03-01'),
+                                             as.Date(max(def$fecha)),
+                                             by=1))) %>% left_join(def) 
+    
+    def[is.na(def)] <- 0
+    
+    
+    #Remuevo el csv
+    file.remove('Casos_Confirmados.csv')
+    file.remove('datos_fallecidos.csv')
+    
+    ########### Vacunas Paraguay (PENDIENTE) #############
+    ########## LAs vacunas que figuran en la p?gina no tienen la edad
+    ########## Solamente hay listado con documento y nombre de los que dieron consentimiento para publicar sus datos
+    
+    
+    Vacunas = casos 
+    Vacunas[,2:20] <- 0
+    Vacunas <- Vacunas[Vacunas$fecha>="2021-01-01",]
+    Vacunas2 <- Vacunas
+    Vacunas0 <- Vacunas #monodosis
+    
+    
+  } # cierra if de Paraguay
+  
+  
+  
   eval(parse(text=paste0('countryData$',
                          pais,
                          ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, vac0=Vacunas0, casos=casos)')))
@@ -1415,10 +1583,10 @@ updateDataOWD <- function (countries) {
 }
 
 # actualiza OWD
-# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI"))
+# updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY"))
 
 # actualiza argentina y guarda RData
-# update(pais = "CRI", diasDeProyeccion = 1100)
+ #update(pais = "PRY", diasDeProyeccion = 1100)
 
 # agrupa edades
 # datosArg <- formatData("URY", ageGroups = ageGroupsV)

@@ -117,6 +117,23 @@ seir_ages <- function(dias,
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
     } else {
       beta       = beta * relaxValue[t]
+      # if (country == "Argentina") {
+      #   beta = beta * 0.98
+      # } else if (country == "Peru") {
+      #   beta = beta * 1.07
+      # } else if (country == "Colombia") {
+      #   beta = beta * 1.05
+      # } else if (country == "Chile") {
+      #   beta = beta * 1.07
+      # } else if (country == "Mexico") {
+      #   beta = beta * 1.10
+      # } else if (country == "Brazil") {
+      #   beta = beta * .87
+      # } else if (country == "Uruguay") {
+      #   beta = beta * 1.15
+      # } else if (country == "Costa Rica") {
+      #   beta = beta * 1.10
+      # }
       e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
     }
     
@@ -144,7 +161,11 @@ seir_ages <- function(dias,
       } else if (country == "Mexico") {
         d[[t]] = d[[t]] * 1.25
       } else if (country == "Brazil") {
-        d[[t]] = d[[t]] * 0.60
+        d[[t]] = d[[t]] * 1
+      } else if (country == "Uruguay") {
+        d[[t]] = d[[t]] * 1.70
+      } else if (country == "Costa Rica") {
+        d[[t]] = d[[t]] * 1.40
       }
     }
     # Acá calculamos los años de vida perdidos
