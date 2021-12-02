@@ -421,10 +421,12 @@ getUI <- function () {
                                              tabPanel("EE",
                                                       br(),
                                                       fluidRow(
-                                                        column(3),
-                                                        column(6,dataTableOutput("eeTable")),
-                                                        column(3)
-                                                        )
+                                                        #column(3),
+                                                        #column(6,dataTableOutput("eeTable")),
+                                                        column(3, actionLink("EEgo", "Ver tabla de resultados principales"),
+                                                               align="left")
+                                                        ),
+                                                      fluidRow(column(10, tableOutput("EESummaryTable"), align="center"))
                                                       ),
                                              tabPanel("Topic II - Question 1",
                                                       div(

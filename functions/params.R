@@ -1,7 +1,6 @@
 setParameters <- function () {
   diasDeProyeccion <<- 1100
   
-  primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
   # crea matrices de contacto y efectividad - set TRUE si queremos observada
   use_empirical_mc <<- T
   immunityStates <<- c("No immunity", "Recovered", "1Dosis", "2Dosis")
@@ -107,6 +106,5 @@ setParameters <- function () {
   modif_porcentajeCasosGraves_hi <<- matrix(rep(modif_porcentajeCasosGravesRow_hi,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = matrixNames)
   modif_porcentajeCasosCriticosRow_hi <<- c(1.565217391,1.564499484,1.235294118,1.166666667,1.282051282,1.304319716,1.375,3.299919468)
   modif_porcentajeCasosCriticos_hi <<- matrix(rep(modif_porcentajeCasosCriticosRow_hi,length(immunityStates)),4,length(ageGroups),byrow=T,dimnames = matrixNames)
-  
   
 }

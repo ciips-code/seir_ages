@@ -140,12 +140,16 @@ seir_ages <- function(dias,
     # resto seir
     E[[t]]      = E[[t-1]] + e[[t-1]] - E[[t-1]]/duracionE
     i[[t]]      = E[[t-1]]/duracionE
+    
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
     Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr
     
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
+    
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
+    
+    
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {

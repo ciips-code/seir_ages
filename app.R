@@ -23,6 +23,8 @@ library(rgdal)
 library(rgeos)
 library(shinythemes)
 library(lubridate)
+library(kableExtra)
+library(formattable)
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 options(dplyr.summarise.inform = FALSE)
 
@@ -48,6 +50,7 @@ load("data/parameters.RData", envir = .GlobalEnv)
 load("data/map.RData", envir = .GlobalEnv)
 load("data/yearsLost.RData", envir = .GlobalEnv)
 load("data/OWDSummaryData.RData", envir = .GlobalEnv)
+load("data/EEparams.RData", envir = .GlobalEnv)
 
 # lee funciones
 source("functions/update.R", encoding = "UTF-8")
@@ -67,9 +70,9 @@ customMatrix <<- F
 
 
 server <- function (input, output, session) {
-  
+  primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
   sensScenarios <<- data.frame()
-  
+  counterEE <<-0
   disable("go")
   
   observeEvent(input$go, {
@@ -446,7 +449,7 @@ server <- function (input, output, session) {
                                  paging=F, 
                                  info=F))
   })
-  
+  ##### PROY BASE #####
   proy <- reactive({
     #browser()
     # paste activa reactive (no comentar)
@@ -581,10 +584,15 @@ server <- function (input, output, session) {
                       relaxFactor=input$relaxationFactor,
                       country=input$country
     )
+
+    
     
     return(proy)
     
   })
+  
+  ##### CIERRE PROY BASE #####
+  
   observe({
     if (primeraVez) {
       updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[0:16],"pV: Vaccination plan"), selected="i: Daily infectious")
@@ -2363,7 +2371,368 @@ server <- function (input, output, session) {
     return(proy)
     
   })
+  
+  EESummary <- eventReactive(list(input$EEgo,
+                                  input$country),{
+    print("pasa")
+                                    fecha <- "2021-12-31"
+    tFecha <- which(fechas_master == "2021-12-31")
+    costoVacuna <- EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+    costoCasoAsint <- EEParams$costoCasoAsint
+    costoCasoSint <- EEParams$costoCasoSint
+    costoCasoHosp <- EEParams$costoCasoHosp
+    costoCasoUtiVent <- EEParams$costoCasoUtiVent
+    costoCasoUtiNoVent <- EEParams$costoCasoUtiNoVent
+    porcentajeAsint <- EEParams$porcentajeAsint
+    porcentajeUtiVent <- EEParams$porcentajeUtiVent
+    
+    `AVACs perdidos (d)` <- sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][1:tFecha],simplify = T,sum))
+    `Casos totales` <- sum(sapply(proy()[["i: Daily infectious"]][1:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum)) + sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día en UTI` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) 
+    `Muertes` <- sum(sapply(proy()[["d: Daily deaths"]][1:tFecha],simplify = T,sum)) 
+    `Años de vida perdidos (d)` <- sum(sapply(proy()[["yld: Years lost Disc"]][1:tFecha],simplify = T,sum))
+    `Años de vida perdidos` <- sum(sapply(proy()[["yl: Years lost"]][1:tFecha],simplify = T,sum))
+    `AVACs perdidos` <- sum(sapply(proy()[["ylq: Years lost Qualy"]][1:tFecha],simplify = T,sum))
+    `Vacunas aplicadas` <- sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
+    `Costos Vacunación` <- costoVacuna * sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
+    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proy()[["Ii: Infectious (mild)"]][1:tFecha],simplify = T,sum))
+    `  Costo casos asintomático` <- costoCasoAsint * `  Casos asintomáticos/dia`
+    `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proy()[["Ii: Infectious (mild)"]][1:tFecha],simplify = T,sum))
+    `  Costo casos sintomáticos no hospitalizados` <- costoCasoSint * `  Casos sintomáticos no hospitalizados`  
+    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum))
+    `  Costo casos hospitalizados no UTI` <- costoCasoHosp * `  Casos hospitalizados no UTI/dia`
+    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
+    `  Costo casos hospitalizados UTI (sin respirador)` <- costoCasoUtiNoVent * `  Casos hospitalizados UTI/dia (sin respirador)`
+    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * porcentajeUtiVent
+    `  Costo casos hospitalizados no UTI (con respirador)` <- costoCasoUtiVent * `  Casos hospitalizados UTI/dia (con respirador)`
+    `Costo de eventos COVID` <- 
+      `  Costo casos asintomático` +
+      `  Costo casos sintomáticos no hospitalizados` +
+      `  Costo casos hospitalizados no UTI` +
+      `  Costo casos hospitalizados UTI (sin respirador)` +
+      `  Costo casos hospitalizados no UTI (con respirador)`
+    `Costos totales` <- `Costo de eventos COVID` + `Costos Vacunación`
+    
+    
+    metrics <- c("Costos totales",
+                 "AVACs perdidos (d)", 
+                 "Casos totales", 
+                 "Hospitalizaciones/día", 
+                 "Hospitalizaciones/día en UTI", 
+                 "Muertes",
+                 "Años de vida perdidos (d)", 
+                 "Años de vida perdidos", 
+                 "AVACs perdidos", 
+                 "Vacunas aplicadas", 
+                 "Costos Vacunación", 
+                 "Costo de eventos COVID",
+                 #"  Casos asintomáticos/dia", 
+                 "  Costo casos asintomático", 
+                 #"  Casos sintomáticos no hospitalizados", 
+                 "  Costo casos sintomáticos no hospitalizados", 
+                 #"  Casos hospitalizados no UTI/dia", 
+                 "  Costo casos hospitalizados no UTI", 
+                 #"  Casos hospitalizados UTI/dia (sin respirador)", 
+                 "  Costo casos hospitalizados UTI (sin respirador)", 
+                 #"  Casos hospitalizados UTI/dia (con respirador)", 
+                 "  Costo casos hospitalizados no UTI (con respirador)")
+    
+    values <- c()
+    for (i in 1:length(metrics)) {
+      values <- c(values,eval(parse(text=paste0("round(","`",metrics,"`",", digits=0)")[i])))
+    }                         
+    
+    EETable <- data.frame(`Metrics`= metrics,
+                          Desenlaces = values)
+    
+    EETable
+    
+    # names(proy)
+    
+  })
+  
+  EESummaryNoVac <- eventReactive(list(input$EEgo,
+                                       input$country), {
+    #browser()
+    # paste activa reactive (no comentar)
+    paste(input$go)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
+    paste(input$transprob_cell_edit)
+    paste(input$mbeta_cell_edit)
+    paste(input$mgraves_cell_edit)
+    paste(input$mcriticos_cell_edit)
+    paste(input$mifr_cell_edit)
+    paste(input$porc_cr_cell_edit)
+    paste(input$porc_gr_cell_edit)
+    paste(input$country)
+    duracion_inmunidad = input$duracionInm
+    
+    
+    # N, diaCeroVac, as.Date("2022-01-01"), tVacunasCero, planVacDosis1
+    shinyjs::show("vacDateGoal")
+    shinyjs::show("vacStrat")
+    shinyjs::show("vacEfficacy")
+    # shinyjs::show("immunityDuration")
+    if (input$vacUptake == "Current uptake") {
+      shinyjs::hide("vacDateGoal")
+    } else if (input$vacUptake == "No vaccination") {
+      shinyjs::hide("vacDateGoal")
+      shinyjs::hide("vacStrat")
+      shinyjs::hide("vacEfficacy")
+      # shinyjs::hide("immunityDuration")
+    }
+    diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+    selectedPriority <- getPrioritiesV2(input$vacStrat)
+    selectedUptake <- getUptake(input$vacUptake)
+    cantidadVacunasTotal = selectedUptake * sum(N)
+    ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+    
+    planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
+                                                    planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
+    
+    planVacunacionFinalParam <- lapply(planVacunacionFinalParam, function(dia) {colnames(dia) <- ageGroups 
+    return(dia)})
+    
+    planVacunacionFinalParam <<- planVacunacionFinalParam 
+    
+    ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+    trans_prob_param <<- transprob_edit * ajuste
+    
+    relaxNpi = FALSE
+    relaxGoal = NULL
+    if (input$npiStrat == "cont") {
+      shinyjs::hide("relaxationDateGoal")
+      shinyjs::hide("relaxationFactor")
+    } else {
+      shinyjs::show("relaxationDateGoal")
+      shinyjs::show("relaxationFactor")
+      relaxNpi = TRUE
+      relaxGoal = which(fechas_master == input$relaxationDateGoal)
+    }
+    
+    # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
+    contact_matrix_scenario <<- get_npi_cm_scenario(scenario = input$npiScenario,
+                                                    matrix_list = list(
+                                                      contact_matrix = contact_matrix,
+                                                      contact_matrix_work = contact_matrix_work,
+                                                      contact_matrix_home = contact_matrix_home,
+                                                      contact_matrix_school = contact_matrix_school,
+                                                      contact_matrix_other = contact_matrix_other),
+                                                    ages= as.numeric(ageGroupsV))
+    contact_matrix_relaxed <<- get_npi_cm_scenario(scenario = input$npiScenarioRelaxed,
+                                                   matrix_list = list(
+                                                     contact_matrix = contact_matrix,
+                                                     contact_matrix_work = contact_matrix_work,
+                                                     contact_matrix_home = contact_matrix_home,
+                                                     contact_matrix_school = contact_matrix_school,
+                                                     contact_matrix_other = contact_matrix_other),
+                                                   ages= as.numeric(ageGroupsV))
+    efficacy = applyVaccineEfficacy(input$vacEfficacy)
+    
+    # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
+    # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
+    
+    # print(porcentajeCasosGraves)
+    # print(porcentajeCasosCriticos)
+    #browser()
+    tVacunasCero = 303
+    ifrProy = ifr_edit[1,]
+    if (input$country == "Argentina") {
+      ifrProy = ifrProy * 2.4
+    } else if (input$country == "Peru") {
+      ifrProy = ifrProy * 3.55
+    } else if (input$country == "Colombia") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Chile") {
+      ifrProy = ifrProy * 1
+    } else if (input$country == "Mexico") {
+      ifrProy = ifrProy * 1.8
+    } else if (input$country == "Brazil") {
+      ifrProy = ifrProy * 1
+    }
+    
+    ifr_base <<- ifrProy
+    proyNoVac <- seir_ages(dias=diasDeProyeccion,
+                      duracionE = periodoPreinfPromedio,
+                      duracionIi = duracionMediaInf,
+                      porc_gr = porcentajeCasosGraves,
+                      porc_cr = porcentajeCasosCriticos,
+                      duracionIg = diasHospCasosGraves,
+                      duracionIc = diasHospCasosCriticos,
+                      ifr = ifrProy,
+                      contact_matrix = contact_matrix_scenario,
+                      relaxationThreshold = input$relaxationThreshold,
+                      contact_matrix_relaxed = contact_matrix_relaxed,
+                      transmission_probability = trans_prob_param,
+                      N = N,
+                      defunciones_reales=def_p,
+                      modif_beta=efficacy$modif_beta,
+                      modif_porc_gr=efficacy$modif_porc_gr,
+                      modif_porc_cr=efficacy$modif_porc_cr,
+                      modif_ifr=efficacy$modif_ifr,
+                      planVacunacionFinal=planVacunacionFinalParam,
+                      selectedPriority=selectedPriority,
+                      selectedUptake=0,
+                      ritmoVacunacion=0,
+                      diasVacunacion=diasVacunacion,
+                      immunityStates=immunityStates,
+                      ageGroups=ageGroups,
+                      paramVac=paramVac_edit,
+                      duracion_inmunidad=duracion_inmunidad,
+                      tVacunasCero=tVacunasCero,
+                      relaxNpi=relaxNpi,
+                      relaxGoal=relaxGoal,
+                      relaxFactor=input$relaxationFactor,
+                      country=input$country
+    )
+    
+    fecha <- "2021-12-31"
+    tFecha <- which(fechas_master == "2021-12-31")
+    costoVacuna <- EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+    costoCasoAsint <- EEParams$costoCasoAsint
+    costoCasoSint <- EEParams$costoCasoSint
+    costoCasoHosp <- EEParams$costoCasoHosp
+    costoCasoUtiVent <- EEParams$costoCasoUtiVent
+    costoCasoUtiNoVent <- EEParams$costoCasoUtiNoVent
+    porcentajeAsint <- EEParams$porcentajeAsint
+    porcentajeUtiVent <- EEParams$porcentajeUtiVent
+    
+    `AVACs perdidos (d)` <- sum(sapply(proyNoVac[["ylqd: Years lost Qualy Disc"]][1:tFecha],simplify = T,sum))
+    `Casos totales` <- sum(sapply(proyNoVac[["i: Daily infectious"]][1:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día` <- sum(sapply(proyNoVac[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum)) + sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día en UTI` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) 
+    `Muertes` <- sum(sapply(proyNoVac[["d: Daily deaths"]][1:tFecha],simplify = T,sum)) 
+    `Años de vida perdidos (d)` <- sum(sapply(proyNoVac[["yld: Years lost Disc"]][1:tFecha],simplify = T,sum))
+    `Años de vida perdidos` <- sum(sapply(proyNoVac[["yl: Years lost"]][1:tFecha],simplify = T,sum))
+    `AVACs perdidos` <- sum(sapply(proyNoVac[["ylq: Years lost Qualy"]][1:tFecha],simplify = T,sum))
+    `Vacunas aplicadas` <- sum(sapply(proyNoVac[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
+    `Costos Vacunación` <- costoVacuna * sum(sapply(proyNoVac[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
+    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proyNoVac[["Ii: Infectious (mild)"]][1:tFecha],simplify = T,sum))
+    `  Costo casos asintomático` <- costoCasoAsint * `  Casos asintomáticos/dia`
+    `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proyNoVac[["Ii: Infectious (mild)"]][1:tFecha],simplify = T,sum))
+    `  Costo casos sintomáticos no hospitalizados` <- costoCasoSint * `  Casos sintomáticos no hospitalizados`  
+    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proyNoVac[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum))
+    `  Costo casos hospitalizados no UTI` <- costoCasoHosp * `  Casos hospitalizados no UTI/dia`
+    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
+    `  Costo casos hospitalizados UTI (sin respirador)` <- costoCasoUtiNoVent * `  Casos hospitalizados UTI/dia (sin respirador)`
+    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * porcentajeUtiVent
+    `  Costo casos hospitalizados no UTI (con respirador)` <- costoCasoUtiVent * `  Casos hospitalizados UTI/dia (con respirador)`
+    `Costo de eventos COVID` <- 
+      `  Costo casos asintomático` +
+      `  Costo casos sintomáticos no hospitalizados` +
+      `  Costo casos hospitalizados no UTI` +
+      `  Costo casos hospitalizados UTI (sin respirador)` +
+      `  Costo casos hospitalizados no UTI (con respirador)`
+    `Costos totales` <- `Costo de eventos COVID` + `Costos Vacunación`
+    
+    
+    metrics <- c("Costos totales",
+                 "AVACs perdidos (d)", 
+                 "Casos totales", 
+                 "Hospitalizaciones/día", 
+                 "Hospitalizaciones/día en UTI",
+                 "Muertes",
+                 "Años de vida perdidos (d)", 
+                 "Años de vida perdidos", 
+                 "AVACs perdidos", 
+                 "Vacunas aplicadas", 
+                 "Costos Vacunación", 
+                 "Costo de eventos COVID",
+                 #"  Casos asintomáticos/dia", 
+                 "  Costo casos asintomático", 
+                 #"  Casos sintomáticos no hospitalizados", 
+                 "  Costo casos sintomáticos no hospitalizados", 
+                 #"  Casos hospitalizados no UTI/dia", 
+                 "  Costo casos hospitalizados no UTI", 
+                 #"  Casos hospitalizados UTI/dia (sin respirador)", 
+                 "  Costo casos hospitalizados UTI (sin respirador)", 
+                 #"  Casos hospitalizados UTI/dia (con respirador)", 
+                 "  Costo casos hospitalizados no UTI (con respirador)")
+    
+    values <- c()
+    for (i in 1:length(metrics)) {
+      values <- c(values,eval(parse(text=paste0("round(","`",metrics,"`",", digits=0)")[i])))
+    }                         
+    
+    EETable <- data.frame(`Metrics`= metrics,
+                          Desenlaces = values)
+    
+    EEAvailable <<- T
+    return(EETable)
+    
+    
+  })
+  observeEvent(input$EEgo,{
+    counterEE <<- counterEE+1 
+    
+  })
+  output$EESummaryTable <- function () {
+    paste(input$EEgo)
+    if (counterEE!=0 & iso_country %in% c("ARG","BRA","CHL","COL","PER","MEX")) {
+      table <- left_join(EESummaryNoVac(),EESummary(), by ="Metrics")
+      table$`RCEI (d2)` <- NA
+      
+      RCEI <- function (metric) {
+        table$`RCEI (d2)`[table$Metrics==metric] <<- 
+          round(
+            (table$Desenlaces.y[table$Metrics=="Costos totales"] -
+               table$Desenlaces.x[table$Metrics=="Costos totales"]) /
+              (table$Desenlaces.y[table$Metrics==metric] -
+                 table$Desenlaces.x[table$Metrics==metric]), 
+            digits=1
+            
+            
+          )
+          
+      }
+      
+      RCEI("Casos totales")
+      RCEI("AVACs perdidos (d)")
+      RCEI("Hospitalizaciones/día")
+      RCEI("Hospitalizaciones/día en UTI")
+      RCEI("Muertes")
+      RCEI("Años de vida perdidos (d)")
+      RCEI("Años de vida perdidos")
+      RCEI("AVACs perdidos")
+      colnames(table) <- c("Métrica","Desenlaces","Desenlaces","RCEI (d2)")
+      table[,2] <- format(as.numeric(table[,2]),  big.mark = ",",justify = "right")
+      table[,3] <- format(as.numeric(table[,3]),  big.mark = ",",justify = "right")
+      table[,4] <- format(as.numeric(table[,4]),  big.mark = ",",justify = "right")
+      
+      table[table$`Métrica`=="Costos Vacunación",2] <- "-"
+      table[table$`Métrica`=="Vacunas aplicadas",2] <- "-"
+      table[table$`Métrica`=="Costos totales",4] <- "-"
+      table[table$`Métrica`=="Costo de eventos COVID",4] <- "-"
+      
+      
+      table[table$`Métrica`=="  Costo casos hospitalizados no UTI",4] <- "-"
+      table[table$`Métrica`=="Vacunas aplicadas",4] <- "-"
+      table[table$`Métrica`=="Costos Vacunación",4] <- "-"
+      table[table$`Métrica`=="  Costo casos asintomático",4] <- "-"
+      table[table$`Métrica`=="  Costo casos sintomáticos no hospitalizados",4] <- "-"
+      table[table$`Métrica`=="  Costo casos hospitalizados UTI (sin respirador)",4] <- "-"
+      table[table$`Métrica`=="  Costo casos hospitalizados no UTI (con respirador)",4] <- "-"
+      
+      
+      kbl(table, escape = F, align=c("l","r","r","r")) %>%
+        kable_styling(font_size = 17) %>% 
+        kable_classic(html_font = "Tahoma") %>% 
+        add_header_above(c(" " = 1, "Sin vacunación" = 1, "Escenario actual" = 2)) %>%
+        row_spec(13:nrow(table), italic = T, font_size = 15)
+      
 
+      
+    }
+      
+      
+      
+    
+      
+  }
+  
+  
 }
 
 shinyApp(ui = getUI(), server = server)
