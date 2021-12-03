@@ -63,14 +63,15 @@ source("functions/ui.R", encoding = "UTF-8")
 
 setParameters()
 
-mode = "Nobasico"
 customMatrix <<- F
 
 
 
 
 server <- function (input, output, session) {
+  mode <- "Nobasico"
   primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
+  print(primeraVez)
   sensScenarios <<- data.frame()
   counterEE <<-0
   disable("go")
@@ -691,6 +692,9 @@ server <- function (input, output, session) {
   
   output$graficoUnico <- renderPlotly({
     res_t()
+    print("if:")
+    print((length(proy()) > 0 & (input$compart_a_graficar != "" | mode=="basico")))
+    
     if (length(proy()) > 0 & (input$compart_a_graficar != "" | mode=="basico")) {
       
       if (mode=="basico") {
@@ -1312,8 +1316,9 @@ server <- function (input, output, session) {
   
   ##### PROY_LOW #####
   
-  proy_low <- reactive({
+  proy_low <- eventReactive(input$runWithSens,{
     #paste activa reactive (no comentar)
+    print("low")
     paste(input$go)
     paste(input$paramVac_cell_edit)
     paste(input$ifrt_cell_edit)
@@ -1500,7 +1505,7 @@ server <- function (input, output, session) {
     
   })
 
-  proy_hi <- reactive({
+  proy_hi <- eventReactive(input$runWithSens,{
     # paste activa reactive (no comentar)
     paste(input$go)
     paste(input$paramVac_cell_edit)
