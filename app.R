@@ -25,6 +25,7 @@ library(shinythemes)
 library(lubridate)
 library(kableExtra)
 library(formattable)
+
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 options(dplyr.summarise.inform = FALSE)
 
@@ -229,6 +230,9 @@ server <- function (input, output, session) {
       
       load(paste0("data/data", iso_country, ".RData"), envir = .GlobalEnv)
       dataPorEdad <<- formatData(iso_country, ageGroupsV)
+      
+      writexl::write_xlsx(data.frame(dataPorEdad$FMTD$def),"argentina.xls")
+      
       diaCeroVac <<- min(dataPorEdad$FMTD$vac$fecha)
       tVacunasCero <<-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
       vacPre <<- lapply(1:(as.numeric(tVacunasCero)-1), matrix, data=0,
@@ -692,8 +696,6 @@ server <- function (input, output, session) {
   
   output$graficoUnico <- renderPlotly({
     res_t()
-    print("if:")
-    print((length(proy()) > 0 & (input$compart_a_graficar != "" | mode=="basico")))
     
     if (length(proy()) > 0 & (input$compart_a_graficar != "" | mode=="basico")) {
       
