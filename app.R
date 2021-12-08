@@ -70,6 +70,8 @@ customMatrix <<- F
 
 
 server <- function (input, output, session) {
+  patronVac <- T
+  patronEfectividad <- T
   mode <- "Nobasico"
   primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
   print(primeraVez)
@@ -2596,8 +2598,15 @@ server <- function (input, output, session) {
     )
     
     fecha <- "2021-12-31"
+    tInicio <- which(fechas_master == "2021-01-01")
     tFecha <- which(fechas_master == "2021-12-31")
-    costoVacuna <- EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+    
+    costoVacuna <- if (patronVac) {
+      EEParams$costoCavacunaPatron
+    } else {
+      EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+    } 
+    
     costoCasoAsint <- EEParams$costoCasoAsint
     costoCasoSint <- EEParams$costoCasoSint
     costoCasoHosp <- EEParams$costoCasoHosp
@@ -2606,25 +2615,25 @@ server <- function (input, output, session) {
     porcentajeAsint <- EEParams$porcentajeAsint
     porcentajeUtiVent <- EEParams$porcentajeUtiVent
     
-    `AVACs perdidos (d)` <- sum(sapply(proyNoVac[["ylqd: Years lost Qualy Disc"]][1:tFecha],simplify = T,sum))
-    `Casos totales` <- sum(sapply(proyNoVac[["i: Daily infectious"]][1:tFecha],simplify = T,sum))
-    `Hospitalizaciones/día` <- sum(sapply(proyNoVac[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum)) + sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
-    `Hospitalizaciones/día en UTI` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) 
-    `Muertes` <- sum(sapply(proyNoVac[["d: Daily deaths"]][1:tFecha],simplify = T,sum)) 
-    `Años de vida perdidos (d)` <- sum(sapply(proyNoVac[["yld: Years lost Disc"]][1:tFecha],simplify = T,sum))
-    `Años de vida perdidos` <- sum(sapply(proyNoVac[["yl: Years lost"]][1:tFecha],simplify = T,sum))
-    `AVACs perdidos` <- sum(sapply(proyNoVac[["ylq: Years lost Qualy"]][1:tFecha],simplify = T,sum))
-    `Vacunas aplicadas` <- sum(sapply(proyNoVac[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
-    `Costos Vacunación` <- costoVacuna * sum(sapply(proyNoVac[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
-    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proyNoVac[["Ii: Infectious (mild)"]][1:tFecha],simplify = T,sum))
+    `AVACs perdidos (d)` <- sum(sapply(proyNoVac[["ylqd: Years lost Qualy Disc"]][tInicio:tFecha],simplify = T,sum))
+    `Casos totales` <- sum(sapply(proyNoVac[["i: Daily infectious"]][tInicio:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día` <- sum(sapply(proyNoVac[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum)) + sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día en UTI` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) 
+    `Muertes` <- sum(sapply(proyNoVac[["d: Daily deaths"]][tInicio:tFecha],simplify = T,sum)) 
+    `Años de vida perdidos (d)` <- sum(sapply(proyNoVac[["yld: Years lost Disc"]][tInicio:tFecha],simplify = T,sum))
+    `Años de vida perdidos` <- sum(sapply(proyNoVac[["yl: Years lost"]][tInicio:tFecha],simplify = T,sum))
+    `AVACs perdidos` <- sum(sapply(proyNoVac[["ylq: Years lost Qualy"]][tInicio:tFecha],simplify = T,sum))
+    `Vacunas aplicadas` <- sum(sapply(proyNoVac[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
+    `Costos Vacunación` <- costoVacuna * sum(sapply(proyNoVac[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
+    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proyNoVac[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
     `  Costo casos asintomático` <- costoCasoAsint * `  Casos asintomáticos/dia`
-    `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proyNoVac[["Ii: Infectious (mild)"]][1:tFecha],simplify = T,sum))
+    `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proyNoVac[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
     `  Costo casos sintomáticos no hospitalizados` <- costoCasoSint * `  Casos sintomáticos no hospitalizados`  
-    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proyNoVac[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum))
+    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proyNoVac[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum))
     `  Costo casos hospitalizados no UTI` <- costoCasoHosp * `  Casos hospitalizados no UTI/dia`
-    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
+    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
     `  Costo casos hospitalizados UTI (sin respirador)` <- costoCasoUtiNoVent * `  Casos hospitalizados UTI/dia (sin respirador)`
-    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * porcentajeUtiVent
+    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proyNoVac[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * porcentajeUtiVent
     `  Costo casos hospitalizados no UTI (con respirador)` <- costoCasoUtiVent * `  Casos hospitalizados UTI/dia (con respirador)`
     `Costo de eventos COVID` <- 
       `  Costo casos asintomático` +
