@@ -421,6 +421,10 @@ getUI <- function () {
                                              tabPanel("EE",
                                                       br(),
                                                       fluidRow(
+                                                        checkboxInput("patronVac", "Usar costo patrón para vacuna", FALSE),
+                                                        checkboxInput("patronEfectividad", "Usar valor patrón para efectividad", FALSE)
+                                                      ),
+                                                      fluidRow(
                                                         #column(3),
                                                         #column(6,dataTableOutput("eeTable")),
                                                         column(3, actionLink("EEgo", "Ver tabla de resultados principales"),
