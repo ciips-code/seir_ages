@@ -61,10 +61,15 @@ getUI <- function () {
                                           column(4,fluidRow(column(4,textInput("save_comp_name", "Save scenario", placeholder = "Enter name")),
                                                             column(2,br(),actionButton("save_comp", icon("chevron-right"))),
                                                             column(2,prettyCheckbox(inputId = "check_cases",label = "Show reported cases",value = FALSE),
-                                                                   prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE),
-                                                                   prettyCheckbox(inputId = "check_rt",label = "Effective reproduction number (Rt)",value = FALSE)))
-                                          )
+                                                                     prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE),
+                                                                     prettyCheckbox(inputId = "check_rt",label = "Effective reproduction number (Rt)",value = FALSE))
+                                                            )
+                                          ),
                                  ),
+                                absolutePanel(actionButton("run_proy", "Actualizar proyección"),
+                                              fixed = T,
+                                              top = 85,
+                                              right = 5),
                                  plotlyOutput("graficoUnico"),
                                  tabsetPanel(type = "tabs",
                                              tabPanel("Scenario configuration",
@@ -426,8 +431,16 @@ getUI <- function () {
                                                         column(3, actionLink("EEgo", "Ver tabla de resultados principales"),
                                                                align="left")
                                                         ),
-                                                      fluidRow(column(10, tableOutput("EESummaryTable"), align="center"))
-                                                      ),
+                                                      fluidRow(column(10, tableOutput("EESummaryTable"), align="center")),
+                                                      br(),
+                                                      fluidRow(column(10, tableOutput("EESummaryTable2"), align="center")),
+                                                      br(),
+                                                      fluidRow(column(10, tableOutput("EESummaryTable3"), align="center")),
+                                                      fluidRow(column(7),
+                                                               column(3, downloadButton("downloadEE", "Descargar"), align="right")
+                                                      )
+                                                      
+                                                  ),
                                              tabPanel("Topic II - Question 1",
                                                       div(
                                                         p("In which order should the following groups beprioritized for COVID-19 

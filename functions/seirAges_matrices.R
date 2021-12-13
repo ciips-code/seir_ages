@@ -70,7 +70,6 @@ seir_ages <- function(dias,
   }
   vacGroupActive = 1
   for(t in 2:dias){
-    
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
@@ -223,7 +222,6 @@ seir_ages <- function(dias,
     porcProt = as.numeric(paramVac[vacuna,4])
     # agregar if escenarios hi y low
     
-
     
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
