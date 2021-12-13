@@ -25,7 +25,7 @@ library(shinythemes)
 library(lubridate)
 library(kableExtra)
 library(formattable)
-#library(openxlsx)
+library(openxlsx)
 
 jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 options(dplyr.summarise.inform = FALSE)
