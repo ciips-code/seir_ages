@@ -389,7 +389,7 @@ get_factor_given_rt = function(contact_matrix, transmission_probability, duracio
 
 # get contact matrix from covoid study: library(covoid) 
 get_empirical_cm <- function(country, ages, type = "general"){
-  
+  if (country=="Barbados") {country <- "Argentina"}
   # get matrix from covoid package
   mc_arg  <- as.data.frame(t(import_contact_matrix(country = country,setting = type)))
   pop_arg <- data.frame(pop = as.numeric(import_age_distribution(country)), group = rownames(mc_arg))
