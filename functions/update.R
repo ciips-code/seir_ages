@@ -1448,17 +1448,29 @@ update <-  function(pais,diasDeProyeccion) {
     
     
     # proporción de fallecidos por grupos de edad para ARG
-    distAge <- c(0.001887598,
-                 0.007639806,
-                 0.020992082,
-                 0.057571754,
-                 0.125386213,
-                 0.224485133,
-                 0.266509036,
-                 0.295528379)
-    
-    ageGroups <<- c("00-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+")
-    
+    distAge <- c(0.000933865,
+                 0.000288107,
+                 0.000198695,
+                 0.000466932,
+                 0.00292081,
+                 0.004718996,
+                 0.007927914,
+                 0.013064168,
+                 0.022700855,
+                 0.034870898,
+                 0.051561243,
+                 0.07382497,
+                 0.098284272,
+                 0.12620086,
+                 0.133165105,
+                 0.13334393,
+                 0.116097241,
+                 0.09672452,
+                 0.082706618
+    )
+    ageGroups <<- c("00-04", "05-09", "10-14", "15-17", "18-24", "25-29", "30-34", "35-39",
+    "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84",
+    "85-89", "90-99")
     
     data <- dataOWD[dataOWD$iso_code=="BRB", c("iso_code","date","new_deaths","new_cases")]
     data$new_deaths <- as.numeric(data$new_deaths)
@@ -1470,10 +1482,9 @@ update <-  function(pais,diasDeProyeccion) {
       data[[paste0(ageGroups[i],"_cases")]] <- data$new_cases * distAge[i]
     }
     
-    
     #Casos 
   
-    casos <- data[, c("date", "00-17_cases","18-29_cases","30-39_cases","40-49_cases","50-59_cases", "60-69_cases", "70-79_cases", "80+_cases")] 
+    casos <- data[, c("date",colnames(data)[grep("cases",colnames(data))][-1])] 
     
     setnames(casos, "date", "fecha")
     setnames(casos, grep("_cases", names(casos), value = TRUE), gsub("_cases", "", grep("_cases", names(casos), value = TRUE)))
@@ -1488,13 +1499,10 @@ update <-  function(pais,diasDeProyeccion) {
     
     #defunciones
     
-    def <- data[, c("date", "00-17_deaths","18-29_deaths","30-39_deaths","40-49_deaths","50-59_deaths", "60-69_deaths", "70-79_deaths", "80+_deaths")] 
+    def <- data[, c("date",colnames(data)[grep("deaths",colnames(data))][-1])] 
     
     setnames(def, "date", "fecha")
     setnames(def, grep("_deaths", names(def), value = TRUE), gsub("_deaths", "", grep("_deaths", names(def), value = TRUE)))
-    
-    
-    library(dplyr)
     
     def <- data.frame(fecha=as.character(seq(as.Date('2020-03-01'),
                                              as.Date(max(def$fecha)),
@@ -2732,7 +2740,6 @@ update <-  function(pais,diasDeProyeccion) {
 ##### formatData function #####
 
 formatData <- function(pais, ageGroups) {
-
   load(paste0("data/data",pais,".RData"))
   eval(parse(text=paste0('countryData$FMTD <- countryData$',pais)))
   
@@ -2751,6 +2758,7 @@ formatData <- function(pais, ageGroups) {
   for (i in 1:length(ageSelCol)) {
     if (i!=length(ageSelCol)) {
       vector <- c(vector,rowSums(countryData$FMTD$casos[,ageSelCol[i]:(ageSelCol[(i+1)]-1)]))
+      
     } else
     {
       vector <- c(vector,rowSums(data.frame(countryData$FMTD$casos[,ageSelCol[i]:(ncol(countryData$FMTD$casos))])))
@@ -2884,6 +2892,9 @@ updateDataOWD <- function (countries) {
   }
   save(OWDSummaryData, file="data/OWDSummaryData.RData")
 }
+
+
+update("BRB",1100)
 
 # actualiza OWD
 #updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHs", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
