@@ -33,7 +33,25 @@ options(dplyr.summarise.inform = FALSE)
 
 comp_table <<- list()
 output_list <<- c()
-countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay")
+countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay", 
+                "Paraguay",
+                "Bahamas",
+                "Barbados",
+                "Belice",
+                "Bolivia",
+                "Ecuador",
+                "Guatemala",
+                "Guyana",
+                "Honduras",
+                "Haiti",
+                "Jamaica",
+                "Nicaragua",
+                "Panama",
+                "El Salvador",
+                "Republica Dominicana",
+                "Suriname",
+                "Trinidad & Tobago",
+                "Venezuela")
 colores <<- rev(tmaptools::get_brewer_pal("RdYlGn", n=5))
 flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
@@ -43,7 +61,25 @@ flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cr.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/mx.svg",
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/uy.svg"
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/uy.svg",
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/py.svg",#paraguay
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bs.svg", #bahamas
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bb.svg",#barbados
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bz.svg",#belice
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bo.svg",#bolivia
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ec.svg",#ecuador
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/gt.svg",#guatemala
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/gy.svg",#guyana
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/hn.svg",#honduras
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ht.svg",#haiti
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/jm.svg",#jamaica
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ni.svg",#nicaragua
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pa.svg",#panama
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/sv.svg",#el salvador
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/do.svg",#republica dominicana
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/sr.svg",#suriname
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/tt.svg",#trinidad y tobag0
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ve.svg"#venezuela
 )
 
 # carga RData
@@ -80,6 +116,7 @@ server <- function (input, output, session) {
   
   patronVac <- T
   patronEfectividad <- T
+
   mode <- "Nobasico"
   primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
   sensScenarios <<- data.frame()
@@ -208,9 +245,28 @@ server <- function (input, output, session) {
       if (input$country=="Mexico") {"MEX"} else
       if (input$country=="Costa Rica") {"CRI"} else
       if (input$country=="Uruguay") {"URY"} else
-      if (input$country=="Chile") {"CHL"}
-      # print(iso_country)
-      
+      if (input$country=="Chile") {"CHL"} else
+      if (input$country=="Paraguay") {"PRY"} else
+      if (input$country=="Bahamas") {"BHS"} else
+      if (input$country=="Barbados") {"BRB"} else
+      if (input$country=="Belice") {"BLZ"} else
+      if (input$country=="Bolivia") {"BOL"} else
+      if (input$country=="Ecuador") {"ECU"} else
+      if (input$country=="Guatemala") {"GMT"} else
+      if (input$country=="Guyana") {"GUY"} else
+      if (input$country=="Honduras") {"HND"} else
+      if (input$country=="Haiti") {"HTI"} else
+      if (input$country=="Jamaica") {"JAM"} else
+      if (input$country=="El Salvador") {"SLV"} else
+      if (input$country=="Nicaragua") {"NIC"} else
+      if (input$country=="Panama") {"PAN"} else
+      if (input$country=="Venezuela") {"VEN"} else
+      if (input$country=="Suriname") {"SUR"} else
+      if (input$country=="Trinidad y Tobago") {"TTO"} else
+      if (input$country=="Republica Dominicana") {"DOM"} 
+   
+   
+   # print(iso_country)
       
     capacidadUTI <<- if (input$country=="Argentina") {11676} else
                      if (input$country=="Brazil") {37950} else
@@ -219,8 +275,28 @@ server <- function (input, output, session) {
                      if (input$country=="Mexico") {11634} else
                      if (input$country=="Costa Rica") {245} else
                      if (input$country=="Uruguay") {822} else
-                     if (input$country=="Chile") {4481}
-      
+                     if (input$country=="Chile") {4481} else
+                    ### cambiar por los valores de UTI correcto
+                     if (input$country=="Paraguay") {100} else
+                     if (input$country=="Bahamas") {100} else
+                     if (input$country=="Barbados") {100} else
+                     if (input$country=="Belice") {100} else
+                     if (input$country=="Bolivia") {100} else
+                     if (input$country=="Ecuador") {100} else
+                     if (input$country=="Guatemala") {100} else
+                     if (input$country=="Guyana") {100} else
+                     if (input$country=="Honduras") {100} else
+                     if (input$country=="Haiti") {100} else
+                     if (input$country=="Jamaica") {100} else
+                     if (input$country=="El Salvador") {100} else
+                     if (input$country=="Nicaragua") {100} else
+                     if (input$country=="Panama") {100} else
+                     if (input$country=="Venezuela") {100} else
+                     if (input$country=="Suriname") {100} else
+                     if (input$country=="Trinidad y Tobago") {100} else
+                     if (input$country=="Republica Dominicana") {100} 
+                       
+                       
     # empirical cm
     if(use_empirical_mc){
       contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
@@ -2393,9 +2469,16 @@ server <- function (input, output, session) {
   EESummary <- eventReactive(list(input$EEgo,
                                   input$country),{
     print("pasa")
-                                    fecha <- "2021-12-31"
+    fecha <- "2021-12-31"
+    tInicio <- which(fechas_master == "2021-01-01")
     tFecha <- which(fechas_master == "2021-12-31")
-    costoVacuna <- EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+    
+    costoVacuna <- if (input$patronVac) {
+      EEParams$costoCavacunaPatron
+    } else {
+      EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+    } 
+    
     costoCasoAsint <- EEParams$costoCasoAsint
     costoCasoSint <- EEParams$costoCasoSint
     costoCasoHosp <- EEParams$costoCasoHosp
@@ -2404,25 +2487,25 @@ server <- function (input, output, session) {
     porcentajeAsint <- EEParams$porcentajeAsint
     porcentajeUtiVent <- EEParams$porcentajeUtiVent
     
-    `AVACs perdidos (d)` <- sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][1:tFecha],simplify = T,sum))
-    `Casos totales` <- sum(sapply(proy()[["i: Daily infectious"]][1:tFecha],simplify = T,sum))
-    `Hospitalizaciones/día` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum)) + sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
-    `Hospitalizaciones/día en UTI` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) 
-    `Muertes` <- sum(sapply(proy()[["d: Daily deaths"]][1:tFecha],simplify = T,sum)) 
-    `Años de vida perdidos (d)` <- sum(sapply(proy()[["yld: Years lost Disc"]][1:tFecha],simplify = T,sum))
-    `Años de vida perdidos` <- sum(sapply(proy()[["yl: Years lost"]][1:tFecha],simplify = T,sum))
-    `AVACs perdidos` <- sum(sapply(proy()[["ylq: Years lost Qualy"]][1:tFecha],simplify = T,sum))
-    `Vacunas aplicadas` <- sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
-    `Costos Vacunación` <- costoVacuna * sum(sapply(proy()[["vA: Daily vaccinations"]][1:tFecha],simplify = T,sum))
-    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proy()[["i: Daily infectious"]][1:tFecha],simplify = T,sum))
+    `AVACs perdidos (d)` <- sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][tInicio:tFecha],simplify = T,sum))
+    `Casos totales` <- sum(sapply(proy()[["i: Daily infectious"]][tInicio:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum)) + sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+    `Hospitalizaciones/día en UTI` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) 
+    `Muertes` <- sum(sapply(proy()[["d: Daily deaths"]][tInicio:tFecha],simplify = T,sum)) 
+    `Años de vida perdidos (d)` <- sum(sapply(proy()[["yld: Years lost Disc"]][tInicio:tFecha],simplify = T,sum))
+    `Años de vida perdidos` <- sum(sapply(proy()[["yl: Years lost"]][tInicio:tFecha],simplify = T,sum))
+    `AVACs perdidos` <- sum(sapply(proy()[["ylq: Years lost Qualy"]][tInicio:tFecha],simplify = T,sum))
+    `Vacunas aplicadas` <- sum(sapply(proy()[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
+    `Costos Vacunación` <- costoVacuna * sum(sapply(proy()[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
+    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proy()[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
     `  Costo casos asintomático` <- costoCasoAsint * `  Casos asintomáticos/dia`
-    `  Casos sintomáticos` <- (1-porcentajeAsint) * sum(sapply(proy()[["i: Daily infectious"]][1:tFecha],simplify = T,sum))
-    `  Costo casos sintomáticos no hospitalizados (ambulatorio)` <- costoCasoSint * `  Casos sintomáticos`  
-    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][1:tFecha],simplify = T,sum))
+    `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proy()[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
+    `  Costo casos sintomáticos no hospitalizados` <- costoCasoSint * `  Casos sintomáticos no hospitalizados`  
+    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum))
     `  Costo casos hospitalizados no UTI` <- costoCasoHosp * `  Casos hospitalizados no UTI/dia`
-    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
+    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
     `  Costo casos hospitalizados UTI (sin respirador)` <- costoCasoUtiNoVent * `  Casos hospitalizados UTI/dia (sin respirador)`
-    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum)) * porcentajeUtiVent
+    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * porcentajeUtiVent
     `  Costo casos hospitalizados no UTI (con respirador)` <- costoCasoUtiVent * `  Casos hospitalizados UTI/dia (con respirador)`
     `Costo de eventos COVID` <- 
       `  Costo casos asintomático` +

@@ -175,24 +175,24 @@ seir_ages <- function(dias,
     # Multiplicamos el total de muertos por grupo de edad
     # Multiplicado por una matriz que tenga los años de vida perdidos para cada grupo para este pais y los mismos valores para todos los estados inmunitarios
     # Esto tiene que venir de parametros (ver si el vector o todo)
-    tablaDeAnosDeVidaPerdidos = yearsLost[yearsLost$country==iso_country,"yearsLost"]
+    tablaDeAnosDeVidaPerdidos = yearsLost_new[yearsLost_new$country==iso_country,"yearsLost"]
     matrizDeAnosDeVidaPerdidos = matrix(rep(tablaDeAnosDeVidaPerdidos,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
-    
-    tablaDeAnosDeVidaPerdidosQualy = yearsLost[yearsLost$country==iso_country,"yearsLostQualy"]
+
+    tablaDeAnosDeVidaPerdidosQualy = yearsLost_new[yearsLost_new$country==iso_country,"yearsLostQualy"]
     matrizDeAnosDeVidaPerdidosQualy = matrix(rep(tablaDeAnosDeVidaPerdidosQualy,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
-    
-    tablaDeAnosDeVidaPerdidosDesc = yearsLost[yearsLost$country==iso_country,"yearsLostDisc"]
+
+    tablaDeAnosDeVidaPerdidosDesc = yearsLost_new[yearsLost_new$country==iso_country,"yearsLostDisc"]
     matrizDeAnosDeVidaPerdidosDesc = matrix(rep(tablaDeAnosDeVidaPerdidosDesc,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
-    
-    tablaDeAnosDeVidaPerdidosQualyDesc = yearsLost[yearsLost$country==iso_country,"yearsLostQualyDisc"]
+
+    tablaDeAnosDeVidaPerdidosQualyDesc = yearsLost_new[yearsLost_new$country==iso_country,"yearsLostQualyDisc"]
     matrizDeAnosDeVidaPerdidosQualyDesc = matrix(rep(tablaDeAnosDeVidaPerdidosQualyDesc,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
-    
-    
+
+
     yl[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidos
     ylq[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidosQualy
     yld[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidosDesc
     ylqd[[t]] = d[[t]] * matrizDeAnosDeVidaPerdidosQualyDesc
-    
+
     
     
     
