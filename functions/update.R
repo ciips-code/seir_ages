@@ -1661,8 +1661,6 @@ updateDataOWD <- function (countries) {
 }
 
 
-#update("BRB",1100)
-
 # actualiza OWD
 #updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHs", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
 
