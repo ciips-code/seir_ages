@@ -33,7 +33,7 @@ options(dplyr.summarise.inform = FALSE)
 
 comp_table <<- list()
 output_list <<- c()
-countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay", 
+countries <<- sort(c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay", 
                 "Paraguay",
                 "Bahamas",
                 "Barbados",
@@ -51,7 +51,7 @@ countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexic
                 "Republica Dominicana",
                 "Suriname",
                 "Trinidad & Tobago",
-                "Venezuela")
+                "Venezuela"))
 colores <<- rev(tmaptools::get_brewer_pal("RdYlGn", n=5))
 flags <<- c(
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",#argentina
