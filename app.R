@@ -54,31 +54,31 @@ countries <<- c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexic
                 "Venezuela")
 colores <<- rev(tmaptools::get_brewer_pal("RdYlGn", n=5))
 flags <<- c(
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/br.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cl.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/co.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cr.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/mx.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/uy.svg",
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/py.svg",#paraguay
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bs.svg", #bahamas
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ar.svg",#argentina
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bs.svg",#bahamas
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bb.svg",#barbados
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bz.svg",#belice
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/bo.svg",#bolivia
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/br.svg",#brasil
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cl.svg",#chile
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/co.svg",#colombia
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/cr.svg",#costa rica
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ec.svg",#ecuador
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/sv.svg",#el salvador
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/gt.svg",#guatemala
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/gy.svg",#guyana
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/hn.svg",#honduras
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ht.svg",#haiti
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/jm.svg",#jamaica
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/mx.svg",#mexico
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ni.svg",#nicaragua
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pa.svg",#panama
-  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/sv.svg",#el salvador
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/py.svg",#paraguay
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/pe.svg",#peru
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/do.svg",#republica dominicana
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/sr.svg",#suriname
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/tt.svg",#trinidad y tobag0
+  "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/uy.svg",#uruguay
   "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/ve.svg"#venezuela
 )
 
