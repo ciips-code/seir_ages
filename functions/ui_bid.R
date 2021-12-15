@@ -269,7 +269,7 @@ getUI <- function () {
                   ),
                 ),
                 fluidRow(id = "npis-output",
-                         div(id = "tail", tags$span("Selecionar medidas..."), style = 'float:left;')
+                         div(id = "tail", tags$span("Seleccionar medidas..."), style = 'float:left;')
                  ),
               ))
               

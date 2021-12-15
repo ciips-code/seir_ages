@@ -169,7 +169,7 @@ server <- function (input, output, session) {
     insertUI(selector = "#npis-col",
              where = "beforeEnd",
              fluidRow(id = "npis-output",
-                      div(id = "tail", tags$span("Add NPIs levels..."), style = 'float:left;')
+                      div(id = "tail", tags$span("Seleccionar medidas..."), style = 'float:left;')
              )
            )
   })

@@ -605,9 +605,9 @@ actualizaPlot <- function(input,output,session) {
 
 
 actualizaTablas <- function(input,output,session) {
-  data_text <<- cbind(data_graf,rep(fechas_master,length(unique(data_graf$Compart))))
-  colnames(data_text)[ncol(data_text)] <- "fechaDia"
-  data_text <<- data_text %>% dplyr::group_by(Compart) %>%
+  data_text_temp <<- cbind(data_graf,rep(fechas_master,length(unique(data_graf$Compart))))
+  colnames(data_text_temp)[ncol(data_text_temp)] <- "fechaDia"
+  data_text <<- data_text_temp %>% dplyr::group_by(Compart) %>%
     dplyr::mutate(ac=cumsum(total))
   
   fechas <- c("2021-06-30",
@@ -615,20 +615,20 @@ actualizaTablas <- function(input,output,session) {
               "2022-06-30")
   fechas <<- fechas
   
-  tfechas <- c(which(fechas_master == "2021-06-30"),
+  tfechas <<- c(which(fechas_master == "2021-06-30"),
                which(fechas_master == "2021-12-31"),
                which(fechas_master == "2022-06-30"))
   
-  def_ac <- data_text$total[(as.character(data_text$fechaDia) %in% fechas) &
+  def_ac <<- data_text$total[(as.character(data_text$fechaDia) %in% fechas) &
                               data_text$Compart=="D"]  
   
-  casos_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
+  casos_ac <<- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
                              data_text$Compart=="i"]
   
-  vacunas_ac <- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
+  vacunas_ac <<- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
                                data_text$Compart=="vA"] 
   #browser()
-  tFechas <- c(grep(fechas[1], fechas_master),
+  tFechas <<- c(grep(fechas[1], fechas_master),
                grep(fechas[2], fechas_master),
                grep(fechas[3], fechas_master))
   
@@ -674,7 +674,7 @@ actualizaTablas <- function(input,output,session) {
                }))
   ) / sum(N) *100
   
-  years_lost <- c(sum(sapply(proy[["yl: Years lost"]][1:tFechas[1]],simplify = T,sum)),
+  years_lost <<- c(sum(sapply(proy[["yl: Years lost"]][1:tFechas[1]],simplify = T,sum)),
                   sum(sapply(proy[["yl: Years lost"]][1:tFechas[2]],simplify = T,sum)),
                   sum(sapply(proy[["yl: Years lost"]][1:tFechas[3]],simplify = T,sum)))
   
