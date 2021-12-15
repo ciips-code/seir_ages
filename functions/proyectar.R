@@ -19,7 +19,7 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
       incProgress(0.1)
       actualizaPlot(input,output,session)
       incProgress(0.1)
-      # actualizaTablas(input,output,session)
+      actualizaTablas(input,output,session)
     }) 
   
 }
@@ -680,12 +680,12 @@ actualizaTablas <- function(input,output,session) {
   
   
   
-  var=c("Cumulative deaths",
-        "Cumulative infections",
-        "Vaccines applied",
-        "Vaccination coverage dose #1 (%)",
-        "Vaccination coverage dose #2 (%)",
-        "Life expectancy years lost")
+  var=c("Defunciones acumuladas",
+        "Infecciones acumuladas",
+        "Vacunas aplicadas",
+        "Cobertura con 1 dosis (%)",
+        "Cobertura con 2 dosis (%)",
+        "Años de vida perdidos")
   C1 = c(def_ac[1],
          casos_ac[1],
          vacunas_ac[1],
@@ -716,7 +716,7 @@ actualizaTablas <- function(input,output,session) {
   tabla <<- tabla
   
   tabla_scn <<- DT::datatable(tabla,
-                              caption = 'Results summary',
+                              caption = 'Tabla de resultados',
                               options = list(ordering=F, 
                                              searching=F, 
                                              paging=F, 
@@ -726,34 +726,35 @@ actualizaTablas <- function(input,output,session) {
     formatStyle(fechas[3], `text-align` = 'right') 
   print("tabla resumen")
   output$resumen_tabla <- renderDataTable({
+    tabla_scn
     #browser()
     # res_t()
   })
   
-  if (primeraVez) {
-    updateSelectInput(session, "compart_a_graficar", choices = c(names(proy)[0:16],"pV: Vaccination plan"), selected="i: Daily infectious")
-    updateNumericInput(session, inputId = "t", value = tHoy)
-    for (c in rev(str_trim(str_replace_all(substring(names(proy)[-16],1,3),":","")))) {
-      insertUI("#content", "afterEnd",
-               column(6,fluidRow(column(1,p(c), align="center"),
-                                 column(11,
-                                        DTOutput(c)
-                                        , align="center")
-               )),
-               immediate = TRUE
-      )
-    }
-    primeraVez <<- FALSE
-  }
-  t = input$t
-  # Actualiza tab pane de tablas de comapartimentos
-  
-  lapply(
-    X = names(proy),
-    FUN = function(c){
-      ui_id=str_trim(str_replace_all(substring(c,1,3),":",""))
-      output[[ui_id]] <- renderDT(round(proy[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
-    }
-  )
+  # if (primeraVez) {
+  #   updateSelectInput(session, "compart_a_graficar", choices = c(names(proy)[0:16],"pV: Vaccination plan"), selected="i: Daily infectious")
+  #   updateNumericInput(session, inputId = "t", value = tHoy)
+  #   for (c in rev(str_trim(str_replace_all(substring(names(proy)[-16],1,3),":","")))) {
+  #     insertUI("#content", "afterEnd",
+  #              column(6,fluidRow(column(1,p(c), align="center"),
+  #                                column(11,
+  #                                       DTOutput(c)
+  #                                       , align="center")
+  #              )),
+  #              immediate = TRUE
+  #     )
+  #   }
+  #   primeraVez <<- FALSE
+  # }
+  # t = input$t
+  # # Actualiza tab pane de tablas de comapartimentos
+  # 
+  # lapply(
+  #   X = names(proy),
+  #   FUN = function(c){
+  #     ui_id=str_trim(str_replace_all(substring(c,1,3),":",""))
+  #     output[[ui_id]] <- renderDT(round(proy[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
+  #   }
+  # )
   
 }

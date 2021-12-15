@@ -283,6 +283,9 @@ getUI <- function () {
             
             tabsetPanel(id="TSP",
                         type = "tabs",
+                        tabPanel("Tabla de resultados",
+                                 column(8,DTOutput("resumen_tabla"), offset = 2)
+                                 ),
                         tabPanel("EE",
                                  br(),
                                  fluidRow(
@@ -425,8 +428,7 @@ getUI <- function () {
                                                                          min=-1, #.3,
                                                                          max=1, #.5,
                                                                          value=.6, #.40,
-                                                                         step=.1)),
-                                                      column(4,DTOutput("resumen_tabla"))
+                                                                         step=.1))
                                                       )
                                              ),
                                              tabPanel("Other parameters",
