@@ -141,7 +141,9 @@ runScenario <- function (escenario,
   
   `AVACs perdidos (d)` <- sum(sapply(proyBaseEE[["ylqd: Years lost Qualy Disc"]][tInicio:tFecha],simplify = T,sum))
   `Casos totales` <- sum(sapply(proyBaseEE[["i: Daily infectious"]][tInicio:tFecha],simplify = T,sum))
-  `Hospitalizaciones/día` <- sum(sapply(proyBaseEE[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum)) + sum(sapply(proyBaseEE[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+  
+  `Hospitalizaciones/día` <- sum(sapply(proyBaseEE[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum)) # + sum(sapply(proyBaseEE[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+  
   `Hospitalizaciones/día en UTI` <- sum(sapply(proyBaseEE[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) 
   `Muertes` <- sum(sapply(proyBaseEE[["d: Daily deaths"]][tInicio:tFecha],simplify = T,sum)) 
   `Años de vida perdidos (d)` <- sum(sapply(proyBaseEE[["yld: Years lost Disc"]][tInicio:tFecha],simplify = T,sum))

@@ -99,7 +99,6 @@ seir_ages <- function(dias,
     
     
     
-    
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
     if (t<tHoy){

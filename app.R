@@ -2466,93 +2466,93 @@ server <- function (input, output, session) {
     
   })
   
-  EESummary <- eventReactive(list(input$EEgo,
-                                  input$country),{
-    print("pasa")
-    fecha <- "2021-12-31"
-    tInicio <- which(fechas_master == "2021-01-01")
-    tFecha <- which(fechas_master == "2021-12-31")
-    
-    costoVacuna <- if (input$patronVac) {
-      EEParams$costoCavacunaPatron
-    } else {
-      EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
-    } 
-    
-    costoCasoAsint <- EEParams$costoCasoAsint
-    costoCasoSint <- EEParams$costoCasoSint
-    costoCasoHosp <- EEParams$costoCasoHosp
-    costoCasoUtiVent <- EEParams$costoCasoUtiVent
-    costoCasoUtiNoVent <- EEParams$costoCasoUtiNoVent
-    porcentajeAsint <- EEParams$porcentajeAsint
-    porcentajeUtiVent <- EEParams$porcentajeUtiVent
-    
-    `AVACs perdidos (d)` <- sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][tInicio:tFecha],simplify = T,sum))
-    `Casos totales` <- sum(sapply(proy()[["i: Daily infectious"]][tInicio:tFecha],simplify = T,sum))
-    `Hospitalizaciones/día` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum)) + sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
-    `Hospitalizaciones/día en UTI` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) 
-    `Muertes` <- sum(sapply(proy()[["d: Daily deaths"]][tInicio:tFecha],simplify = T,sum)) 
-    `Años de vida perdidos (d)` <- sum(sapply(proy()[["yld: Years lost Disc"]][tInicio:tFecha],simplify = T,sum))
-    `Años de vida perdidos` <- sum(sapply(proy()[["yl: Years lost"]][tInicio:tFecha],simplify = T,sum))
-    `AVACs perdidos` <- sum(sapply(proy()[["ylq: Years lost Qualy"]][tInicio:tFecha],simplify = T,sum))
-    `Vacunas aplicadas` <- sum(sapply(proy()[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
-    `Costos Vacunación` <- costoVacuna * sum(sapply(proy()[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
-    `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proy()[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
-    `  Costo casos asintomático` <- costoCasoAsint * `  Casos asintomáticos/dia`
-    `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proy()[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
-    `  Costo casos sintomáticos no hospitalizados` <- costoCasoSint * `  Casos sintomáticos no hospitalizados`  
-    `  Casos hospitalizados no UTI/dia` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum))
-    `  Costo casos hospitalizados no UTI` <- costoCasoHosp * `  Casos hospitalizados no UTI/dia`
-    `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
-    `  Costo casos hospitalizados UTI (sin respirador)` <- costoCasoUtiNoVent * `  Casos hospitalizados UTI/dia (sin respirador)`
-    `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * porcentajeUtiVent
-    `  Costo casos hospitalizados no UTI (con respirador)` <- costoCasoUtiVent * `  Casos hospitalizados UTI/dia (con respirador)`
-    `Costo de eventos COVID` <- 
-      `  Costo casos asintomático` +
-      `  Costo casos sintomáticos no hospitalizados (ambulatorio)` +
-      `  Costo casos hospitalizados no UTI` +
-      `  Costo casos hospitalizados UTI (sin respirador)` +
-      `  Costo casos hospitalizados no UTI (con respirador)`
-    `Costos totales` <- `Costo de eventos COVID` + `Costos Vacunación`
-    
-    
-    metrics <- c("Costos totales",
-                 "AVACs perdidos (d)", 
-                 "Casos totales", 
-                 "Hospitalizaciones/día", 
-                 "Hospitalizaciones/día en UTI", 
-                 "Muertes",
-                 "Años de vida perdidos (d)", 
-                 "Años de vida perdidos", 
-                 "AVACs perdidos", 
-                 "Vacunas aplicadas", 
-                 "Costos Vacunación", 
-                 "Costo de eventos COVID",
-                 #"  Casos asintomáticos/dia", 
-                 "  Costo casos asintomático", 
-                 #"  Casos sintomáticos no hospitalizados", 
-                 "  Costo casos sintomáticos no hospitalizados (ambulatorio)", 
-                 #"  Casos hospitalizados no UTI/dia", 
-                 "  Costo casos hospitalizados no UTI", 
-                 #"  Casos hospitalizados UTI/dia (sin respirador)", 
-                 "  Costo casos hospitalizados UTI (sin respirador)", 
-                 #"  Casos hospitalizados UTI/dia (con respirador)", 
-                 "  Costo casos hospitalizados no UTI (con respirador)")
-    
-    values <- c()
-    for (i in 1:length(metrics)) {
-      values <- c(values,eval(parse(text=paste0("round(","`",metrics,"`",", digits=0)")[i])))
-    }                         
-    
-    EETable <- data.frame(`Metrics`= metrics,
-                          Desenlaces = values)
-    
-    EETable
-    
-    # names(proy)
-    
-  })
-  
+  # EESummary <- eventReactive(list(input$EEgo,
+  #                                 input$country),{
+  #   print("pasa")
+  #   fecha <- "2021-12-31"
+  #   tInicio <- which(fechas_master == "2021-01-01")
+  #   tFecha <- which(fechas_master == "2021-12-31")
+  #   
+  #   costoVacuna <- if (input$patronVac) {
+  #     EEParams$costoCavacunaPatron
+  #   } else {
+  #     EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]
+  #   } 
+  #   
+  #   costoCasoAsint <- EEParams$costoCasoAsint
+  #   costoCasoSint <- EEParams$costoCasoSint
+  #   costoCasoHosp <- EEParams$costoCasoHosp
+  #   costoCasoUtiVent <- EEParams$costoCasoUtiVent
+  #   costoCasoUtiNoVent <- EEParams$costoCasoUtiNoVent
+  #   porcentajeAsint <- EEParams$porcentajeAsint
+  #   porcentajeUtiVent <- EEParams$porcentajeUtiVent
+  #   
+  #   `AVACs perdidos (d)` <- sum(sapply(proy()[["ylqd: Years lost Qualy Disc"]][tInicio:tFecha],simplify = T,sum))
+  #   `Casos totales` <- sum(sapply(proy()[["i: Daily infectious"]][tInicio:tFecha],simplify = T,sum))
+  #   `Hospitalizaciones/día` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum)) + sum(sapply(proy()[["Ic: Infectious (severe)"]][1:tFecha],simplify = T,sum))
+  #   `Hospitalizaciones/día en UTI` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) 
+  #   `Muertes` <- sum(sapply(proy()[["d: Daily deaths"]][tInicio:tFecha],simplify = T,sum)) 
+  #   `Años de vida perdidos (d)` <- sum(sapply(proy()[["yld: Years lost Disc"]][tInicio:tFecha],simplify = T,sum))
+  #   `Años de vida perdidos` <- sum(sapply(proy()[["yl: Years lost"]][tInicio:tFecha],simplify = T,sum))
+  #   `AVACs perdidos` <- sum(sapply(proy()[["ylq: Years lost Qualy"]][tInicio:tFecha],simplify = T,sum))
+  #   `Vacunas aplicadas` <- sum(sapply(proy()[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
+  #   `Costos Vacunación` <- costoVacuna * sum(sapply(proy()[["vA: Daily vaccinations"]][tInicio:tFecha],simplify = T,sum))
+  #   `  Casos asintomáticos/dia` <-porcentajeAsint * sum(sapply(proy()[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
+  #   `  Costo casos asintomático` <- costoCasoAsint * `  Casos asintomáticos/dia`
+  #   `  Casos sintomáticos no hospitalizados` <- (1-porcentajeAsint) * sum(sapply(proy()[["Ii: Infectious (mild)"]][tInicio:tFecha],simplify = T,sum))
+  #   `  Costo casos sintomáticos no hospitalizados` <- costoCasoSint * `  Casos sintomáticos no hospitalizados`  
+  #   `  Casos hospitalizados no UTI/dia` <- sum(sapply(proy()[["Ig: Infectious (moderate)"]][tInicio:tFecha],simplify = T,sum))
+  #   `  Costo casos hospitalizados no UTI` <- costoCasoHosp * `  Casos hospitalizados no UTI/dia`
+  #   `  Casos hospitalizados UTI/dia (sin respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * (1-porcentajeUtiVent)
+  #   `  Costo casos hospitalizados UTI (sin respirador)` <- costoCasoUtiNoVent * `  Casos hospitalizados UTI/dia (sin respirador)`
+  #   `  Casos hospitalizados UTI/dia (con respirador)` <- sum(sapply(proy()[["Ic: Infectious (severe)"]][tInicio:tFecha],simplify = T,sum)) * porcentajeUtiVent
+  #   `  Costo casos hospitalizados no UTI (con respirador)` <- costoCasoUtiVent * `  Casos hospitalizados UTI/dia (con respirador)`
+  #   `Costo de eventos COVID` <- 
+  #     `  Costo casos asintomático` +
+  #     `  Costo casos sintomáticos no hospitalizados (ambulatorio)` +
+  #     `  Costo casos hospitalizados no UTI` +
+  #     `  Costo casos hospitalizados UTI (sin respirador)` +
+  #     `  Costo casos hospitalizados no UTI (con respirador)`
+  #   `Costos totales` <- `Costo de eventos COVID` + `Costos Vacunación`
+  #   
+  #   
+  #   metrics <- c("Costos totales",
+  #                "AVACs perdidos (d)", 
+  #                "Casos totales", 
+  #                "Hospitalizaciones/día", 
+  #                "Hospitalizaciones/día en UTI", 
+  #                "Muertes",
+  #                "Años de vida perdidos (d)", 
+  #                "Años de vida perdidos", 
+  #                "AVACs perdidos", 
+  #                "Vacunas aplicadas", 
+  #                "Costos Vacunación", 
+  #                "Costo de eventos COVID",
+  #                #"  Casos asintomáticos/dia", 
+  #                "  Costo casos asintomático", 
+  #                #"  Casos sintomáticos no hospitalizados", 
+  #                "  Costo casos sintomáticos no hospitalizados (ambulatorio)", 
+  #                #"  Casos hospitalizados no UTI/dia", 
+  #                "  Costo casos hospitalizados no UTI", 
+  #                #"  Casos hospitalizados UTI/dia (sin respirador)", 
+  #                "  Costo casos hospitalizados UTI (sin respirador)", 
+  #                #"  Casos hospitalizados UTI/dia (con respirador)", 
+  #                "  Costo casos hospitalizados no UTI (con respirador)")
+  #   
+  #   values <- c()
+  #   for (i in 1:length(metrics)) {
+  #     values <- c(values,eval(parse(text=paste0("round(","`",metrics,"`",", digits=0)")[i])))
+  #   }                         
+  #   
+  #   EETable <- data.frame(`Metrics`= metrics,
+  #                         Desenlaces = values)
+  #   
+  #   EETable
+  #   
+  #   # names(proy)
+  #   
+  # })
+  # 
   observeEvent(input$EEgo,{
     counterEE <<- counterEE+1 
     
@@ -2756,6 +2756,7 @@ server <- function (input, output, session) {
     EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
     EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
     EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country)
+    
     shinyjs::show("downloadEE")
     EEAvailable <-  T
   
