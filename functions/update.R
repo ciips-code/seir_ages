@@ -802,6 +802,77 @@ update <-  function(pais,diasDeProyeccion) {
 
 
   ##### BRASIL #####
+  
+  # 2021-12-14: corrección de fallecidos de Brasil
+  # Tomo fallecidos de OWD y aplico % de muertos por edad de Colombia
+  
+  if (pais=="BRA") {
+    
+    
+    # Descargo casos y muertes totales 
+    dataOWD <- read.csv2("https://covid.ourworldindata.org/data/owid-covid-data.csv", sep = ",")
+    
+    # proporción de fallecidos por grupos de edad para Colombia
+    distAge <- c(0.000850442,
+                 0.000256737,
+                 0.000304876,
+                 0.000433244,
+                 0.004171982,
+                 0.007966881,
+                 0.012540015,
+                 0.021830698,
+                 0.033375855,
+                 0.043797787,
+                 0.062988904,
+                 0.090122833,
+                 0.113269309,
+                 0.123907863,
+                 0.128464951,
+                 0.117930697,
+                 0.106409608,
+                 0.077887693,
+                 0.053489622
+    )
+    
+    ageGroups <<- c("00-04", "05-09", "10-14", "15-17", "18-24", "25-29", "30-34", "35-39",
+                    "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84",
+                    "85-89", "90-99")
+    
+    data <- dataOWD[dataOWD$iso_code=="BRA", c("iso_code","date","new_deaths")]
+    data$new_deaths <- as.numeric(data$new_deaths)
+    #data$new_cases <- as.numeric(data$new_cases)
+    data[is.na(data)] <- 0
+    
+    for (i in 1:length(ageGroups)) {
+      data[[paste0(ageGroups[i],"_deaths")]] <- data$new_deaths * distAge[i]
+      #data[[paste0(ageGroups[i],"_cases")]] <- data$new_cases * distAge[i]
+    }
+    
+    
+    #defunciones Brasil
+    
+    def <- data[, c("date",colnames(data)[grep("deaths",colnames(data))][-1])] 
+    
+    setnames(def, "date", "fecha")
+    setnames(def, grep("_deaths", names(def), value = TRUE), gsub("_deaths", "", grep("_deaths", names(def), value = TRUE)))
+    
+    def <- data.frame(fecha=as.character(seq(as.Date('2020-03-01'),
+                                             as.Date(max(def$fecha)),
+                                             by=1))) %>% left_join(def) 
+    
+    def[is.na(def)] <- 0
+    
+    # casos y vacunas => levanto la data actual
+    load("data/dataBRA.RData")
+    casos <- countryData$BRA$casos
+    Vacunas <- countryData$BRA$vac
+    Vacunas2 <- countryData$BRA$vac2
+    Vacunas0 <- Vacunas
+   
+    
+   
+   
+  } # cierro Brasil
 
   # if (pais=="BRA") {
   #   url <- "https://opendatasus.saude.gov.br/dataset/casos-nacionais"
@@ -1664,6 +1735,7 @@ updateDataOWD <- function (countries) {
 # actualiza OWD
 #updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHs", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
 
+update(pais = "BRA", diasDeProyeccion = 1100)
 
 # actualiza argentina y guarda RData
  #update(pais = "BHS", diasDeProyeccion = 1100)
