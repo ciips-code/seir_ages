@@ -27,7 +27,6 @@ library(kableExtra)
 library(formattable)
 library(openxlsx)
 
-jsResetCode <<- "shinyjs.reset = function() {history.go(0)}"
 options(dplyr.summarise.inform = FALSE)
 
 
@@ -113,7 +112,7 @@ customMatrix <<- F
 
 server <- function (input, output, session) {
   hide("downloadEE")
-  counter <<- 0
+  counter_obs <<- 0
   
   mode_ui <<- "basico"
   primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
@@ -2573,7 +2572,6 @@ server <- function (input, output, session) {
   ##### FUNCION EE #####
   
   observeEvent(input$EEgo, {
-    browser()
     EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country)
     EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
     EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
@@ -2815,14 +2813,22 @@ server <- function (input, output, session) {
     
     
   })
-  
-  observe( {
-    if (counter == 0) {
-      ejecutarProyeccionConParametrosUI(input, output, session)
-    }
-    counter <<- counter + 1
-  })
+  print(paste("counter=",counter_obs))
+  # observe( {
+  #   if (counter_obs == 0) {
+  #     ejecutarProyeccionConParametrosUI(input, output, session)
+  #     
+  #   }
+  #   counter_obs <<- counter_obs + 1
+  # })
     
+  observeEvent(list(input$country,
+                    input$uptakeSlider,
+                    input$effectivenessSlider
+                    ), {
+    ejecutarProyeccionConParametrosUI(input, output, session)
+  })
+  
 }
 
 

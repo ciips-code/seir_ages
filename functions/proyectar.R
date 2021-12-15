@@ -1,43 +1,71 @@
 ejecutarProyeccionConParametrosUI = function(input, output, session) {
+  withProgress(
+    message = 'Cargando...', value = 0, {
+      incProgress(0.1)
+      actualizaMapa(input,output,session)
+      incProgress(0.1)
+      actualizaPanel(input,output,session)
+      incProgress(0.1)
+      incProgress(0.1)
+      actualizaVariables(input,output,session)
+      incProgress(0.1)
+      actualizaCM(input,output,session)
+      incProgress(0.1)
+      actualizaDTTables(input,output,session)
+      incProgress(0.1)
+      actualizaParametros(input,output,session)
+      incProgress(0.1)
+      actualizaProy(input,output,session)
+      incProgress(0.1)
+      actualizaPlot(input,output,session)
+      incProgress(0.1)
+      # actualizaTablas(input,output,session)
+    }) 
+  
+}
+
+
+actualizaMapa <- function(input, output, session) {
   # browser()
   # Set params
+  print("arranca funcion")
   iso_country <<- if (input$country=="Argentina") {"ARG"} else
     if (input$country=="Peru") {"PER"}
-    else if (input$country=="Brazil") {"BRA"} else
-        if (input$country=="Colombia") {"COL"} else
-          if (input$country=="Mexico") {"MEX"} else
-            if (input$country=="Costa Rica") {"CRI"} else
-              if (input$country=="Uruguay") {"URY"} else
-                if (input$country=="Chile") {"CHL"} else
-                  if (input$country=="Paraguay") {"PRY"} else
-                    if (input$country=="Bahamas") {"BHS"} else
-                      if (input$country=="Barbados") {"BRB"} else
-                        if (input$country=="Belice") {"BLZ"} else
-                          if (input$country=="Bolivia") {"BOL"} else
-                            if (input$country=="Ecuador") {"ECU"} else
-                              if (input$country=="Guatemala") {"GMT"} else
-                                if (input$country=="Guyana") {"GUY"} else
-                                  if (input$country=="Honduras") {"HND"} else
-                                    if (input$country=="Haiti") {"HTI"} else
-                                      if (input$country=="Jamaica") {"JAM"} else
-                                        if (input$country=="El Salvador") {"SLV"} else
-                                          if (input$country=="Nicaragua") {"NIC"} else
-                                            if (input$country=="Panama") {"PAN"} else
-                                              if (input$country=="Venezuela") {"VEN"} else
-                                                if (input$country=="Suriname") {"SUR"} else
-                                                  if (input$country=="Trinidad y Tobago") {"TTO"} else
-                                                    if (input$country=="Republica Dominicana") {"DOM"} 
+  else if (input$country=="Brazil") {"BRA"} else
+    if (input$country=="Colombia") {"COL"} else
+      if (input$country=="Mexico") {"MEX"} else
+        if (input$country=="Costa Rica") {"CRI"} else
+          if (input$country=="Uruguay") {"URY"} else
+            if (input$country=="Chile") {"CHL"} else
+              if (input$country=="Paraguay") {"PRY"} else
+                if (input$country=="Bahamas") {"BHS"} else
+                  if (input$country=="Barbados") {"BRB"} else
+                    if (input$country=="Belice") {"BLZ"} else
+                      if (input$country=="Bolivia") {"BOL"} else
+                        if (input$country=="Ecuador") {"ECU"} else
+                          if (input$country=="Guatemala") {"GMT"} else
+                            if (input$country=="Guyana") {"GUY"} else
+                              if (input$country=="Honduras") {"HND"} else
+                                if (input$country=="Haiti") {"HTI"} else
+                                  if (input$country=="Jamaica") {"JAM"} else
+                                    if (input$country=="El Salvador") {"SLV"} else
+                                      if (input$country=="Nicaragua") {"NIC"} else
+                                        if (input$country=="Panama") {"PAN"} else
+                                          if (input$country=="Venezuela") {"VEN"} else
+                                            if (input$country=="Suriname") {"SUR"} else
+                                              if (input$country=="Trinidad y Tobago") {"TTO"} else
+                                                if (input$country=="Republica Dominicana") {"DOM"} 
   
   
   # print(iso_country)
-  
+  print("mapa")
   mapa_ui_basico <- leaflet(subset(map, ADM0_A3 == iso_country),
-          options = leafletOptions(attributionControl=FALSE,
-                                   zoomControl = FALSE)) %>% 
-    addPolygons(color = "#444444", 
-                weight = 1, 
+                            options = leafletOptions(attributionControl=FALSE,
+                                                     zoomControl = FALSE)) %>%
+    addPolygons(color = "#444444",
+                weight = 1,
                 smoothFactor = 0.5,
-                opacity = 1.0, 
+                opacity = 1.0,
                 fillOpacity = 0.1) %>%
     addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
     addPolygons(stroke = T, color="#18BC9C", weight=0.4) %>%
@@ -49,6 +77,10 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     mapa_ui_basico
   })
   
+}
+  
+actualizaPanel <- function (input,output,session) {
+  print("well panel")
   output$population <- renderText({
     input$country
     OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="population"]})         
@@ -76,7 +108,9 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
   output$dailyTests <- renderText({
     input$country
     OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="dailyTests"]})   
-  
+}
+
+actualizaVariables <- function (input,output,session) {
   capacidadUTI <<- if (input$country=="Argentina") {11676} else
     if (input$country=="Brazil") {37950} else
       if (input$country=="Peru") {2804} else
@@ -104,8 +138,10 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
                                                 if (input$country=="Suriname") {100} else
                                                   if (input$country=="Trinidad y Tobago") {100} else
                                                     if (input$country=="Republica Dominicana") {100} 
-  
-  
+}
+
+actualizaCM <- function (input,output,session) {
+  print("empirical cm")
   # empirical cm
   if(use_empirical_mc){
     contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
@@ -129,7 +165,7 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     load(paste0("data/data", iso_country, ".RData"), envir = .GlobalEnv)
     dataPorEdad <<- formatData(iso_country, ageGroupsV)
     
-    writexl::write_xlsx(data.frame(dataPorEdad$FMTD$def),"argentina.xls")
+    #writexl::write_xlsx(data.frame(dataPorEdad$FMTD$def),"argentina.xls")
     
     diaCeroVac <<- min(dataPorEdad$FMTD$vac$fecha)
     tVacunasCero <<-  as.numeric(as.Date(diaCeroVac)-min(dataPorEdad$FMTD$def$fecha))
@@ -168,7 +204,10 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     fechas_master <<- seq(min(dataPorEdad$FMTD$def$fecha),
                           min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
   }
-  
+}
+
+actualizaDTTables <- function (input,output,session) {
+  print("Update data from DT tables")
   # Update data from DT tables
   if (mbeta_primeraVez==T) {
     mbeta_edit <<- modif_beta
@@ -252,7 +291,9 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     porc_gr_edit <<- porc_gr_edit
     porcentajeCasosGraves <<- matrix(rep(porc_gr_edit,length(immunityStates)),length(immunityStates),length(ageGroups),byrow=T,dimnames = )
   }
-  
+}
+
+actualizaParametros <- function(input,output,session) {
   duracion_inmunidad = input$duracionInm
   
   
@@ -269,8 +310,9 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     shinyjs::hide("vacEfficacy")
     # shinyjs::hide("immunityDuration")
   }
-  diasVacunacion = as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
+  diasVacunacion <<- as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
   
+  print("parametros de sliders")
   # Set parameters from sliders
   if ("uptakeSlider" %in% names(reactiveValuesToList(input))) {
     # customMatrix <<- T
@@ -295,12 +337,12 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     }  
   }
   
-  selectedPriority <- getPrioritiesV2(input$vacStrat)
-  selectedUptake <- getUptake(input$vacUptake)
+  selectedPriority <<- getPrioritiesV2(input$vacStrat)
+  selectedUptake <<- getUptake(input$vacUptake)
   
   
-  cantidadVacunasTotal = selectedUptake * sum(N)
-  ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
+  cantidadVacunasTotal <<- selectedUptake * sum(N)
+  ritmoVacunacion <<- cantidadVacunasTotal / diasVacunacion
   
   planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
                                                   planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
@@ -310,19 +352,19 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
   
   planVacunacionFinalParam <<- planVacunacionFinalParam 
   
-  ajuste = (((input$ajusta_beta*-1) + 1)/10)+0.3
+  ajuste <<- (((input$ajusta_beta*-1) + 1)/10)+0.3
   trans_prob_param <<- transprob_edit * ajuste
   
-  relaxNpi = FALSE
-  relaxGoal = NULL
+  relaxNpi <<- FALSE
+  relaxGoal <<- NULL
   if (input$npiStrat == "cont") {
     shinyjs::hide("relaxationDateGoal")
     shinyjs::hide("relaxationFactor")
   } else {
     shinyjs::show("relaxationDateGoal")
     shinyjs::show("relaxationFactor")
-    relaxNpi = TRUE
-    relaxGoal = which(fechas_master == input$relaxationDateGoal)
+    relaxNpi <<- TRUE
+    relaxGoal <<- which(fechas_master == input$relaxationDateGoal)
   }
   
   # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
@@ -342,7 +384,7 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
                                                    contact_matrix_school = contact_matrix_school,
                                                    contact_matrix_other = contact_matrix_other),
                                                  ages= as.numeric(ageGroupsV))
-  efficacy = applyVaccineEfficacy(input$vacEfficacy)
+  efficacy <<- applyVaccineEfficacy(input$vacEfficacy)
   
   # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
   # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
@@ -350,24 +392,30 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
   # print(porcentajeCasosGraves)
   # print(porcentajeCasosCriticos)
   #browser()
-  tVacunasCero = 303
-  ifrProy = ifr_edit[1,]
+  tVacunasCero <<- 303
+  ifrProy <<- ifr_edit[1,]
   if (input$country == "Argentina") {
-    ifrProy = ifrProy * 2.4
+    ifrProy <<- ifrProy * 2.4
   } else if (input$country == "Peru") {
-    ifrProy = ifrProy * 3.55
+    ifrProy <<- ifrProy * 3.55
   } else if (input$country == "Colombia") {
-    ifrProy = ifrProy * 1.8
+    ifrProy <<- ifrProy * 1.8
   } else if (input$country == "Chile") {
-    ifrProy = ifrProy * 1
+    ifrProy <<- ifrProy * 1
   } else if (input$country == "Mexico") {
-    ifrProy = ifrProy * 1.8
+    ifrProy <<- ifrProy * 1.8
   } else if (input$country == "Brazil") {
-    ifrProy = ifrProy * 1
+    ifrProy <<- ifrProy * 1
   }
   
+  
+}
+  
+actualizaProy <- function (input,output,session) {
+  
+  print("crea proy")
   ifr_base <<- ifrProy
-  proy <- seir_ages(dias=diasDeProyeccion,
+  proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
                     porc_gr = porcentajeCasosGraves,
@@ -401,7 +449,14 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
                     country=input$country
   )
   
-  data_graf <- bind_rows(
+  
+}
+
+
+actualizaPlot <- function(input,output,session) {
+  
+  print("data graf")
+  data_graf <<- bind_rows(
     tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
     tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),
     tibble(Compart = "vA", do.call(rbind, lapply(proy$`vA: Daily vaccinations`,colSums)) %>% as_tibble()),
@@ -422,14 +477,14 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     dplyr::mutate(fecha = rep(1:length(proy$S),17)) %>%
     # TODO: Arreglar
     dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
-  data_graf$total=data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
+  data_graf$total<<-data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
   
   #casos reales
   
   Compart=rep("casos_registrados",nrow(dataPorEdad$FMTD$casos))
   fecha=seq(1,nrow(dataPorEdad$FMTD$casos),by=1)
   casos=dataPorEdad$FMTD$casos[-1]
-  total=rowSums(casos)
+  total<<-rowSums(casos)
   casos=cbind(Compart,casos,fecha,total) 
   colnames(casos)=colnames(data_graf)
   casos <- data.frame(fecha=unique(data_graf$fecha)) %>% left_join(casos, by = "fecha")
@@ -437,7 +492,7 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
   #casos[is.na(casos)] <- 0
   casos$Compart <- "casos_registrados"
   
-  data_graf=union_all(data_graf,casos)
+  data_graf<<-union_all(data_graf,casos)
   
   #muertes reales
   
@@ -451,8 +506,9 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
   #muertes[is.na(muertes)] <- 0
   muertes$Compart <- "muertes_registradas"
   
-  data_graf=union_all(data_graf,muertes)
+  data_graf<<-union_all(data_graf,muertes)
   
+  print("output grafico")
   output$graficoUnico <- renderPlotly({
     # res_t()
     
@@ -468,11 +524,11 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
       
       
       
-      dataTemp = data_graf %>% dplyr::filter(Compart == col_id)
-      dataTemp$fechaDia = fechas_master 
-      dataRep_cases = data_graf %>% dplyr::filter(Compart == "casos_registrados")
-      dataRep_cases$fechaDia = fechas_master
-      dataRep_deaths = data_graf %>% dplyr::filter(Compart == "muertes_registradas")
+      dataTemp <<- data_graf %>% dplyr::filter(Compart == col_id)
+      dataTemp$fechaDia <<- fechas_master 
+      dataRep_cases <<- data_graf %>% dplyr::filter(Compart == "casos_registrados")
+      dataRep_cases$fechaDia <<- fechas_master
+      dataRep_deaths <<- data_graf %>% dplyr::filter(Compart == "muertes_registradas")
       dataRep_deaths$fechaDia = fechas_master
       
       #colnames(dataTemp)[8] <- "70-79"
@@ -545,10 +601,13 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     }
   })
   
-  data_text <- cbind(data_graf,rep(fechas_master,length(unique(data_graf$Compart))))
+}
+
+
+actualizaTablas <- function(input,output,session) {
+  data_text <<- cbind(data_graf,rep(fechas_master,length(unique(data_graf$Compart))))
   colnames(data_text)[ncol(data_text)] <- "fechaDia"
-  
-  data_text <- data_text %>% dplyr::group_by(Compart) %>%
+  data_text <<- data_text %>% dplyr::group_by(Compart) %>%
     dplyr::mutate(ac=cumsum(total))
   
   fechas <- c("2021-06-30",
@@ -665,7 +724,7 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     formatStyle(fechas[1], `text-align` = 'right') %>%
     formatStyle(fechas[2], `text-align` = 'right') %>%
     formatStyle(fechas[3], `text-align` = 'right') 
-  
+  print("tabla resumen")
   output$resumen_tabla <- renderDataTable({
     #browser()
     # res_t()
@@ -696,4 +755,5 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
       output[[ui_id]] <- renderDT(round(proy[[c]][[t]],0), editable = F,rownames = T, options = list(paging = FALSE, info = FALSE, searching = FALSE, fixedColumns = TRUE,autoWidth = TRUE,ordering = FALSE,dom = 'Bfrtip'))
     }
   )
+  
 }
