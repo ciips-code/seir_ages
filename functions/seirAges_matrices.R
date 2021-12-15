@@ -74,7 +74,8 @@ seir_ages <- function(dias,
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
     poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
-    if (customMatrix & t>tHoy+3 & mode_ui!="basico") {
+    # browser()
+    if (customMatrix & t>tHoy+3) {
       # browser()
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
