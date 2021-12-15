@@ -4,7 +4,6 @@ getUI <- function () {
             theme = shinytheme("flatly"),
             tags$head(HTML('<link rel="icon", href="ISO-IECS.png", type="image/png" />')),
             useWaiter(),
-            extendShinyjs(text = jsResetCode, functions = "reset"),
             titlePanel(windowTitle = "IECS: Proyecciones COVID-19", title = ""),
             fluidRow(
               br(),

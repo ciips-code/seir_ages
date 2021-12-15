@@ -24,7 +24,7 @@ for (i in 1:length(ageGroups)) {
 }
 
 
-writexl::write_xlsx(dataOWD, "C:/Users/Adrian/Desktop/prueba.xlsx")
+#writexl::write_xlsx(dataOWD, "C:/Users/Adrian/Desktop/prueba.xlsx")
 
 
 
