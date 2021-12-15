@@ -202,7 +202,7 @@ getUI <- function () {
                 div(
                   actionButton(
                     "npi1",
-                    HTML("<b>Physical distancing</b>"),
+                    HTML("<b>Distanciamiento social, uso de mascarillas faciales</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[1],
@@ -212,7 +212,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi2",
-                    HTML("<b>Physical distancing + Shielding of older people</b>"),
+                    HTML("<b>Agrega aislamiento de ancianos</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[2],
@@ -222,7 +222,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi3",
-                    HTML("<b>Physical distancing + Shielding of older people +<br>Self isolation</b>"),
+                    HTML("<b>Agrega aislamiento personal</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[3],
@@ -232,7 +232,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi4",
-                    HTML("<b>Physical distancing + Shielding of older people +<br>Self isolation + School closures</b>"),
+                    HTML("<b>Agrega cierre de escuelas</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[4],
@@ -242,7 +242,7 @@ getUI <- function () {
                   br(),
                   actionButton(
                     "npi5",
-                    HTML("<b>Physical distancing + Shielding of older people +<br>Lockdown + School closures</b>"),
+                    HTML("<b>Implementa confinamiento total</b>"),
                     style = paste0(
                       "color: #222426; background-color: ",
                       colores[5],
