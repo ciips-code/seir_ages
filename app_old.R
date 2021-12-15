@@ -99,9 +99,9 @@ source("functions/vacunas.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
 source("functions/NPIInterface.R", encoding = "UTF-8")
 source("functions/ui.R", encoding = "UTF-8")
-#source("functions/EESummaryFunction.R", encoding = "UTF-8")
-source("functions/ui_bid.R", encoding = "UTF-8")
 source("functions/EESummaryFunction.R", encoding = "UTF-8")
+# source("functions/ui_bid.R", encoding = "UTF-8")
+
 setParameters()
 
 customMatrix <<- F
@@ -112,14 +112,18 @@ customMatrix <<- F
 server <- function (input, output, session) {
   hide("downloadEE")
   
-  mode_ui <<- "basico"
+
+  
+  patronVac <- T
+  patronEfectividad <- T
+
+  mode <- "Nobasico"
   primeraVez <<- porc_gr_primeraVez <<- porc_cr_primeraVez <<- paramVac_primeraVez <<- ifr_primeraVez <<- transprob_primeraVez <<- mbeta_primeraVez <<- mgraves_primeraVez <<- mcriticos_primeraVez <<- mifr_primeraVez <<- TRUE
   sensScenarios <<- data.frame()
   counterEE <<-0
   disable("go")
   
-  observeEvent(list(input$run_proy,
-                    input$run_basico), {
+  observeEvent(input$run_proy, {
     
     if ("uptakeSlider" %in% names(reactiveValuesToList(input))) {
       customMatrix <<- T
@@ -233,8 +237,7 @@ server <- function (input, output, session) {
   })
   
   # country customize
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
    iso_country <<- if (input$country=="Argentina") {"ARG"} else
       if (input$country=="Peru") {"PER"} else
       if (input$country=="Brazil") {"BRA"} else
@@ -363,8 +366,7 @@ server <- function (input, output, session) {
   })
   
   delete<<-F
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$mbeta_cell_edit
     if (mbeta_primeraVez==T) {
       mbeta_edit <<- modif_beta
@@ -379,8 +381,7 @@ server <- function (input, output, session) {
     DT::datatable(mbeta_edit, editable = T, caption = 'Beta modifier', options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$mgraves_cell_edit
     if (mgraves_primeraVez==T) {
       mgraves_edit <<- modif_porc_gr
@@ -395,8 +396,7 @@ server <- function (input, output, session) {
     DT::datatable(mgraves_edit, editable = T, caption = 'Severe disease modifier', options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$mcriticos_cell_edit
     if (mcriticos_primeraVez==T) {
       mcriticos_edit <<- modif_porc_cr
@@ -411,8 +411,7 @@ server <- function (input, output, session) {
     DT::datatable(mcriticos_edit, editable = T, caption = 'Critical disease modifier', options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$mifr_cell_edit
     if (mifr_primeraVez==T) {
       mifr_edit <<- modif_ifr
@@ -427,8 +426,7 @@ server <- function (input, output, session) {
     DT::datatable(mifr_edit, editable = T, caption = 'IFR modifier', options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$ifrt_cell_edit
     if (ifr_primeraVez==T) {
       ifr_edit <- matrix(ifr, 1, length(ageGroups))
@@ -451,8 +449,7 @@ server <- function (input, output, session) {
                                  info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$transprob_cell_edit
     if (transprob_primeraVez==T) {
       transprob_edit <- transmission_probability
@@ -474,8 +471,7 @@ server <- function (input, output, session) {
                                  info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$paramVac_cell_edit
     if (paramVac_primeraVez==T) {
       paramVac_edit <- paramVac
@@ -489,8 +485,7 @@ server <- function (input, output, session) {
   })
   
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$porc_cr_cell_edit
     
     if (porc_cr_primeraVez==T) {
@@ -515,8 +510,7 @@ server <- function (input, output, session) {
                                  info=F))
   })
   
-  observeEvent(list(input$country,
-                    input$go), {
+  observeEvent(input$run_proy, {
     input$porc_gr_cell_edit
     
     if (porc_gr_primeraVez==T) {
@@ -550,10 +544,19 @@ server <- function (input, output, session) {
                                  info=F))
   })
   ##### PROY #####
-  proy <- eventReactive(list(input$country,
-                             input$go),{
+  proy <- eventReactive(input$run_proy,{
     # paste activa reactive (no comentar)
-
+    paste(input$go)
+    paste(input$paramVac_cell_edit)
+    paste(input$ifrt_cell_edit)
+    paste(input$transprob_cell_edit)
+    paste(input$mbeta_cell_edit)
+    paste(input$mgraves_cell_edit)
+    paste(input$mcriticos_cell_edit)
+    paste(input$mifr_cell_edit)
+    paste(input$porc_cr_cell_edit)
+    paste(input$porc_gr_cell_edit)
+    paste(input$country)
     duracion_inmunidad = input$duracionInm
     
     
@@ -641,7 +644,6 @@ server <- function (input, output, session) {
     }
     
     ifr_base <<- ifrProy
-    print("pasa 653")
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -684,8 +686,7 @@ server <- function (input, output, session) {
   
   ##### CIERRE PROY BASE #####
   
-  observeEvent(list(input$country,
-                    input$go),{
+  observeEvent(input$run_proy,{
     if (primeraVez) {
       updateSelectInput(session, "compart_a_graficar", choices = c(names(proy())[0:16],"pV: Vaccination plan"), selected="i: Daily infectious")
       updateNumericInput(session, inputId = "t", value = tHoy)
@@ -723,8 +724,7 @@ server <- function (input, output, session) {
     updateNumericInput(session,"t", value =  input$t + 1)
   })
   
-  data_graf <- eventReactive(list(input$country,
-                                  input$go),{
+  data_graf <- eventReactive(input$run_proy,{
     w$show()
     proy <- proy()
     data_graf <- bind_rows(
@@ -785,9 +785,9 @@ server <- function (input, output, session) {
   output$graficoUnico <- renderPlotly({
     res_t()
     
-    if (length(proy()) > 0 & (input$compart_a_graficar != "" | mode_ui=="basico")) {
+    if (length(proy()) > 0 & (input$compart_a_graficar != "" | mode=="basico")) {
       
-      if (mode_ui=="basico") {
+      if (mode=="basico") {
         col_id=str_trim(str_replace_all(substring(input$compart_checkbox,1,3),":",""))
         compart_label <- input$compart_checkbox
       } else {
@@ -875,8 +875,7 @@ server <- function (input, output, session) {
   })
   
   
-  res_t <- eventReactive(list(input$country,
-                              input$go),{
+  res_t <- eventReactive(input$run_proy,{
     
     
     input$TSP
@@ -1357,8 +1356,9 @@ server <- function (input, output, session) {
   } else {NULL}
   })
   
-  mapa_ui_basico <- eventReactive(list(input$country,
-                                       input$go),{
+  output$map <- renderLeaflet({
+    wm$show()
+    paste(input$country)
     leaflet(subset(map, ADM0_A3 == iso_country),
                    options = leafletOptions(attributionControl=FALSE,
                                          zoomControl = FALSE)) %>% 
@@ -1373,11 +1373,7 @@ server <- function (input, output, session) {
               lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
               zoom = 3)
     
-      
-  })
-  
-  output$map <- renderLeaflet({
-    mapa_ui_basico()
+    
   })
   
   output$population <- renderText({
@@ -1540,7 +1536,7 @@ server <- function (input, output, session) {
     if (input$check_wainingSens) {duracion_inmunidad = modificador_wainingSens} else {duracion_inmunidad = duracion_inmunidad}
     
     
-    print("pasa 1549")
+    
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -1728,7 +1724,7 @@ server <- function (input, output, session) {
     if (input$check_wainingSens) {duracion_inmunidad = modificador_wainingSens} else {duracion_inmunidad = duracion_inmunidad}
     
     
-    print("pasa 1737")
+    
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -2413,7 +2409,6 @@ server <- function (input, output, session) {
     }
     
     ifr_base <<- ifrProy
-    print("pasa 2422")
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -2563,21 +2558,6 @@ server <- function (input, output, session) {
     
   })
   
-  ##### FUNCION EE #####
-  
-  observeEvent(input$EEgo, {
-    browser()
-    EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country)
-    EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
-    EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
-    EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country)
-    
-    shinyjs::show("downloadEE")
-    EEAvailable <-  T
-    
-    
-  })
-  
   output$EESummaryTable <- function () {
     paste(input$EEgo)
     if (counterEE!=0 & iso_country %in% c("ARG","BRA","CHL","COL","PER","MEX","CRI")) {
@@ -2702,8 +2682,6 @@ server <- function (input, output, session) {
     }
   }
     
-  
-
     
     output$EESummaryTable3 <- function () {
       paste(input$EEgo)
@@ -2770,7 +2748,20 @@ server <- function (input, output, session) {
     
   }
   
+  
+  ##### FUNCION EE #####
+  
+  observeEvent(input$EEgo, {
+    EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country)
+    EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
+    EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
+    EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country)
+    
+    shinyjs::show("downloadEE")
+    EEAvailable <-  T
+  
 
+  })
 
     
   output$downloadEE <- downloadHandler(

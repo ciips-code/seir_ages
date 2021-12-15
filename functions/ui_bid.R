@@ -147,6 +147,10 @@ getUI <- function () {
             fluidRow(column(12,plotlyOutput("graficoUnico")
                      )
             ),
+            br(),
+            fluidRow(column(10)),
+            fluidRow(column(2,actionButton("run_basico","Actualizar"))
+                     ),
             
             fluidRow(column(
               width = 12,
@@ -276,16 +280,27 @@ getUI <- function () {
            
             br(),
             br(),
-            br(),
-            br(),
-            br(),
-            hr(),
-            br(),
-            br(),
-            br(),
             
             tabsetPanel(id="TSP",
                         type = "tabs",
+                        tabPanel("EE",
+                                 br(),
+                                 fluidRow(
+                                   #column(3),
+                                   #column(6,dataTableOutput("eeTable")),
+                                   column(3, actionLink("EEgo", "Ver tabla de resultados principales"),
+                                          align="left")
+                                 ),
+                                 fluidRow(column(10, tableOutput("EESummaryTable"), align="center")),
+                                 br(),
+                                 fluidRow(column(10, tableOutput("EESummaryTable2"), align="center")),
+                                 br(),
+                                 fluidRow(column(10, tableOutput("EESummaryTable3"), align="center")),
+                                 fluidRow(column(7),
+                                          column(3, downloadButton("downloadEE", "Descargar"), align="right")
+                                 )
+                                 
+                        ),
                         tabPanel("Graphs",
                                  br(),
                                  fluidRow(column(3,selectInput("compart_a_graficar","Compartment",choices = NULL)),

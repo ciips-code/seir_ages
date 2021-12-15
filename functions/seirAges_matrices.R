@@ -46,7 +46,6 @@ seir_ages <- function(dias,
                                                                                                                       dimnames = matrixNames)
   
   S[[1]][1,] = N
-  
   N = S[[1]]
   
   I[[1]] = matrix(0,length(immunityStates),length(ageGroups), byrow = T,
@@ -75,7 +74,7 @@ seir_ages <- function(dias,
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
     poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
-    if (customMatrix & t>tHoy+3) {
+    if (customMatrix & t>tHoy+3 & mode_ui!="basico") {
       # browser()
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
@@ -302,7 +301,6 @@ seir_ages <- function(dias,
         S[[t]][4,iAge] = S[[t]][4,iAge] + segundasDosisHoyS3[iAge]
       }
     }
-    
     # S[[t]][1,] = colSums(E[[t]]) - colSums(I[[t]]) - colSums(R[[t]]) - colSums(V[[t]])
     # los recuperados de hoy son los recuperados de ayer menos los que se expusieron hoy
     # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
@@ -323,7 +321,6 @@ seir_ages <- function(dias,
 
     # Diferencias: print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
-
   salida <- list("S: Susceptible"=S,
                  "V: Vaccinated"=V,
                  "vA: Daily vaccinations"=vA,

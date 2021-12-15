@@ -1683,7 +1683,6 @@ formatData <- function(pais, ageGroups) {
   return(countryData)
 }
 
-
 updateDataOWD <- function (countries) {
   dataOWD <- read.csv2("https://covid.ourworldindata.org/data/owid-covid-data.csv", sep = ",")
   dataOWD <- dataOWD %>% dplyr::filter(iso_code %in% countries)
@@ -1693,6 +1692,7 @@ updateDataOWD <- function (countries) {
   
   for (p in countries) {
     filteredData <- dataOWD[dataOWD$iso_code == p,]
+    filteredData[filteredData==""] <- "NA"
     population <- as.numeric(unique(filteredData$population))
     dailyCases <- round(mean(as.numeric(filteredData$new_cases[filteredData$date<=update &
                                                             filteredData$date>=updateWeek])), digits=0)
@@ -1704,7 +1704,6 @@ updateDataOWD <- function (countries) {
     lifeExp <- round(as.numeric(unique(filteredData$life_expectancy)), digits= 1)
     totalTestPerMillon <- as.numeric(last(filteredData$total_tests_per_thousand[filteredData$total_tests_per_thousand!=""]))*1000
     dailyTests <- mean(tail(as.numeric(filteredData$new_tests[filteredData$new_tests!=""]), 7))
-    
     filteredData <- data.frame(iso_code=p,
                                metric=c("population",
                                         "dailyCases",
@@ -1726,16 +1725,16 @@ updateDataOWD <- function (countries) {
                                        dailyTests)
                     )
     OWDSummaryData <- rbind.fill(OWDSummaryData,filteredData)
-    
+    print(p)
   }
   save(OWDSummaryData, file="data/OWDSummaryData.RData")
 }
 
 
 # actualiza OWD
-#updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHs", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
+#updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHS", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
 
-update(pais = "BRA", diasDeProyeccion = 1100)
+#update(pais = "BRA", diasDeProyeccion = 1100)
 
 # actualiza argentina y guarda RData
  #update(pais = "BHS", diasDeProyeccion = 1100)
