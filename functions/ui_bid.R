@@ -46,7 +46,7 @@ getUI <- function () {
                      column(width = 4),
                      column(width = 4,
                             pickerInput("country", 
-                                        "Country", 
+                                        "País", 
                                         multiple = F,
                                         choices = countries,
                                         choicesOpt = list(content =  
@@ -134,12 +134,12 @@ getUI <- function () {
                               status = "success"), 
                             align="left"),
                      column(1),
-                     column(3,prettyCheckbox(inputId = "check_cases",label = "Show reported cases",value = FALSE),
-                              prettyCheckbox(inputId = "check_deaths",label = "Show reported deaths",value = FALSE),
-                              prettyCheckbox(inputId = "check_rt",label = "Effective reproduction number (Rt)",value = FALSE)),
+                     column(3,prettyCheckbox(inputId = "check_cases",label = "Mostrar casos reportados",value = FALSE),
+                              prettyCheckbox(inputId = "check_deaths",label = "Mostrar defunciones reportadas",value = FALSE),
+                              prettyCheckbox(inputId = "check_rt",label = "Mostrar número de reproducción (Rt)",value = FALSE)),
                      column(1),
-                     column(4,selectInput("edad","Age groups",
-                                          choices=c("All ages"="total",ageGroups),
+                     column(4,selectInput("edad","Grupos de edad",
+                                          choices=c("Todos"="total",ageGroups),
                                           multiple = T,
                                           selected= c("total")), align="left"
                      )
@@ -168,7 +168,7 @@ getUI <- function () {
                   # ),
                   sliderTextInput(
                     inputId = "uptakeSlider",
-                    label = "Vaccine uptake:",
+                    label = "Cobertura de vacunas:",
                     width = "100%",
                     choices = c("0%",
                                 "20%",
@@ -177,26 +177,26 @@ getUI <- function () {
                                 "95%"),
                     selected = "50%"
                   ),
-                  tags$small("% of population with complete schemas in the end of 2021")
+                  tags$small("% de la población a vacunar hasta el fin de 2021")
                 ),
                 column(
                   width = 6,
                   sliderTextInput(
                     inputId = "effectivenessSlider",
-                    label = "Vaccine effectiveness:",
+                    label = "Efectividad de la vacuna:",
                     width = "100%",
-                    choices = c("Low",
-                                "Middle",
-                                "High"),
+                    choices = c("Baja"="Low",
+                                "Media"="Middle",
+                                "Alta"="High"),
                     selected = "Middle"
                   ),
                   tags$small(
-                    "* High efficary(death, severe, moderate): 100%, 80%, 80%; Middle: 100%, 80%, 50%; Low: 80%, 50%, 50%"
+                    "* Eficacia (muerte, caso critico, hospitalización) Alta: 100%, 80%, 80%; Media: 100%, 80%, 50%; Baja: 80%, 50%, 50%"
                   )
                 )
               ),
               br(),
-              p("Cofigure NPIs (Non Pharmaceutical Interventions) during 2021 and 2022:"),
+              p("Configurar medidadas de restricción durante 2021 y 2022:"),
               fluidRow(column(
                 4, style = "padding-right: 15px;",
                 div(
@@ -265,18 +265,19 @@ getUI <- function () {
                 8,
                 fluidRow(
                   tags$small(
-                    "Click on the NPIs levels to add the interventions for the first month (January 2021), keep adding for each following month or leave empty with no changes"
+                    "Clickee en la mediddas para incorporarlas a la proyección a partir del primer mes (Enero 2021), 
+                    siga agregando medidas para cada mes, o deje definina la ultima que se prolongrá hasta el final de la proyección"
                   ),
                 ),
                 fluidRow(id = "npis-output",
-                         div(id = "tail", tags$span("Add NPIs levels..."), style = 'float:left;')
+                         div(id = "tail", tags$span("Selecionar medidas..."), style = 'float:left;')
                  ),
               ))
               
             )
            ),
-           actionButton(inputId = "go", label = "Go!"),
-           actionButton(inputId = "reset", label = "Reset NPIs"),
+           actionButton(inputId = "go", label = "Actualizar"),
+           actionButton(inputId = "reset", label = "Borrar medidas"),
            
             br(),
             br(),
