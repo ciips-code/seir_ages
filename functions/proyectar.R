@@ -450,6 +450,10 @@ actualizaProy <- function (input,output,session) {
   
   print("crea proy")
   ifr_base <<- ifrProy
+  shinyjs::hide("downloadEE")
+  shinyjs::hide("EESummaryTable")
+  shinyjs::hide("EESummaryTable2")
+  shinyjs::hide("EESummaryTable3")
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,

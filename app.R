@@ -2592,6 +2592,9 @@ server <- function (input, output, session) {
     })
     
     shinyjs::show("downloadEE")
+    shinyjs::show("EESummaryTable")
+    shinyjs::show("EESummaryTable2")
+    shinyjs::show("EESummaryTable3")
     EEAvailable <<-  T
     
     output$EESummaryTable <- function () {
@@ -2843,6 +2846,14 @@ server <- function (input, output, session) {
     ejecutarProyeccionConParametrosUI(input, output, session)
   })
   
+  # observeEvent(input$country, {
+  #   browser()
+  #   if (exists("EEAvailable")) {
+  #     hide("EESummaryTable")
+  #     hide("EESummaryTable2")
+  #     hide("EESummaryTable3")
+  #   }
+  # })
 }
 
 
