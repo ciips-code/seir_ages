@@ -43,7 +43,7 @@ actualizaMapa <- function(input, output, session) {
                     if (input$country=="Belice") {"BLZ"} else
                       if (input$country=="Bolivia") {"BOL"} else
                         if (input$country=="Ecuador") {"ECU"} else
-                          if (input$country=="Guatemala") {"GMT"} else
+                          if (input$country=="Guatemala") {"GTM"} else
                             if (input$country=="Guyana") {"GUY"} else
                               if (input$country=="Honduras") {"HND"} else
                                 if (input$country=="Haiti") {"HTI"} else
@@ -53,7 +53,7 @@ actualizaMapa <- function(input, output, session) {
                                         if (input$country=="Panama") {"PAN"} else
                                           if (input$country=="Venezuela") {"VEN"} else
                                             if (input$country=="Suriname") {"SUR"} else
-                                              if (input$country=="Trinidad y Tobago") {"TTO"} else
+                                              if (input$country=="Trinidad & Tobago") {"TTO"} else
                                                 if (input$country=="Republica Dominicana") {"DOM"} 
   
   
@@ -142,13 +142,29 @@ actualizaVariables <- function (input,output,session) {
 
 actualizaCM <- function (input,output,session) {
   print("empirical cm")
+  
+  if (input$country=="Belice") {
+    cm_country <- "Belize"
+  } else if (input$country=="Bolivia") {
+    cm_country <- "Argentina"
+  } else if (input$country=="Republica Dominicana") {
+    cm_country <- "Dominican Republic"
+  } else if (input$country=="Trinidad & Tobago") {
+    cm_country <- "Argentina"
+  } else if (input$country=="Venezuela") {
+    cm_country <- "Argentina"
+  }  else {
+    cm_country <- input$country
+  }
+  
+  
   # empirical cm
   if(use_empirical_mc){
-    contact_matrix <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "general")
-    contact_matrix_home <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "home")
-    contact_matrix_school <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "school")
-    contact_matrix_work <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "work")
-    contact_matrix_other <<- get_empirical_cm(country = input$country, ages=as.numeric(ageGroupsV), type = "other")
+    contact_matrix <<- get_empirical_cm(country = cm_country, ages=as.numeric(ageGroupsV), type = "general")
+    contact_matrix_home <<- get_empirical_cm(country = cm_country, ages=as.numeric(ageGroupsV), type = "home")
+    contact_matrix_school <<- get_empirical_cm(country = cm_country, ages=as.numeric(ageGroupsV), type = "school")
+    contact_matrix_work <<- get_empirical_cm(country = cm_country, ages=as.numeric(ageGroupsV), type = "work")
+    contact_matrix_other <<- get_empirical_cm(country = cm_country, ages=as.numeric(ageGroupsV), type = "other")
     colnames(contact_matrix) = rownames(contact_matrix) = ageGroups
     colnames(contact_matrix_home) = rownames(contact_matrix_home) = ageGroups
     colnames(contact_matrix_school) = rownames(contact_matrix_school) = ageGroups
@@ -158,7 +174,18 @@ actualizaCM <- function (input,output,session) {
     
     # population data
     load("data/population.RData")
-    N <<- population[[input$country]]
+    if (input$country=="Belice") {
+      pop_country <- "Belize"
+    } else if (input$country=="Trinidad & Tobago") {
+      pop_country <- "Argentina"
+    } else if (input$country=="Venezuela") {
+      pop_country <- "Argentina"
+    }  else {
+      pop_country <- input$country
+    }
+    
+    
+    N <<- population[[pop_country]]
     
     # epi data
     
@@ -343,7 +370,6 @@ actualizaParametros <- function(input,output,session) {
   
   cantidadVacunasTotal <<- selectedUptake * sum(N)
   ritmoVacunacion <<- cantidadVacunasTotal / diasVacunacion
-  
   planVacunacionFinalParam <- generaEscenarioSage(input$vacUptake, input$vacDateGoal, input$vacStrat,
                                                   planVacunacionFinal, N, tVacunasCero, as.Date(diaCeroVac))
   
@@ -366,7 +392,6 @@ actualizaParametros <- function(input,output,session) {
     relaxNpi <<- TRUE
     relaxGoal <<- which(fechas_master == input$relaxationDateGoal)
   }
-  
   # Aplicar el NPI Scenario seleccionado y mandarlo al SEIR
   contact_matrix_scenario <<- get_npi_cm_scenario(scenario = input$npiScenario,
                                                   matrix_list = list(

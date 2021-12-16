@@ -1911,13 +1911,15 @@ server <- function (input, output, session) {
   output$plotWithSens <- renderPlotly({
     # print(data_graf_hi())
     # print(data_graf_low())
-    res_t()
-    
-    col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
-    compart_label <- input$compart_a_graficar
+    # res_t()
+    input$run_basico
+    compartimento <- if (mode_ui=="basico") {input$compart_checkbox} else {
+      input$compart_a_graficar}
+    col_id=str_trim(str_replace_all(substring(compartimento,1,3),":",""))
+    compart_label <- compartimento
     
     serie_fecha = data_graf_hi() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(fecha)
-    serie = data_graf() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
+    serie = data_graf %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
     serie_hi = data_graf_hi() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
     serie_low = data_graf_low() %>% dplyr::filter(Compart == col_id) %>% dplyr::select(total)
     

@@ -252,7 +252,7 @@ server <- function (input, output, session) {
       if (input$country=="Belice") {"BLZ"} else
       if (input$country=="Bolivia") {"BOL"} else
       if (input$country=="Ecuador") {"ECU"} else
-      if (input$country=="Guatemala") {"GMT"} else
+      if (input$country=="Guatemala") {"GTM"} else
       if (input$country=="Guyana") {"GUY"} else
       if (input$country=="Honduras") {"HND"} else
       if (input$country=="Haiti") {"HTI"} else
