@@ -120,7 +120,7 @@ server <- function (input, output, session) {
   counterEE <<-0
   disable("go")
   
-  observeEvent(input$run_basico, {
+  observeEvent(input$go, {
     ejecutarProyeccionConParametrosUI(input, output, session)
   })
   
@@ -1912,7 +1912,8 @@ server <- function (input, output, session) {
     # print(data_graf_hi())
     # print(data_graf_low())
     # res_t()
-    input$run_basico
+    # input$run_basico
+    input$go
     compartimento <- if (mode_ui=="basico") {input$compart_checkbox} else {
       input$compart_a_graficar}
     col_id=str_trim(str_replace_all(substring(compartimento,1,3),":",""))
@@ -2136,42 +2137,42 @@ server <- function (input, output, session) {
   })
   
   output$base_transmissionEffectivenessSens <- renderUI({
-    paste0("Transmission effectiveness (base value: ",
+    paste0("Efectividad de la transmisión (valor base: ",
            as.character(round(mean(transprob_edit),digits=3)),
            ")")
     
     })
   
   output$base_ifrSens <- renderUI({
-    paste0("IFR (base value: ",
+    paste0("IFR (Fatalidad) (valor base: ",
            as.character(round(mean(ifr_base),digits=3)),
            ")")
     
   })
   
   output$base_complicacionesSensCritic <- renderUI({
-    paste0("UCI rates (base value: ",
+    paste0("Porcentaje de internación en UCI (valor base: ",
            as.character(round(mean(porcentajeCasosCriticos),digits=3)),
            ")")
     
   })
   
   output$base_complicacionesSensSevere <- renderUI({
-    paste0("Hospitalization rates (base value: ",
+    paste0("Porcentaje de internación común (valor base: ",
            as.character(round(mean(porcentajeCasosGraves),digits=3)),
            ")")
     
   })
   
   output$base_tiempoPSens <- renderUI({
-    paste0("Vaccine protection duration periods (base value: ",
+    paste0("Duración de la protección de la vacuna (valor base: ",
            as.character(tiempoP_mean,digits=0),
            ")")
     
   })
   
   output$base_wainingSens <- renderUI({
-    paste0("Immunity duration periods (base value: ",
+    paste0("Duración de la protección natural (x contagio) (valor base: ",
            as.character(duracion_inmunidad,digits=0),
            ")")
     
@@ -2824,8 +2825,8 @@ server <- function (input, output, session) {
   #   counter_obs <<- counter_obs + 1
   # })
     
-  observeEvent(list(input$country,
-                    input$uptakeSlider,
+  observeEvent(list(input$country
+                    ,input$uptakeSlider,
                     input$effectivenessSlider
                     ), {
     ejecutarProyeccionConParametrosUI(input, output, session)

@@ -148,9 +148,6 @@ getUI <- function () {
             ),
             br(),
             fluidRow(column(10)),
-            fluidRow(column(2,actionButton("run_basico","Actualizar"))
-                     ),
-            
             fluidRow(column(
               width = 12,
               fluidRow(
@@ -194,6 +191,7 @@ getUI <- function () {
                   )
                 )
               ),
+              # fluidRow(column(2,actionButton("run_basico","",icon = icon("refresh")))),
               br(),
               p("Configurar medidadas de restricción durante 2021 y 2022:"),
               fluidRow(column(
@@ -286,7 +284,7 @@ getUI <- function () {
                         tabPanel("Tabla de resultados",
                                  column(8,DTOutput("resumen_tabla"), offset = 2)
                                  ),
-                        tabPanel("EE",
+                        tabPanel("Evaluación Económica",
                                  br(),
                                  fluidRow(
                                    #column(3),
@@ -304,13 +302,13 @@ getUI <- function () {
                                  )
                                  
                         ),
-                        tabPanel("Sensitivity analysis", id="senstab",
+                        tabPanel("Análisis de sensibilidad", id="senstab",
                                  fluidRow(
                                    column(12,align="center",
-                                          h4("Select parameters for sensitivity analysis"),
-                                          tags$span("Worst case scenario", style="color: red; font-weight: bold;"),
+                                          h4("Seleccionar los parámetros a incluir en el análisis de sensibilidad"),
+                                          tags$span("Peor escenario", style="color: red; font-weight: bold;"),
                                           tags$span(" - "),
-                                          tags$span("Best case scenario", style="color: green; font-weight: bold;"),
+                                          tags$span("Mejor escenario", style="color: green; font-weight: bold;"),
                                           br(),br(),br(),br(),
                                    )
                                  ),
@@ -479,7 +477,7 @@ getUI <- function () {
                                           fluidRow(
                                             column(12,align="center",
                                                    actionButton("runWithSens", 
-                                                                label = "Run projection with sensitivity", 
+                                                                label = "Ejecutar análisis de sensibilidad", 
                                                                 # icon = icon("chevron-right"), 
                                                                 class = "btn-primary", style = "margin: 5px;")
                                             ),
@@ -500,7 +498,7 @@ getUI <- function () {
                                    )
                                  )
                         ),
-                        tabPanel("Graphs",
+                        tabPanel("Configración avanzada",
                                  br(),
                                  fluidRow(column(3,selectInput("compart_a_graficar","Compartment",choices = NULL)),
                                          
@@ -515,6 +513,7 @@ getUI <- function () {
                                  tabsetPanel(type = "tabs",
                                              tabPanel("Scenario configuration",
                                                       fluidRow(column(4,
+                                                                      numericInput("t", label = "Day of projection", value = 1, step = 1),
                                                                       selectInput(
                                                                         "vacUptake",
                                                                         label="Vaccination uptake",
@@ -813,27 +812,26 @@ getUI <- function () {
                                                       tags$img(src='davies2.jpg')
                                              )
                                  )
-                        ),
-                        tabPanel("Saved scenarios", id="SE", 
-                                 fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
-                                          column(3,
-                                                 br(),
-                                                 prettyCheckbox("icu_beds","Show ICU beds endowment"))),
-                                 #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
-                                 plotlyOutput("graficoComp"),
-                                 br(),
-                                 div(uiOutput("tables")),
-                                 br(),
-                                 column(2,actionButton("del_scenarios","Delete all scenarios"))),
-                        tabPanel("Compartments", fluidRow(id="content"))
+                        )
+                        # tabPanel("Escenarios guardados", id="SE", 
+                        #          fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
+                        #                   column(3,
+                        #                          br(),
+                        #                          prettyCheckbox("icu_beds","Show ICU beds endowment"))),
+                        #          #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
+                        #          plotlyOutput("graficoComp"),
+                        #          br(),
+                        #          div(uiOutput("tables")),
+                        #          br(),
+                        #          column(2,actionButton("del_scenarios","Delete all scenarios"))),
+                        # tabPanel("Compartmientos", fluidRow(id="content"))
             ),
             # fluidRow(column(12,id="content")),
             br(),
             br(),
             br(),
             br(),
-            br(),
-            numericInput("t", label = "Day of projection", value = 1, step = 1)
+            br()
   )
 }
   

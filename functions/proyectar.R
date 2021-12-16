@@ -26,7 +26,6 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
 
 
 actualizaMapa <- function(input, output, session) {
-  # browser()
   # Set params
   print("arranca funcion")
   iso_country <<- if (input$country=="Argentina") {"ARG"} else
@@ -227,7 +226,6 @@ actualizaCM <- function (input,output,session) {
     def_p <<- dataPorEdad$FMTD$def[,loessCols]
     def_p <<- def_p[1:(nrow(def_p)-15),]
     
-    #browser()
     fechas_master <<- seq(min(dataPorEdad$FMTD$def$fecha),
                           min(dataPorEdad$FMTD$def$fecha)+diasDeProyeccion-1,by=1)
   }
@@ -341,32 +339,45 @@ actualizaParametros <- function(input,output,session) {
   
   print("parametros de sliders")
   # Set parameters from sliders
+  print(input$uptakeSlider)
+  print(paste("antes",input$vacUptake))
   if ("uptakeSlider" %in% names(reactiveValuesToList(input))) {
     # customMatrix <<- T
     if (input$uptakeSlider == "0%") {
       updateSelectInput(session, "vacUptake", selected = "No vaccination")
+      selectedUptake <<- getUptake("No vaccination")
     } else if (input$uptakeSlider == "20%") {
       updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
+      selectedUptake <<- getUptake("Low uptake: 20%")
     } else if (input$uptakeSlider == "50%") {
       updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
+      selectedUptake <<- getUptake("Mid-range uptake: 50%")
     } else if (input$uptakeSlider == "80%") {
       updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
+      selectedUptake <<- getUptake("High uptake: 80%")
     } else if (input$uptakeSlider == "95%") {
       updateSelectInput(session, "vacUptake", selected = "High uptake: 95%")
+      selectedUptake <<- getUptake("High uptake: 95%")
     }
     
     if (input$effectivenessSlider == 'Low') {
       updateSelectInput(session, "vacEfficacy", selected = "C2. 80%, 50%, 50%")
+      efficacy <<- applyVaccineEfficacy("C2. 80%, 50%, 50%")
     } else if (input$effectivenessSlider  == 'Middle') {
       updateSelectInput(session, "vacEfficacy", selected = "B2. 100%, 80%, 50%")
+      efficacy <<- applyVaccineEfficacy("B2. 100%, 80%, 50%")
     } else if (input$effectivenessSlider ==  'High') {
       updateSelectInput(session, "vacEfficacy", selected = "B1. 100%, 80%, 80%")
+      efficacy <<- applyVaccineEfficacy("B1. 100%, 80%, 80%")
     }  
+  } else {
+    selectedUptake <<- getUptake(input$vacUptake)
+    efficacy <<- applyVaccineEfficacy(input$vacEfficacy)
   }
   
   selectedPriority <<- getPrioritiesV2(input$vacStrat)
-  selectedUptake <<- getUptake(input$vacUptake)
-  
+  print(paste("despues",input$vacUptake))
+  print(selectedUptake)
   
   cantidadVacunasTotal <<- selectedUptake * sum(N)
   ritmoVacunacion <<- cantidadVacunasTotal / diasVacunacion
@@ -409,14 +420,12 @@ actualizaParametros <- function(input,output,session) {
                                                    contact_matrix_school = contact_matrix_school,
                                                    contact_matrix_other = contact_matrix_other),
                                                  ages= as.numeric(ageGroupsV))
-  efficacy <<- applyVaccineEfficacy(input$vacEfficacy)
   
   # paramVac_edit[3,3] = as.numeric(input$immunityDuration) * .25
   # paramVac_edit[3,5] = as.numeric(input$immunityDuration)
   
   # print(porcentajeCasosGraves)
   # print(porcentajeCasosCriticos)
-  #browser()
   tVacunasCero <<- 303
   ifrProy <<- ifr_edit[1,]
   if (input$country == "Argentina") {
@@ -557,16 +566,14 @@ actualizaPlot <- function(input,output,session) {
       dataRep_deaths$fechaDia = fechas_master
       
       #colnames(dataTemp)[8] <- "70-79"
-      
       # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
-      valx = dataTemp$fechaDia[input$t]
+      valx = dataTemp$fechaDia[tVacunasCero]
       maxy = max(dataTemp$total)
       
       if (is.null(input$edad)==F & is.na(input$diasProy)==F) {
         #data=dataTemp[1:(input$t+input$diasProy),]
         data=dataTemp
         data[data<0] = 0
-        # browser()
         plot=plot_ly(data=data, x=~fechaDia)          
         
         if (length(input$edad)>0) {
@@ -591,7 +598,6 @@ actualizaPlot <- function(input,output,session) {
                                     yaxis = list(title = paste("Compartimento:",compart_label)))
             # , range = c(0,60000)
           } else if (input$compart_a_graficar == "Ic: Infectious (severe)") {
-            #browser()
             plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
             plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
             plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
@@ -652,7 +658,6 @@ actualizaTablas <- function(input,output,session) {
   
   vacunas_ac <<- data_text$ac[(as.character(data_text$fechaDia) %in% fechas) &
                                data_text$Compart=="vA"] 
-  #browser()
   tFechas <<- c(grep(fechas[1], fechas_master),
                grep(fechas[2], fechas_master),
                grep(fechas[3], fechas_master))
@@ -752,8 +757,6 @@ actualizaTablas <- function(input,output,session) {
   print("tabla resumen")
   output$resumen_tabla <- renderDataTable({
     tabla_scn
-    #browser()
-    # res_t()
   })
   
   # if (primeraVez) {
