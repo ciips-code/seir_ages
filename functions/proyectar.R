@@ -1,4 +1,5 @@
 ejecutarProyeccionConParametrosUI = function(input, output, session) {
+  
   withProgress(
     message = 'Cargando...', value = 0, {
       incProgress(0.1)
@@ -488,8 +489,9 @@ actualizaProy <- function (input,output,session) {
 
 
 actualizaPlot <- function(input,output,session) {
-  
+
   print("data graf")
+
   data_graf <<- bind_rows(
     tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
     tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()),

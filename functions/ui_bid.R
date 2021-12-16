@@ -120,7 +120,7 @@ getUI <- function () {
                                         )
                                       ))
                     ),
-                    column(5,leafletOutput("map"))
+                    column(5,withSpinner(leafletOutput("map"),type = 8, size = .5, color = "#bdbdbd"))
             ),
             
             br(),
@@ -143,7 +143,7 @@ getUI <- function () {
                                           selected= c("total")), align="left"
                      )
             ),
-            fluidRow(column(12,plotlyOutput("graficoUnico")
+            fluidRow(column(12,withSpinner(plotlyOutput("graficoUnico"),type = 8, size = .5, color = "#bdbdbd"),
                      )
             ),
             br(),
@@ -492,7 +492,7 @@ getUI <- function () {
                                           # ),
                                           fluidRow(
                                             column(12,align="center",
-                                                   plotlyOutput("plotWithSens")
+                                                   withSpinner(plotlyOutput("plotWithSens"),type = 8, size = .5, color = "#bdbdbd")
                                             ),
                                           )
                                    )

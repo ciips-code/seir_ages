@@ -26,6 +26,7 @@ library(lubridate)
 library(kableExtra)
 library(formattable)
 library(openxlsx)
+library(shinycssloaders)
 
 options(dplyr.summarise.inform = FALSE)
 
@@ -1607,6 +1608,7 @@ server <- function (input, output, session) {
 
   proy_hi <- eventReactive(input$runWithSens,{
     # paste activa reactive (no comentar)
+
     paste(input$go)
     paste(input$paramVac_cell_edit)
     paste(input$ifrt_cell_edit)
@@ -1909,6 +1911,7 @@ server <- function (input, output, session) {
   })
   
   output$plotWithSens <- renderPlotly({
+
     # print(data_graf_hi())
     # print(data_graf_low())
     # res_t()
@@ -2572,16 +2575,24 @@ server <- function (input, output, session) {
     
   })
   
+
   ##### FUNCION EE #####
   
   observeEvent(input$EEgo, {
-    EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country)
-    EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
-    EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
-    EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country)
+    withProgress(message = "Cargando...", value = 0, {
+      incProgress(.25)
+      EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country)
+      incProgress(.25)
+      EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
+      incProgress(.25)
+      EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
+      incProgress(.25)
+      EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country)
+      
+    })
     
     shinyjs::show("downloadEE")
-    EEAvailable <-  T
+    EEAvailable <<-  T
     
     output$EESummaryTable <- function () {
       paste(input$EEgo)
