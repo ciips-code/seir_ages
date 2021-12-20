@@ -59,22 +59,37 @@ actualizaMapa <- function(input, output, session) {
   
   # print(iso_country)
   print("mapa")
-  mapa_ui_basico <- leaflet(subset(map, ADM0_A3 == iso_country),
-                            options = leafletOptions(attributionControl=FALSE,
-                                                     zoomControl = FALSE)) %>%
-    addPolygons(color = "#444444",
-                weight = 1,
-                smoothFactor = 0.5,
-                opacity = 1.0,
-                fillOpacity = 0.1) %>%
-    addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-    addPolygons(stroke = T, color="#18BC9C", weight=0.4) %>%
-    setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
-            lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
-            zoom = 3)
+  map_tiles <- subset(OWDSummaryData,metric=="totalCases7") %>% dplyr::arrange(value)
+  map_tiles$tile <- as.numeric(rownames(map_tiles))
+  map_tiles$SOV_A3 <- map_tiles$iso_code
+  map <- merge(map,map_tiles)
+  
+  pal <- colorNumeric(
+    palette = "Reds",
+    domain = map$tile)
+  
+  mapa_pais <- subset(map, iso_code==iso_country)
+  
+  mapa_ui_basico <- leaflet(options = leafletOptions(attributionControl=FALSE,
+                                                     zoomControl = FALSE
+                                                     )) %>%
+                    addPolygons(data=map,
+                                    stroke = FALSE, 
+                                    smoothFactor = 0.2, 
+                                    fillOpacity = .5,
+                                    color = ~pal(tile)) %>%
+                    addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+                    setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
+                            lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
+                            zoom = 3) %>% 
+                    addPolygons(data=mapa_pais,
+                                weight = .6,
+                                opacity = 1.2,
+                                fillOpacity = 0,
+                                color = "Black")
   
   output$map <- renderLeaflet({
-    mapa_ui_basico
+    mapa_ui_basico 
   })
   
 }

@@ -1693,7 +1693,9 @@ updateDataOWD <- function (countries) {
   for (p in countries) {
     filteredData <- dataOWD[dataOWD$iso_code == p,]
     filteredData[filteredData==""] <- "NA"
+    
     population <- as.numeric(unique(filteredData$population))
+    totalCases7 <- sum(as.numeric((tail(filteredData$new_cases,7))))/population*1000000
     dailyCases <- round(mean(as.numeric(filteredData$new_cases[filteredData$date<=update &
                                                             filteredData$date>=updateWeek])), digits=0)
     dailyDeaths <- round(mean(as.numeric(filteredData$new_deaths[filteredData$date<=update &
@@ -1706,6 +1708,7 @@ updateDataOWD <- function (countries) {
     dailyTests <- mean(tail(as.numeric(filteredData$new_tests[filteredData$new_tests!=""]), 7))
     filteredData <- data.frame(iso_code=p,
                                metric=c("population",
+                                        "totalCases7",
                                         "dailyCases",
                                         "dailyDeaths",
                                         "populationOver65",
@@ -1715,6 +1718,7 @@ updateDataOWD <- function (countries) {
                                         "totalTestPerMillon",
                                         "dailyTests"),
                                value=c(population,
+                                       totalCases7,
                                        dailyCases,
                                        dailyDeaths,
                                        populationOver65,
