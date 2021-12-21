@@ -273,28 +273,28 @@ server <- function (input, output, session) {
                      if (input$country=="Peru") {2804} else
                      if (input$country=="Colombia") {13054} else
                      if (input$country=="Mexico") {11634} else
-                     if (input$country=="Costa Rica") {245} else
-                     if (input$country=="Uruguay") {822} else
+                     if (input$country=="Costa Rica") {464} else
+                     if (input$country=="Uruguay") {1066} else
                      if (input$country=="Chile") {4481} else
                     ### cambiar por los valores de UTI correcto
-                     if (input$country=="Paraguay") {100} else
-                     if (input$country=="Bahamas") {100} else
-                     if (input$country=="Barbados") {100} else
-                     if (input$country=="Belice") {100} else
-                     if (input$country=="Bolivia") {100} else
-                     if (input$country=="Ecuador") {100} else
-                     if (input$country=="Guatemala") {100} else
+                     if (input$country=="Paraguay") {575} else
+                     if (input$country=="Bahamas") {44} else
+                     if (input$country=="Barbados") {50} else
+                     if (input$country=="Belice") {16} else
+                     if (input$country=="Bolivia") {467} else
+                     if (input$country=="Ecuador") {1823} else
+                     if (input$country=="Guatemala") {96} else
                      if (input$country=="Guyana") {100} else
-                     if (input$country=="Honduras") {100} else
-                     if (input$country=="Haiti") {100} else
-                     if (input$country=="Jamaica") {100} else
-                     if (input$country=="El Salvador") {100} else
-                     if (input$country=="Nicaragua") {100} else
-                     if (input$country=="Panama") {100} else
-                     if (input$country=="Venezuela") {100} else
-                     if (input$country=="Suriname") {100} else
-                     if (input$country=="Trinidad y Tobago") {100} else
-                     if (input$country=="Republica Dominicana") {100} 
+                     if (input$country=="Honduras") {76} else
+                     if (input$country=="Haiti") {130} else
+                     if (input$country=="Jamaica") {70} else
+                     if (input$country=="El Salvador") {700} else
+                     if (input$country=="Nicaragua") {562} else
+                     if (input$country=="Panama") {751} else
+                     if (input$country=="Venezuela") {1213} else
+                     if (input$country=="Suriname") {50} else
+                     if (input$country=="Trinidad y Tobago") {75} else
+                     if (input$country=="Republica Dominicana") {644} 
                        
                        
     # empirical cm
