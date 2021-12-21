@@ -59,22 +59,42 @@ actualizaMapa <- function(input, output, session) {
   
   # print(iso_country)
   print("mapa")
-  mapa_ui_basico <- leaflet(subset(map, ADM0_A3 == iso_country),
-                            options = leafletOptions(attributionControl=FALSE,
-                                                     zoomControl = FALSE)) %>%
-    addPolygons(color = "#444444",
-                weight = 1,
-                smoothFactor = 0.5,
-                opacity = 1.0,
-                fillOpacity = 0.1) %>%
-    addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-    addPolygons(stroke = T, color="#18BC9C", weight=0.4) %>%
-    setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
-            lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
-            zoom = 3)
+  map_tiles <- subset(OWDSummaryData,metric=="totalDeathsPerMillon") %>% dplyr::arrange(value)
+  map_tiles$tile <- as.numeric(rownames(map_tiles))
+  map_tiles$SOV_A3 <- map_tiles$iso_code
+  map <- merge(map,map_tiles)
+  mapa_pais <- subset(map, iso_code==iso_country)
+  pal <- colorBin("YlOrRd", map@data$value)
   
+  
+  bounds <- subset(map, map@data$SOV_A3 == iso_country) %>% 
+    st_bbox() %>% 
+    as.character()
+  
+  mapa_ui_basico <-leaflet(map,
+                           options = leafletOptions(attributionControl=FALSE,
+                                     zoomControl = FALSE,
+                                     zoomControl = FALSE,
+                                     minZoom = 1, maxZoom = 8)) %>%
+                   addPolygons(stroke = F, 
+                               fillOpacity = .5, 
+                               smoothFactor = .5, 
+                               color = ~pal(value),
+                               label = map@data$BBRK_NAME) %>% 
+                   leaflet::addLegend("bottomright", 
+                                      pal = pal, 
+                                      values = ~value, 
+                                      opacity = .6, 
+                                      title = "Muertes Acum. </br>
+                                              c/Mill. hab.") %>%
+                    addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+                    setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
+                            lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
+                            zoom = 3) %>%
+    fitBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+                    
   output$map <- renderLeaflet({
-    mapa_ui_basico
+    mapa_ui_basico 
   })
   
 }

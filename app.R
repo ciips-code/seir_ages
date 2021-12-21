@@ -27,6 +27,7 @@ library(kableExtra)
 library(formattable)
 library(openxlsx)
 library(shinycssloaders)
+library(sf)
 
 options(dplyr.summarise.inform = FALSE)
 
