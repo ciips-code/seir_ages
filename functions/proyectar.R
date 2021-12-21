@@ -59,35 +59,40 @@ actualizaMapa <- function(input, output, session) {
   
   # print(iso_country)
   print("mapa")
-  map_tiles <- subset(OWDSummaryData,metric=="totalCases7") %>% dplyr::arrange(value)
+  map_tiles <- subset(OWDSummaryData,metric=="totalDeathsPerMillon") %>% dplyr::arrange(value)
   map_tiles$tile <- as.numeric(rownames(map_tiles))
   map_tiles$SOV_A3 <- map_tiles$iso_code
   map <- merge(map,map_tiles)
-  
-  pal <- colorNumeric(
-    palette = "Reds",
-    domain = map$tile)
-  
   mapa_pais <- subset(map, iso_code==iso_country)
+  pal <- colorBin("YlOrRd", map@data$value)
   
-  mapa_ui_basico <- leaflet(options = leafletOptions(attributionControl=FALSE,
-                                                     zoomControl = FALSE
-                                                     )) %>%
-                    addPolygons(data=map,
-                                    stroke = FALSE, 
-                                    smoothFactor = 0.2, 
-                                    fillOpacity = .5,
-                                    color = ~pal(tile)) %>%
+  
+  bounds <- subset(map, map@data$SOV_A3 == iso_country) %>% 
+    st_bbox() %>% 
+    as.character()
+  
+  mapa_ui_basico <-leaflet(map,
+                           options = leafletOptions(attributionControl=FALSE,
+                                     zoomControl = FALSE,
+                                     zoomControl = FALSE,
+                                     minZoom = 1, maxZoom = 8)) %>%
+                   addPolygons(stroke = F, 
+                               fillOpacity = .5, 
+                               smoothFactor = .5, 
+                               color = ~pal(value),
+                               label = map@data$BBRK_NAME) %>% 
+                   leaflet::addLegend("bottomright", 
+                                      pal = pal, 
+                                      values = ~value, 
+                                      opacity = .6, 
+                                      title = "Muertes Acum. </br>
+                                              c/Mill. hab.") %>%
                     addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
                     setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
                             lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],
-                            zoom = 3) %>% 
-                    addPolygons(data=mapa_pais,
-                                weight = .6,
-                                opacity = 1.2,
-                                fillOpacity = 0,
-                                color = "Black")
-  
+                            zoom = 3) %>%
+    fitBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+                    
   output$map <- renderLeaflet({
     mapa_ui_basico 
   })
