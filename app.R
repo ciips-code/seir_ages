@@ -109,7 +109,7 @@ setParameters()
 
 customMatrix <<- F
 
-
+sensEE <<- F
 
 
 server <- function (input, output, session) {
@@ -2855,6 +2855,87 @@ server <- function (input, output, session) {
   #     hide("EESummaryTable3")
   #   }
   # })
+  
+  observeEvent(input$runWithSensEE, {
+    sensEE <<- T
+    withProgress(message = "Cargando...", value = 0, {
+      incProgress(.1)
+      EETableSummaryOptimistaLow <<- runScenario("OPTIMISTA", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="low")
+      incProgress(.1)
+      EETableSummaryOptimistaHi <<- runScenario("OPTIMISTA", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="hi")
+      incProgress(.1)
+      EETableSummaryRealLifeLow <<- runScenario("REAL_LIFE", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="low")
+      incProgress(.1)
+      EETableSummaryRealLifeHi <<- runScenario("REAL_LIFE", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="hi")
+      incProgress(.1)
+      EETableSummaryBaseLow <<- runScenario("BASE", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="low")
+      incProgress(.1)
+      EETableSummaryBaseHi <<- runScenario("BASE", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="hi")
+      incProgress(.1)
+      EETableSummaryNoVacLow <<- runScenario("NO_VAC", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="low")
+      incProgress(.1)
+      EETableSummaryNoVacHi <<- runScenario("NO_VAC", 
+                                                 input$country, 
+                                                 iso_country, 
+                                                 sensEE = T,
+                                                 modifCostosSens=input$costosSens, 
+                                                 modifEfectividadSens=input$efectividadSens, 
+                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 sensScenario="hi")
+
+    })
+    sensEE <<- F
+  })
+  
 }
 
 

@@ -302,6 +302,114 @@ getUI <- function () {
                                  )
                                  
                         ),
+                        tabPanel("Análisis de sensibilidad (EE)", 
+                                 id="senstabEE",
+                                 fluidRow(
+                                   column(12,align="center",
+                                          h4("Seleccionar los parámetros a incluir en el análisis de sensibilidad"),
+                                          tags$span("Peor escenario", style="color: red; font-weight: bold;"),
+                                          tags$span(" - "),
+                                          tags$span("Mejor escenario", style="color: green; font-weight: bold;"),
+                                          br(),br(),br(),br(),
+                                   )
+                                 ),
+                                 fluidRow(column(12,
+                                                 fluidRow(column(2,
+                                                                 align="right",
+                                                                 fluidRow(br()),
+                                                                 fluidRow(br()),
+                                                                 fluidRow(
+                                                                   switchInput("check_costos", 
+                                                                               onLabel = "ON",
+                                                                               offLabel = "OFF",
+                                                                               value = TRUE)
+                                                                   )
+                                                                 ),
+                                                          column(2, align="right",
+                                                                 br(),br(),
+                                                                 htmlOutput("")
+                                                                 ),
+                                                          column(6,
+                                                                 sliderInput("costosSens", 
+                                                                             h4("Costo de las vacunas"),
+                                                                             min = -.25, max = .25, 
+                                                                             value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                                             width = "100%"
+                                                                 ),
+                                                                 br(),
+                                                          ),
+                                                          column(2)
+                                                          ),
+                                                
+                                                 
+                                          fluidRow(column(2,
+                                                          align="right",
+                                                          fluidRow(br()),
+                                                          fluidRow(br()),
+                                                          fluidRow(
+                                                            switchInput("check_efectividad", 
+                                                                        onLabel = "ON",
+                                                                        offLabel = "OFF",
+                                                                        value = TRUE)
+                                                          )
+                                          ),
+                                          column(2, align="right",
+                                                 br(),br(),
+                                                 htmlOutput("")
+                                          ),
+                                          column(6,
+                                                 sliderInput("efectividadSens", 
+                                                             h4("Efectividad de las vacunas"),
+                                                             min = -.25, max = .25, 
+                                                             value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                             width = "100%"
+                                                 ),
+                                                 br(),
+                                          ),
+                                          column(2)
+                                          ),
+                                          fluidRow(column(2,
+                                                          align="right",
+                                                          fluidRow(br()),
+                                                          fluidRow(br()),
+                                                          fluidRow(
+                                                            switchInput("check_costo_eventos", 
+                                                                        onLabel = "ON",
+                                                                        offLabel = "OFF",
+                                                                        value = TRUE)
+                                                          )
+                                          ),
+                                          column(2, align="right",
+                                                 br(),br(),
+                                                 htmlOutput("")
+                                          ),
+                                          column(6,
+                                                 sliderInput("costoEventosSens", 
+                                                             h4("Costo de los eventos"),
+                                                             min = -.25, max = .25, 
+                                                             value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                             width = "100%"
+                                                 ),
+                                                 br(),
+                                          ),
+                                          column(2)
+                                          ),
+                                          fluidRow(
+                                            column(12,align="center",
+                                                   actionButton("runWithSensEE", 
+                                                                label = "Ejecutar análisis de sensibilidad", 
+                                                                # icon = icon("chevron-right"), 
+                                                                class = "btn-primary", style = "margin: 5px;")
+                                            ),
+                                          )
+                                 )
+                              )
+                        ),
+                        
+                        
+                        
+                        
+                        
                         tabPanel("Análisis de sensibilidad", id="senstab",
                                  fluidRow(
                                    column(12,align="center",

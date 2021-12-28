@@ -1,6 +1,24 @@
 runScenario <- function (escenario,
                          country,
-                         iso_country) {
+                         iso_country,
+                         sensEE=F,
+                         modifCostosSens=NULL,
+                         modifEfectividadSens=NULL,
+                         modifCostoEventosSens=NULL,
+                         sensScenario=NULL
+                         ) {
+  
+  if (sensEE == F) {
+    modifCostosSens <- c(0,0)  
+    modifEfectividadSens <- c(0,0) 
+    modifCostoEventosSens <- c(0,0) 
+    sensScenario <- if (is.null(sensScenario)) {1} 
+  } else {
+    sensScenario <- if (sensScenario=="low") {1} else {2}
+  }
+  
+  
+  
   duracion_inmunidad = 180
   fechaMetaVac = '2021-12-31'
   diasVacunacion = as.numeric(as.Date(fechaMetaVac) - as.Date('2021-01-01'))
@@ -43,33 +61,31 @@ runScenario <- function (escenario,
   } else if (escenario=="REAL_LIFE") {
     parametroDeBusqueda <- iso_country
   }
-  
   efficacy = applyVaccineEfficacy("B2. 100%, 80%, 50%")
-  
   efficacy[[1]][3,] <- rep(EEParams2$eficaciaVacuna$caso[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                            EEParams2$eficaciaVacuna$dosis==1], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[1]][4,] <- rep(EEParams2$eficaciaVacuna$caso[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                            EEParams2$eficaciaVacuna$dosis==2], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[2]][3,] <- rep(EEParams2$eficaciaVacuna$casoGrave[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                                 EEParams2$eficaciaVacuna$dosis==1], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[2]][4,] <- rep(EEParams2$eficaciaVacuna$casoGrave[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                                 EEParams2$eficaciaVacuna$dosis==2], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[3]][3,] <- rep(EEParams2$eficaciaVacuna$casoCritico[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                                   EEParams2$eficaciaVacuna$dosis==1], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[3]][4,] <- rep(EEParams2$eficaciaVacuna$casoCritico[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                                   EEParams2$eficaciaVacuna$dosis==2], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[4]][3,] <- rep(EEParams2$eficaciaVacuna$muerte[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                              EEParams2$eficaciaVacuna$dosis==1], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   efficacy[[4]][4,] <- rep(EEParams2$eficaciaVacuna$muerte[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                              EEParams2$eficaciaVacuna$dosis==2], 
-                           length(ageGroupsV)) 
+                           length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
   tVacunasCero = 303
   ifrProy = ifr_edit[1,]
   if (country == "Argentina") {
@@ -124,15 +140,15 @@ runScenario <- function (escenario,
   fecha <- "2021-12-31"
   tInicio <- which(fechas_master == "2021-01-01")
   tFecha <- which(fechas_master == "2021-12-31")
-  costoVacuna <- EEParams2$costoVacuna$valor[EEParams2$costoVacuna$costoVacuna==parametroDeBusqueda] 
+  costoVacuna <- (1 + modifCostosSens[sensScenario]) * EEParams2$costoVacuna$valor[EEParams2$costoVacuna$costoVacuna==parametroDeBusqueda] 
   costoCasoAsint <- 0
-  costoCasoSint <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoSint" & 
+  costoCasoSint <- (1 + modifCostoEventosSens[sensScenario]) * EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoSint" & 
                                                  EEParams2$costoEvento$pais==iso_country]
-  costoCasoHosp <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoHosp" & 
+  costoCasoHosp <- (1 + modifCostoEventosSens[sensScenario]) * EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoHosp" & 
                                                  EEParams2$costoEvento$pais==iso_country]
-  costoCasoUtiVent <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoUtiVent" & 
+  costoCasoUtiVent <- (1 + modifCostoEventosSens[sensScenario]) * EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoUtiVent" & 
                                                     EEParams2$costoEvento$pais==iso_country]
-  costoCasoUtiNoVent <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoUtiNoVent" & 
+  costoCasoUtiNoVent <- (1 + modifCostoEventosSens[sensScenario]) * EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="costoCasoUtiNoVent" & 
                                                       EEParams2$costoEvento$pais==iso_country]
   porcentajeAsint <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="porcentajeAsint" & 
                                                    EEParams2$costoEvento$pais==iso_country]
@@ -200,7 +216,7 @@ runScenario <- function (escenario,
   
   EETable <- data.frame(`Metrics`= metrics,
                         Desenlaces = values)
-  
+  print(paste(escenario, "costo total", EETable[1,2]))
   # EEAvailable <<- T
   return(EETable)
   
