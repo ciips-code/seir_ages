@@ -8,6 +8,7 @@ runScenario <- function (escenario,
                          modifCoberturaSens=NULL,
                          sensScenario=NULL
                          ) {
+  print(paste(escenario,sensScenario))
   if (sensEE == F) {
     modifCostosSens <- c(0,0)  
     modifEfectividadSens <- c(0,0) 
@@ -17,6 +18,8 @@ runScenario <- function (escenario,
   } else {
     sensScenario <- if (sensScenario=="low") {1} else {2}
   }
+  print(modifEfectividadSens)
+  print(sensScenario)
   
   
   
@@ -64,6 +67,8 @@ runScenario <- function (escenario,
     parametroDeBusqueda <- iso_country
   }
   efficacy = applyVaccineEfficacy("B2. 100%, 80%, 50%")
+  modifEfectividadSens <- rev(modifEfectividadSens)
+  
   efficacy[[1]][3,] <- rep(EEParams2$eficaciaVacuna$caso[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                            EEParams2$eficaciaVacuna$dosis==1], 
                            length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
@@ -88,6 +93,9 @@ runScenario <- function (escenario,
   efficacy[[4]][4,] <- rep(EEParams2$eficaciaVacuna$muerte[EEParams2$eficaciaVacuna$eficaciaVacuna==parametroDeBusqueda &
                                                              EEParams2$eficaciaVacuna$dosis==2], 
                            length(ageGroupsV)) * (1+modifEfectividadSens[sensScenario])
+  
+  
+  
   tVacunasCero = 303
   ifrProy = ifr_edit[1,]
   if (country == "Argentina") {
@@ -218,7 +226,6 @@ runScenario <- function (escenario,
   
   EETable <- data.frame(`Metrics`= metrics,
                         Desenlaces = values)
-  print(paste(escenario, "costo total", EETable[1,2]))
   # EEAvailable <<- T
   return(EETable)
   

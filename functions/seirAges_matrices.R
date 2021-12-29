@@ -35,6 +35,8 @@ seir_ages <- function(dias,
                       usarVariantes = F
                       # tablaDeAnosDeVidaPerdidos
 ){
+  print(modif_porc_cr)
+  
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   matrixNames = list(immunityStates,
                ageGroups)

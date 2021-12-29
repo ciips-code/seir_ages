@@ -28,7 +28,6 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
 
 actualizaMapa <- function(input, output, session) {
   # Set params
-  print("arranca funcion")
   iso_country <<- if (input$country=="Argentina") {"ARG"} else
     if (input$country=="Peru") {"PER"}
   else if (input$country=="Brazil") {"BRA"} else
@@ -58,7 +57,6 @@ actualizaMapa <- function(input, output, session) {
   
   
   # print(iso_country)
-  print("mapa")
   map_tiles <- subset(OWDSummaryData,metric=="totalDeathsPerMillon") %>% dplyr::arrange(value)
   map_tiles$tile <- as.numeric(rownames(map_tiles))
   map_tiles$SOV_A3 <- map_tiles$iso_code
@@ -100,7 +98,6 @@ actualizaMapa <- function(input, output, session) {
 }
   
 actualizaPanel <- function (input,output,session) {
-  print("well panel")
   output$population <- renderText({
     input$country
     OWDSummaryData$value[OWDSummaryData$iso_code==iso_country & OWDSummaryData$metric=="population"]})         
@@ -161,7 +158,6 @@ actualizaVariables <- function (input,output,session) {
 }
 
 actualizaCM <- function (input,output,session) {
-  print("empirical cm")
   
   if (input$country=="Belice") {
     cm_country <- "Belize"
@@ -253,7 +249,6 @@ actualizaCM <- function (input,output,session) {
 }
 
 actualizaDTTables <- function (input,output,session) {
-  print("Update data from DT tables")
   # Update data from DT tables
   if (mbeta_primeraVez==T) {
     mbeta_edit <<- modif_beta
@@ -358,10 +353,7 @@ actualizaParametros <- function(input,output,session) {
   }
   diasVacunacion <<- as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
   
-  print("parametros de sliders")
   # Set parameters from sliders
-  print(input$uptakeSlider)
-  print(paste("antes",input$vacUptake))
   if ("uptakeSlider" %in% names(reactiveValuesToList(input))) {
     # customMatrix <<- T
     if (input$uptakeSlider == "0%") {
@@ -397,8 +389,6 @@ actualizaParametros <- function(input,output,session) {
   }
   
   selectedPriority <<- getPrioritiesV2(input$vacStrat)
-  print(paste("despues",input$vacUptake))
-  print(selectedUptake)
   
   cantidadVacunasTotal <<- selectedUptake * sum(N)
   ritmoVacunacion <<- cantidadVacunasTotal / diasVacunacion
@@ -468,7 +458,6 @@ actualizaParametros <- function(input,output,session) {
   
 actualizaProy <- function (input,output,session) {
   
-  print("crea proy")
   ifr_base <<- ifrProy
   shinyjs::hide("downloadEE")
   shinyjs::hide("EESummaryTable")
@@ -514,7 +503,6 @@ actualizaProy <- function (input,output,session) {
 
 actualizaPlot <- function(input,output,session) {
 
-  print("data graf")
 
   data_graf <<- bind_rows(
     tibble(Compart = "S", do.call(rbind, lapply(proy$`S: Susceptible`,colSums)) %>% as_tibble()),
@@ -568,7 +556,6 @@ actualizaPlot <- function(input,output,session) {
   
   data_graf<<-union_all(data_graf,muertes)
   
-  print("output grafico")
   output$graficoUnico <- renderPlotly({
     # res_t()
     
@@ -781,7 +768,6 @@ actualizaTablas <- function(input,output,session) {
     formatStyle(fechas[1], `text-align` = 'right') %>%
     formatStyle(fechas[2], `text-align` = 'right') %>%
     formatStyle(fechas[3], `text-align` = 'right') 
-  print("tabla resumen")
   output$resumen_tabla <- renderDataTable({
     tabla_scn
   })

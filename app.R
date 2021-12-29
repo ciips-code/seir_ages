@@ -1420,7 +1420,6 @@ server <- function (input, output, session) {
   
   proy_low <- eventReactive(input$runWithSens,{
     #paste activa reactive (no comentar)
-    print("low")
     # paste(input$go)
     # paste(input$paramVac_cell_edit)
     # paste(input$ifrt_cell_edit)
@@ -1548,7 +1547,6 @@ server <- function (input, output, session) {
     if (input$check_wainingSens) {duracion_inmunidad = modificador_wainingSens} else {duracion_inmunidad = duracion_inmunidad}
     
     
-    print("pasa 1549")
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -1602,7 +1600,6 @@ server <- function (input, output, session) {
                            value=dValue)
     
     sensScenarios <<- union_all(sensScenarios,insertDF)
-    print(sensScenarios)
     return(proy)
     
   })
@@ -1737,7 +1734,6 @@ server <- function (input, output, session) {
     if (input$check_wainingSens) {duracion_inmunidad = modificador_wainingSens} else {duracion_inmunidad = duracion_inmunidad}
     
     
-    print("pasa 1737")
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -2426,7 +2422,6 @@ server <- function (input, output, session) {
     }
     
     ifr_base <<- ifrProy
-    print("pasa 2422")
     proy <- seir_ages(dias=diasDeProyeccion,
                       duracionE = periodoPreinfPromedio,
                       duracionIi = duracionMediaInf,
@@ -2478,7 +2473,6 @@ server <- function (input, output, session) {
                            value=dValue)
     
     sensScenarios <<- union_all(sensScenarios,insertDF)
-    print(sensScenarios)
     
     return(proy)
     
@@ -2831,7 +2825,6 @@ server <- function (input, output, session) {
     
     
   })
-  print(paste("counter=",counter_obs))
   # observe( {
   #   if (counter_obs == 0) {
   #     ejecutarProyeccionConParametrosUI(input, output, session)
@@ -3003,7 +2996,7 @@ server <- function (input, output, session) {
                               EETableSummaryRealLifeHi$Desenlaces[1])
       
       table$OPTIMISTA_LOW <- c(EETableSummaryOptimistaLow$Desenlaces[2],
-                               EETableSummaryOptimistaLow$Desenlaces[1])
+                               EETableSummaryOptimistaHi$Desenlaces[1])
       
       table$OPTIMISTA_HI <- c(EETableSummaryOptimistaHi$Desenlaces[2],
                               EETableSummaryOptimistaHi$Desenlaces[1])
