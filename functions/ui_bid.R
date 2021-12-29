@@ -302,309 +302,309 @@ getUI <- function () {
                                  )
                                  
                         ),
-                        tabPanel("Análisis de sensibilidad (EE)", 
-                                 id="senstabEE",
-                                 fluidRow(
-                                   column(12,align="center",
-                                          h4("Seleccionar los parámetros a incluir en el análisis de sensibilidad"),
-                                          tags$span("Peor escenario", style="color: red; font-weight: bold;"),
-                                          tags$span(" - "),
-                                          tags$span("Mejor escenario", style="color: green; font-weight: bold;"),
-                                          br(),br(),br(),br(),
-                                   )
-                                 ),
-                                 fluidRow(column(12,
-                                                 fluidRow(column(2,
-                                                                 align="right",
+                        tabPanel("Análisis de sensibilidad",
+                          tabsetPanel(id="senstab",
+                                      type = "tabs",
+                                      tabPanel("Análisis de sensibilidad (Evaluación Económica)", 
+                                               id="senstabEE",
+                                               fluidRow(
+                                                 column(12,align="center",
+                                                        h4("Seleccionar los parámetros a incluir en el análisis de sensibilidad"),
+                                                        tags$span("Peor escenario", style="color: red; font-weight: bold;"),
+                                                        tags$span(" - "),
+                                                        tags$span("Mejor escenario", style="color: green; font-weight: bold;"),
+                                                        br(),br(),br(),br(),
+                                                 )
+                                               ),
+                                               fluidRow(column(12,
+                                                               fluidRow(column(2,
+                                                                               align="right",
+                                                                               fluidRow(br()),
+                                                                               fluidRow(br()),
+                                                                               fluidRow(
+                                                                                 switchInput("check_costos", 
+                                                                                             onLabel = "ON",
+                                                                                             offLabel = "OFF",
+                                                                                             value = TRUE)
+                                                                                 )
+                                                                               ),
+                                                                        column(2, align="right",
+                                                                               br(),br(),
+                                                                               htmlOutput("")
+                                                                               ),
+                                                                        column(6,
+                                                                               sliderInput("costosSens", 
+                                                                                           tags$span("Costo de las vacunas", style="font-weight: bold;"),
+                                                                                           min = -.25, max = .25, 
+                                                                                           value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                                                           width = "100%"
+                                                                               ),
+                                                                               br(),
+                                                                        ),
+                                                                        column(2)
+                                                                        ),
+                                                              
+                                                               
+                                                        fluidRow(column(2,
+                                                                        align="right",
+                                                                        fluidRow(br()),
+                                                                        fluidRow(br()),
+                                                                        fluidRow(
+                                                                          switchInput("check_efectividad", 
+                                                                                      onLabel = "ON",
+                                                                                      offLabel = "OFF",
+                                                                                      value = TRUE)
+                                                                        )
+                                                        ),
+                                                        column(2, align="right",
+                                                               br(),br(),
+                                                               htmlOutput("")
+                                                        ),
+                                                        column(6,
+                                                               sliderInput("efectividadSens",
+                                                                           tags$span("Efectividad de las vacunas", style="font-weight: bold;"),
+                                                                           min = -.25, max = .25, 
+                                                                           value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                                           width = "100%"
+                                                               ),
+                                                               br(),
+                                                        ),
+                                                        column(2)
+                                                        ),
+                                                        fluidRow(column(2,
+                                                                        align="right",
+                                                                        fluidRow(br()),
+                                                                        fluidRow(br()),
+                                                                        fluidRow(
+                                                                          switchInput("check_costo_eventos", 
+                                                                                      onLabel = "ON",
+                                                                                      offLabel = "OFF",
+                                                                                      value = TRUE)
+                                                                        )
+                                                        ),
+                                                        column(2, align="right",
+                                                               br(),br(),
+                                                               htmlOutput("")
+                                                        ),
+                                                        column(6,
+                                                               sliderInput("costoEventosSens", 
+                                                                           tags$span("Costo de los eventos", style="font-weight: bold;"),
+                                                                           min = -.25, max = .25, 
+                                                                           value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                                           width = "100%"
+                                                               ),
+                                                               br(),
+                                                        ),
+                                                        column(2)
+                                                        ),
+                                                        fluidRow(
+                                                          column(12,align="center",
+                                                                 actionButton("runWithSensEE", 
+                                                                              label = "Ejecutar análisis de sensibilidad", 
+                                                                              # icon = icon("chevron-right"), 
+                                                                              class = "btn-primary", style = "margin: 5px;")
+                                                          ),
+                                                        )
+                                               )
+                                            )
+                                      ),
+                                      tabPanel("Análisis de sensibilidad (Epidemiológico)", id="senstabEPI",
+                                               fluidRow(
+                                                 column(12,align="center",
+                                                        h4("Seleccionar los parámetros a incluir en el análisis de sensibilidad"),
+                                                        tags$span("Peor escenario", style="color: red; font-weight: bold;"),
+                                                        tags$span(" - "),
+                                                        tags$span("Mejor escenario", style="color: green; font-weight: bold;"),
+                                                        br(),br(),br(),br(),
+                                                 )
+                                               ),
+                                               fluidRow(
+                                                 column(12,
+                                                        fluidRow(
+                                                          column(2, align="right",
                                                                  fluidRow(br()),
                                                                  fluidRow(br()),
                                                                  fluidRow(
-                                                                   switchInput("check_costos", 
+                                                                   switchInput("check_transmissionEffectivenessSens", 
                                                                                onLabel = "ON",
                                                                                offLabel = "OFF",
-                                                                               value = TRUE)
-                                                                   )
-                                                                 ),
+                                                                               value = TRUE),
+                                                                 )
+                                                          ),
                                                           column(2, align="right",
                                                                  br(),br(),
-                                                                 htmlOutput("")
-                                                                 ),
+                                                                 htmlOutput("transEffSens_low", 
+                                                                            style="color: green; font-weight: bold;")),
                                                           column(6,
-                                                                 sliderInput("costosSens", 
-                                                                             h4("Costo de las vacunas"),
-                                                                             min = -.25, max = .25, 
-                                                                             value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                                 sliderInput("transmissionEffectivenessSens", htmlOutput("base_transmissionEffectivenessSens"),
+                                                                             min = -1, max = 1, 
+                                                                             value = c(-1,1), step = 0.01, dragRange = T,
                                                                              width = "100%"
                                                                  ),
                                                                  br(),
                                                           ),
-                                                          column(2)
+                                                          column(2,
+                                                                 br(),br(),
+                                                                 htmlOutput("transEffSens_hi", 
+                                                                            style="color: red; font-weight: bold;")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(2, align="right",
+                                                                 fluidRow(br()),
+                                                                 fluidRow(br()),
+                                                                 fluidRow(
+                                                                   switchInput("check_ifrSens", 
+                                                                               onLabel = "ON",
+                                                                               offLabel = "OFF",
+                                                                               value = TRUE),
+                                                                 )
                                                           ),
-                                                
-                                                 
-                                          fluidRow(column(2,
-                                                          align="right",
-                                                          fluidRow(br()),
-                                                          fluidRow(br()),
-                                                          fluidRow(
-                                                            switchInput("check_efectividad", 
-                                                                        onLabel = "ON",
-                                                                        offLabel = "OFF",
-                                                                        value = TRUE)
-                                                          )
-                                          ),
-                                          column(2, align="right",
-                                                 br(),br(),
-                                                 htmlOutput("")
-                                          ),
-                                          column(6,
-                                                 sliderInput("efectividadSens", 
-                                                             h4("Efectividad de las vacunas"),
-                                                             min = -.25, max = .25, 
-                                                             value = c(-.25,.25), step = 0.01, dragRange = T,
-                                                             width = "100%"
-                                                 ),
-                                                 br(),
-                                          ),
-                                          column(2)
-                                          ),
-                                          fluidRow(column(2,
-                                                          align="right",
-                                                          fluidRow(br()),
-                                                          fluidRow(br()),
-                                                          fluidRow(
-                                                            switchInput("check_costo_eventos", 
-                                                                        onLabel = "ON",
-                                                                        offLabel = "OFF",
-                                                                        value = TRUE)
-                                                          )
-                                          ),
-                                          column(2, align="right",
-                                                 br(),br(),
-                                                 htmlOutput("")
-                                          ),
-                                          column(6,
-                                                 sliderInput("costoEventosSens", 
-                                                             h4("Costo de los eventos"),
-                                                             min = -.25, max = .25, 
-                                                             value = c(-.25,.25), step = 0.01, dragRange = T,
-                                                             width = "100%"
-                                                 ),
-                                                 br(),
-                                          ),
-                                          column(2)
-                                          ),
-                                          fluidRow(
-                                            column(12,align="center",
-                                                   actionButton("runWithSensEE", 
-                                                                label = "Ejecutar análisis de sensibilidad", 
-                                                                # icon = icon("chevron-right"), 
-                                                                class = "btn-primary", style = "margin: 5px;")
-                                            ),
-                                          )
-                                 )
-                              )
-                        ),
-                        
-                        
-                        
-                        
-                        
-                        tabPanel("Análisis de sensibilidad", id="senstab",
-                                 fluidRow(
-                                   column(12,align="center",
-                                          h4("Seleccionar los parámetros a incluir en el análisis de sensibilidad"),
-                                          tags$span("Peor escenario", style="color: red; font-weight: bold;"),
-                                          tags$span(" - "),
-                                          tags$span("Mejor escenario", style="color: green; font-weight: bold;"),
-                                          br(),br(),br(),br(),
-                                   )
-                                 ),
-                                 fluidRow(
-                                   column(12,
-                                          fluidRow(
-                                            column(2, align="right",
-                                                   fluidRow(br()),
-                                                   fluidRow(br()),
-                                                   fluidRow(
-                                                     switchInput("check_transmissionEffectivenessSens", 
-                                                                 onLabel = "ON",
-                                                                 offLabel = "OFF",
-                                                                 value = TRUE),
-                                                   )
-                                            ),
-                                            column(2, align="right",
-                                                   br(),br(),
-                                                   htmlOutput("transEffSens_low", 
-                                                              style="color: green; font-weight: bold;")),
-                                            column(6,
-                                                   sliderInput("transmissionEffectivenessSens", htmlOutput("base_transmissionEffectivenessSens"),
-                                                               min = -1, max = 1, 
-                                                               value = c(-1,1), step = 0.01, dragRange = T,
-                                                               width = "100%"
-                                                   ),
-                                                   br(),
-                                            ),
-                                            column(2,
-                                                   br(),br(),
-                                                   htmlOutput("transEffSens_hi", 
-                                                              style="color: red; font-weight: bold;")),
-                                          ),
-                                          fluidRow(
-                                            column(2, align="right",
-                                                   fluidRow(br()),
-                                                   fluidRow(br()),
-                                                   fluidRow(
-                                                     switchInput("check_ifrSens", 
-                                                                 onLabel = "ON",
-                                                                 offLabel = "OFF",
-                                                                 value = TRUE),
-                                                   )
-                                            ),
-                                            column(2,align="right", br(), br(),
-                                                   htmlOutput("ifrSens_low", 
-                                                              style="color: green; font-weight: bold;")),
-                                            column(6,
-                                                   sliderInput("ifrSens", htmlOutput("base_ifrSens"),
-                                                               min = -1, max = 1, 
-                                                               value = c(-1,1), step = 0.01, dragRange = T,
-                                                               width = "100%"
-                                                   ),
-                                            ),
-                                            column(2,align="left",br(),br(),
-                                                   htmlOutput("ifrSens_hi", 
-                                                              style="color: red; font-weight: bold;")),
-                                          ),
-                                          fluidRow(
-                                            column(2, align="right",
-                                                   fluidRow(br()),
-                                                   fluidRow(br()),
-                                                   fluidRow(
-                                                     switchInput("check_complicacionesSensSevere", 
-                                                                 onLabel = "ON",
-                                                                 offLabel = "OFF",
-                                                                 value = TRUE),
-                                                   )
-                                            ),
-                                            column(2, align="right",
-                                                   br(),br(),
-                                                   htmlOutput("complicacionesSensSevere_low", 
-                                                              style="color: green; font-weight: bold;")),
-                                            column(6,
-                                                   sliderInput("complicacionesSensSevere", 
-                                                               htmlOutput("base_complicacionesSensSevere"),
-                                                               min = -1, max = 1, 
-                                                               value = c(-1,1), step = 0.01, dragRange = T,
-                                                               width = "100%"
-                                                   ),
-                                            ),
-                                            column(2,align="left",br(),br(), 
-                                                   htmlOutput("complicacionesSensSevere_hi", 
-                                                              style="color: red; font-weight: bold;")),
-                                          ),
-                                          fluidRow(
-                                            column(2, align="right",
-                                                   fluidRow(br()),
-                                                   fluidRow(br()),
-                                                   fluidRow(
-                                                     switchInput("check_complicacionesSensCritic", 
-                                                                 onLabel = "ON",
-                                                                 offLabel = "OFF",
-                                                                 value = TRUE),
-                                                   )
-                                            ),
-                                            column(2, align="right",
-                                                   br(),br(),
-                                                   htmlOutput("complicacionesSensCritic_low", 
-                                                              style="color: green; font-weight: bold;")),
-                                            column(6,
-                                                   sliderInput("complicacionesSensCritic", 
-                                                               htmlOutput("base_complicacionesSensCritic"),
-                                                               min = -1, max = 1, 
-                                                               value = c(-1,1), step = 0.01, dragRange = T,
-                                                               width = "100%"
-                                                   ),
-                                            ),
-                                            column(2,align="left",br(),br(), 
-                                                   htmlOutput("complicacionesSensCritic_hi", 
-                                                              style="color: red; font-weight: bold;")),
-                                          ),
-                                          fluidRow(
-                                            column(2, align="right",
-                                                   fluidRow(br()),
-                                                   fluidRow(br()),
-                                                   fluidRow(
-                                                     switchInput("check_tiempoPSens", 
-                                                                 onLabel = "ON",
-                                                                 offLabel = "OFF",
-                                                                 value = TRUE),
-                                                   )
-                                            ),
-                                            column(2, align="right",
-                                                   br(),br(),
-                                                   htmlOutput("tiempoPSens_low", 
-                                                              style="color: red; font-weight: bold;")),
-                                            column(6,
-                                                   sliderInput("tiempoPSens", 
-                                                               htmlOutput("base_tiempoPSens"),
-                                                               min = -1, max = 1, 
-                                                               value = c(-1,1), step = 0.01, dragRange = T,
-                                                               width = "100%"
-                                                   ),
-                                            ),
-                                            column(2,align="left",br(),br(), 
-                                                   htmlOutput("tiempoPSens_hi", 
-                                                              style="color: green; font-weight: bold;")),
-                                          ),
-                                          fluidRow(
-                                            column(2, align="right",
-                                                   fluidRow(br()),
-                                                   fluidRow(br()),
-                                                   fluidRow(
-                                                     switchInput("check_wainingSens", 
-                                                                 onLabel = "ON",
-                                                                 offLabel = "OFF",
-                                                                 value = TRUE),
-                                                   )
-                                            ),
-                                            column(2, align="right",
-                                                   br(),br(),
-                                                   htmlOutput("wainingSens_low", 
-                                                              style="color: red; font-weight: bold;")),
-                                            column(6,
-                                                   sliderInput("wainingSens", htmlOutput("base_wainingSens"),
-                                                               min = -1, max = 1, 
-                                                               value = c(-1,1), step = 0.01, dragRange = T,
-                                                               width = "100%"
-                                                   ),
-                                            ),
-                                            column(2,align="left",br(),br(), 
-                                                   htmlOutput("wainingSens_hi", 
-                                                              style="color: green; font-weight: bold;")),
-                                          ),
-                                          fluidRow(
-                                            column(12,align="center",
-                                                   actionButton("runWithSens", 
-                                                                label = "Ejecutar análisis de sensibilidad", 
-                                                                # icon = icon("chevron-right"), 
-                                                                class = "btn-primary", style = "margin: 5px;")
-                                            ),
-                                          ),
-                                          # fluidRow(
-                                          #   column(12,align="center",
-                                          #          actionButton("exportSens", 
-                                          #                       label = "Export projection with sensitivity", 
-                                          #                       # icon = icon("chevron-right"), 
-                                          #                       class = "btn-primary", style = "margin: 5px;")
-                                          #   ),
-                                          # ),
-                                          fluidRow(
-                                            column(12,align="center",
-                                                   withSpinner(plotlyOutput("plotWithSens"),type = 8, size = .5, color = "#bdbdbd")
-                                            ),
-                                          )
-                                   )
-                                 )
+                                                          column(2,align="right", br(), br(),
+                                                                 htmlOutput("ifrSens_low", 
+                                                                            style="color: green; font-weight: bold;")),
+                                                          column(6,
+                                                                 sliderInput("ifrSens", htmlOutput("base_ifrSens"),
+                                                                             min = -1, max = 1, 
+                                                                             value = c(-1,1), step = 0.01, dragRange = T,
+                                                                             width = "100%"
+                                                                 ),
+                                                          ),
+                                                          column(2,align="left",br(),br(),
+                                                                 htmlOutput("ifrSens_hi", 
+                                                                            style="color: red; font-weight: bold;")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(2, align="right",
+                                                                 fluidRow(br()),
+                                                                 fluidRow(br()),
+                                                                 fluidRow(
+                                                                   switchInput("check_complicacionesSensSevere", 
+                                                                               onLabel = "ON",
+                                                                               offLabel = "OFF",
+                                                                               value = TRUE),
+                                                                 )
+                                                          ),
+                                                          column(2, align="right",
+                                                                 br(),br(),
+                                                                 htmlOutput("complicacionesSensSevere_low", 
+                                                                            style="color: green; font-weight: bold;")),
+                                                          column(6,
+                                                                 sliderInput("complicacionesSensSevere", 
+                                                                             htmlOutput("base_complicacionesSensSevere"),
+                                                                             min = -1, max = 1, 
+                                                                             value = c(-1,1), step = 0.01, dragRange = T,
+                                                                             width = "100%"
+                                                                 ),
+                                                          ),
+                                                          column(2,align="left",br(),br(), 
+                                                                 htmlOutput("complicacionesSensSevere_hi", 
+                                                                            style="color: red; font-weight: bold;")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(2, align="right",
+                                                                 fluidRow(br()),
+                                                                 fluidRow(br()),
+                                                                 fluidRow(
+                                                                   switchInput("check_complicacionesSensCritic", 
+                                                                               onLabel = "ON",
+                                                                               offLabel = "OFF",
+                                                                               value = TRUE),
+                                                                 )
+                                                          ),
+                                                          column(2, align="right",
+                                                                 br(),br(),
+                                                                 htmlOutput("complicacionesSensCritic_low", 
+                                                                            style="color: green; font-weight: bold;")),
+                                                          column(6,
+                                                                 sliderInput("complicacionesSensCritic", 
+                                                                             htmlOutput("base_complicacionesSensCritic"),
+                                                                             min = -1, max = 1, 
+                                                                             value = c(-1,1), step = 0.01, dragRange = T,
+                                                                             width = "100%"
+                                                                 ),
+                                                          ),
+                                                          column(2,align="left",br(),br(), 
+                                                                 htmlOutput("complicacionesSensCritic_hi", 
+                                                                            style="color: red; font-weight: bold;")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(2, align="right",
+                                                                 fluidRow(br()),
+                                                                 fluidRow(br()),
+                                                                 fluidRow(
+                                                                   switchInput("check_tiempoPSens", 
+                                                                               onLabel = "ON",
+                                                                               offLabel = "OFF",
+                                                                               value = TRUE),
+                                                                 )
+                                                          ),
+                                                          column(2, align="right",
+                                                                 br(),br(),
+                                                                 htmlOutput("tiempoPSens_low", 
+                                                                            style="color: red; font-weight: bold;")),
+                                                          column(6,
+                                                                 sliderInput("tiempoPSens", 
+                                                                             htmlOutput("base_tiempoPSens"),
+                                                                             min = -1, max = 1, 
+                                                                             value = c(-1,1), step = 0.01, dragRange = T,
+                                                                             width = "100%"
+                                                                 ),
+                                                          ),
+                                                          column(2,align="left",br(),br(), 
+                                                                 htmlOutput("tiempoPSens_hi", 
+                                                                            style="color: green; font-weight: bold;")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(2, align="right",
+                                                                 fluidRow(br()),
+                                                                 fluidRow(br()),
+                                                                 fluidRow(
+                                                                   switchInput("check_wainingSens", 
+                                                                               onLabel = "ON",
+                                                                               offLabel = "OFF",
+                                                                               value = TRUE),
+                                                                 )
+                                                          ),
+                                                          column(2, align="right",
+                                                                 br(),br(),
+                                                                 htmlOutput("wainingSens_low", 
+                                                                            style="color: red; font-weight: bold;")),
+                                                          column(6,
+                                                                 sliderInput("wainingSens", htmlOutput("base_wainingSens"),
+                                                                             min = -1, max = 1, 
+                                                                             value = c(-1,1), step = 0.01, dragRange = T,
+                                                                             width = "100%"
+                                                                 ),
+                                                          ),
+                                                          column(2,align="left",br(),br(), 
+                                                                 htmlOutput("wainingSens_hi", 
+                                                                            style="color: green; font-weight: bold;")),
+                                                        ),
+                                                        fluidRow(
+                                                          column(12,align="center",
+                                                                 actionButton("runWithSens", 
+                                                                              label = "Ejecutar análisis de sensibilidad", 
+                                                                              # icon = icon("chevron-right"), 
+                                                                              class = "btn-primary", style = "margin: 5px;")
+                                                          ),
+                                                        ),
+                                                        # fluidRow(
+                                                        #   column(12,align="center",
+                                                        #          actionButton("exportSens", 
+                                                        #                       label = "Export projection with sensitivity", 
+                                                        #                       # icon = icon("chevron-right"), 
+                                                        #                       class = "btn-primary", style = "margin: 5px;")
+                                                        #   ),
+                                                        # ),
+                                                        fluidRow(
+                                                          column(12,align="center",
+                                                                 withSpinner(plotlyOutput("plotWithSens"),type = 8, size = .5, color = "#bdbdbd")
+                                                          ),
+                                                        )
+                                                 )
+                                               )
+                                      )
+                          )
                         ),
                         tabPanel("Configración avanzada",
                                  br(),

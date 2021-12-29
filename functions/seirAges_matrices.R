@@ -31,7 +31,8 @@ seir_ages <- function(dias,
                       relaxGoal,
                       relaxFactor,
                       country,
-                      modificador_tiempoP = NULL
+                      modificador_tiempoP = NULL,
+                      usarVariantes = F
                       # tablaDeAnosDeVidaPerdidos
 ){
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
@@ -69,6 +70,11 @@ seir_ages <- function(dias,
   }
   vacGroupActive = 1
   for(t in 2:dias){
+    if (usarVariantes) {
+      modificadorVariantes = obtenerModificadorDeVariante(t)
+    } else {
+      modificadorVariantes = c(1,1,1,1)
+    }
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
@@ -113,8 +119,9 @@ seir_ages <- function(dias,
       e[[t-1]] = apor*bpor/cpor
       e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
+      e[[t-1]] <- e[[t-1]] * modificadorVariantes[1]
     } else {
-      beta       = beta * relaxValue[t]
+      beta       = beta * relaxValue[t] * modificadorVariantes[1]
       # if (country == "Argentina") {
       #   beta = beta * 0.98
       # } else if (country == "Peru") {
@@ -141,9 +148,9 @@ seir_ages <- function(dias,
     
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[2]
     
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[3]
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     
@@ -151,7 +158,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[4] * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
       } else if (country == "Peru") {
