@@ -330,7 +330,8 @@ getUI <- function () {
                                                                                ),
                                                                         column(2, align="right",
                                                                                br(),br(),
-                                                                               htmlOutput("")
+                                                                               tags$span("Mejor", 
+                                                                                          style="color: green; font-weight: bold;")
                                                                                ),
                                                                         column(6,
                                                                                sliderInput("costosSens", 
@@ -341,7 +342,10 @@ getUI <- function () {
                                                                                ),
                                                                                br(),
                                                                         ),
-                                                                        column(2)
+                                                                        column(2,
+                                                                               br(),br(),
+                                                                               tags$span("Peor", 
+                                                                                         style="color: red; font-weight: bold;"))
                                                                         ),
                                                                fluidRow(column(2,
                                                                                align="right",
@@ -356,7 +360,8 @@ getUI <- function () {
                                                                ),
                                                                column(2, align="right",
                                                                       br(),br(),
-                                                                      htmlOutput("")
+                                                                      tags$span("Peor", 
+                                                                                style="color: red; font-weight: bold;")
                                                                ),
                                                                column(6,
                                                                       sliderInput("coberturaSens", 
@@ -367,7 +372,11 @@ getUI <- function () {
                                                                       ),
                                                                       br(),
                                                                ),
-                                                               column(2)
+                                                               column(2,
+                                                                      br(),br(),
+                                                                      tags$span("Mejor", 
+                                                                                style="color: green; font-weight: bold;")
+                                                                      )
                                                                ),
                                                               
                                                                
@@ -384,7 +393,8 @@ getUI <- function () {
                                                         ),
                                                         column(2, align="right",
                                                                br(),br(),
-                                                               htmlOutput("")
+                                                               tags$span("Peor", 
+                                                                         style="color: red; font-weight: bold;")
                                                         ),
                                                         column(6,
                                                                sliderInput("efectividadSens",
@@ -395,7 +405,11 @@ getUI <- function () {
                                                                ),
                                                                br(),
                                                         ),
-                                                        column(2)
+                                                        column(2,
+                                                               br(),br(),
+                                                               tags$span("Mejor", 
+                                                                         style="color: green; font-weight: bold;")
+                                                               )
                                                         ),
                                                         fluidRow(column(2,
                                                                         align="right",
@@ -410,7 +424,8 @@ getUI <- function () {
                                                         ),
                                                         column(2, align="right",
                                                                br(),br(),
-                                                               htmlOutput("")
+                                                               tags$span("Mejor", 
+                                                                         style="color: green; font-weight: bold;")
                                                         ),
                                                         column(6,
                                                                sliderInput("costoEventosSens", 
@@ -421,7 +436,11 @@ getUI <- function () {
                                                                ),
                                                                br(),
                                                         ),
-                                                        column(2)
+                                                        column(2,
+                                                               br(),br(),
+                                                               tags$span("Peor", 
+                                                                         style="color: red; font-weight: bold;")
+                                                               )
                                                         ),
                                                         fluidRow(
                                                           column(12,align="center",
