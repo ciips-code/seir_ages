@@ -3003,7 +3003,7 @@ server <- function (input, output, session) {
                               EETableSummaryRealLifeHi$Desenlaces[1])
       
       table$OPTIMISTA_LOW <- c(EETableSummaryOptimistaLow$Desenlaces[2],
-                               EETableSummaryOptimistaHi$Desenlaces[1])
+                               EETableSummaryOptimistaLow$Desenlaces[1])
       
       table$OPTIMISTA_HI <- c(EETableSummaryOptimistaHi$Desenlaces[2],
                               EETableSummaryOptimistaHi$Desenlaces[1])
