@@ -2859,83 +2859,203 @@ server <- function (input, output, session) {
   
   observeEvent(input$runWithSensEE, {
     sensEE <<- T
+    
+    if (input$check_costos==T) {
+      costo <- input$costosSens
+    } else {costo <- c(0,0)} 
+    
+    if (input$check_efectividad==T) {
+      efectividad <- input$efectividadSens 
+    } else {
+      efectividad <- c(0,0)
+    }
+    
+    if (input$check_costo_eventos==T) {
+      costoEventos <- input$costoEventosSens 
+    } else {
+      costoEventos <- c(0,0)
+    }
+    
+    if (input$check_cobertura==T) {
+      cobertura <- input$coberturaSens
+    } else {
+      cobertura <- c(0,0)
+    }
+    
     withProgress(message = "Cargando...", value = 0, {
       incProgress(.1)
       EETableSummaryOptimistaLow <<- runScenario("OPTIMISTA", 
                                                  input$country, 
                                                  iso_country, 
                                                  sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                 modifCostosSens=costo, 
+                                                 modifEfectividadSens=efectividad, 
+                                                 modifCostoEventosSens=costoEventos, 
+                                                 modifCoberturaSens =cobertura, 
                                                  sensScenario="low")
       incProgress(.1)
       EETableSummaryOptimistaHi <<- runScenario("OPTIMISTA", 
                                                  input$country, 
                                                  iso_country, 
                                                  sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                modifCostosSens=costo, 
+                                                modifEfectividadSens=efectividad, 
+                                                modifCostoEventosSens=costoEventos, 
+                                                modifCoberturaSens =cobertura,
                                                  sensScenario="hi")
       incProgress(.1)
       EETableSummaryRealLifeLow <<- runScenario("REAL_LIFE", 
                                                  input$country, 
                                                  iso_country, 
                                                  sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                                modifCostosSens=costo, 
+                                                modifEfectividadSens=efectividad, 
+                                                modifCostoEventosSens=costoEventos, 
+                                                modifCoberturaSens =cobertura,
                                                  sensScenario="low")
       incProgress(.1)
       EETableSummaryRealLifeHi <<- runScenario("REAL_LIFE", 
                                                  input$country, 
                                                  iso_country, 
                                                  sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
+                                               modifCostosSens=costo, 
+                                               modifEfectividadSens=efectividad, 
+                                               modifCostoEventosSens=costoEventos, 
+                                               modifCoberturaSens =cobertura,
                                                  sensScenario="hi")
       incProgress(.1)
       EETableSummaryBaseLow <<- runScenario("BASE", 
-                                                 input$country, 
-                                                 iso_country, 
-                                                 sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
-                                                 sensScenario="low")
+                                            input$country, 
+                                            iso_country, 
+                                            sensEE = T,
+                                            modifCostosSens=costo, 
+                                            modifEfectividadSens=efectividad, 
+                                            modifCostoEventosSens=costoEventos, 
+                                            modifCoberturaSens =cobertura,
+                                            sensScenario="low")
       incProgress(.1)
       EETableSummaryBaseHi <<- runScenario("BASE", 
-                                                 input$country, 
-                                                 iso_country, 
-                                                 sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
-                                                 sensScenario="hi")
+                                           input$country, 
+                                           iso_country, 
+                                           sensEE = T,
+                                           modifCostosSens=costo, 
+                                           modifEfectividadSens=efectividad, 
+                                           modifCostoEventosSens=costoEventos, 
+                                           modifCoberturaSens =cobertura,
+                                           sensScenario="hi")
       incProgress(.1)
       EETableSummaryNoVacLow <<- runScenario("NO_VAC", 
-                                                 input$country, 
-                                                 iso_country, 
-                                                 sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
-                                                 sensScenario="low")
+                                             input$country, 
+                                             iso_country, 
+                                             sensEE = T,
+                                             modifCostosSens=costo, 
+                                             modifEfectividadSens=efectividad, 
+                                             modifCostoEventosSens=costoEventos, 
+                                             modifCoberturaSens =cobertura,
+                                             sensScenario="low")
       incProgress(.1)
       EETableSummaryNoVacHi <<- runScenario("NO_VAC", 
-                                                 input$country, 
-                                                 iso_country, 
-                                                 sensEE = T,
-                                                 modifCostosSens=input$costosSens, 
-                                                 modifEfectividadSens=input$efectividadSens, 
-                                                 modifCostoEventosSens=input$costoEventosSens, 
-                                                 sensScenario="hi")
+                                            input$country, 
+                                            iso_country, 
+                                            sensEE = T,
+                                            modifCostosSens=costo, 
+                                            modifEfectividadSens=efectividad, 
+                                            modifCostoEventosSens=costoEventos, 
+                                            modifCoberturaSens =cobertura,
+                                            sensScenario="hi")
 
     })
     sensEE <<- F
+    shinyjs::show("EETableSens")
   })
+  
+  output$EETableSens <- function () {
+    
+    input$runWithSensEE
+    if (exists("EETableSummaryNoVacLow")) {
+      table <- data.frame(Metric=NA,
+                          NO_VAC_LOW=NA,
+                          NO_VAC_HI=NA,
+                          BASE_LOW=NA,
+                          BASE_HI=NA,
+                          REAL_LIFE_LOW=NA,
+                          REAL_LIFE_HI=NA,
+                          OPTIMISTA_LOW=NA,
+                          OPTIMISTA_HI=NA
+      )
+      table[1,1] <- "AVACs perdidos (d)"
+      table[2,1] <- "Costos totales"
+      table$NO_VAC_LOW <- c(EETableSummaryNoVacLow$Desenlaces[2],
+                            EETableSummaryNoVacLow$Desenlaces[1])
+      
+      table$NO_VAC_HI <- c(EETableSummaryNoVacHi$Desenlaces[2],
+                           EETableSummaryNoVacHi$Desenlaces[1])
+      
+      table$BASE_LOW <- c(EETableSummaryBaseLow$Desenlaces[2],
+                          EETableSummaryBaseLow$Desenlaces[1])
+      
+      table$BASE_HI <- c(EETableSummaryBaseHi$Desenlaces[2],
+                         EETableSummaryBaseHi$Desenlaces[1])
+      
+      table$REAL_LIFE_LOW <- c(EETableSummaryRealLifeLow$Desenlaces[2],
+                               EETableSummaryRealLifeLow$Desenlaces[1])
+      
+      table$REAL_LIFE_HI <- c(EETableSummaryRealLifeHi$Desenlaces[2],
+                              EETableSummaryRealLifeHi$Desenlaces[1])
+      
+      table$OPTIMISTA_LOW <- c(EETableSummaryOptimistaLow$Desenlaces[2],
+                               EETableSummaryOptimistaHi$Desenlaces[1])
+      
+      table$OPTIMISTA_HI <- c(EETableSummaryOptimistaHi$Desenlaces[2],
+                              EETableSummaryOptimistaHi$Desenlaces[1])
+      
+      colnames(table) <- c("", "Inf.","Sup.","Inf.","Sup.","Inf.","Sup.","Inf.","Sup.")
+      
+      kbl(table, escape = F, align=c("l","r","r","r","r","r","r","r","r")) %>% 
+        kable_styling(font_size = 17) %>% 
+        kable_classic(html_font = "Tahoma") %>%
+        add_header_above(c(" " = 1, "Sin vacunación" = 2, "Escenario Base" = 2, "Escenario real-life" = 2, "Escenario optimista"=2))
+    }
+  }
+    
+    
+    observeEvent(input$check_cobertura, {
+      shinyjs::hide("EETableSens")
+      if (input$check_cobertura==F) {shinyjs::disable("coberturaSens")} else {
+        shinyjs::enable("coberturaSens")
+      }
+    })
+    
+    observeEvent(input$check_costos, {
+      shinyjs::hide("EETableSens")
+      if (input$check_costos==F) {shinyjs::disable("costosSens")} else {
+        shinyjs::enable("costosSens")
+      }
+    })
+    
+    observeEvent(input$check_efectividad, {
+      shinyjs::hide("EETableSens")
+      if (input$check_efectividad==F) {shinyjs::disable("efectividadSens")} else {
+        shinyjs::enable("efectividadSens")
+      }
+    })
+    
+    observeEvent(input$check_costo_eventos, {
+    shinyjs::hide("EETableSens")
+      if (input$check_costo_eventos==F) {shinyjs::disable("costoEventosSens")} else {
+        shinyjs::enable("costoEventosSens")
+      }
+    })
+    
+    observeEvent(list(input$costoEventosSens,
+                      input$coverturaSens,
+                      input$efectividadSens,
+                      input$costosSens), {
+                        shinyjs::hide("EETableSens")
+                      })
+    
+  
+  
   
 }
 

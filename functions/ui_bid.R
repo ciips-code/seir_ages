@@ -343,6 +343,32 @@ getUI <- function () {
                                                                         ),
                                                                         column(2)
                                                                         ),
+                                                               fluidRow(column(2,
+                                                                               align="right",
+                                                                               fluidRow(br()),
+                                                                               fluidRow(br()),
+                                                                               fluidRow(
+                                                                                 switchInput("check_cobertura", 
+                                                                                             onLabel = "ON",
+                                                                                             offLabel = "OFF",
+                                                                                             value = TRUE)
+                                                                               )
+                                                               ),
+                                                               column(2, align="right",
+                                                                      br(),br(),
+                                                                      htmlOutput("")
+                                                               ),
+                                                               column(6,
+                                                                      sliderInput("coberturaSens", 
+                                                                                  tags$span("Cobertura de la vacunación", style="font-weight: bold;"),
+                                                                                  min = -.25, max = .25, 
+                                                                                  value = c(-.25,.25), step = 0.01, dragRange = T,
+                                                                                  width = "100%"
+                                                                      ),
+                                                                      br(),
+                                                               ),
+                                                               column(2)
+                                                               ),
                                                               
                                                                
                                                         fluidRow(column(2,
@@ -404,7 +430,10 @@ getUI <- function () {
                                                                               # icon = icon("chevron-right"), 
                                                                               class = "btn-primary", style = "margin: 5px;")
                                                           ),
-                                                        )
+                                                        ),
+                                                        br(),
+                                                        br(),
+                                                        fluidRow(column(12, tableOutput("EETableSens")))
                                                )
                                             )
                                       ),

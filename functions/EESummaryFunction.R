@@ -5,13 +5,14 @@ runScenario <- function (escenario,
                          modifCostosSens=NULL,
                          modifEfectividadSens=NULL,
                          modifCostoEventosSens=NULL,
+                         modifCoberturaSens=NULL,
                          sensScenario=NULL
                          ) {
-  
   if (sensEE == F) {
     modifCostosSens <- c(0,0)  
     modifEfectividadSens <- c(0,0) 
     modifCostoEventosSens <- c(0,0) 
+    modifCoberturaSens <- c(0,0) 
     sensScenario <- if (is.null(sensScenario)) {1} 
   } else {
     sensScenario <- if (sensScenario=="low") {1} else {2}
@@ -34,6 +35,7 @@ runScenario <- function (escenario,
   } else if (escenario=="OPTIMISTA") {
     selectedUptake <- EEParams2$uptake$valor[EEParams2$uptake$uptake==escenario]  
   }
+  selectedUptake <- selectedUptake * (1+modifCoberturaSens[sensScenario]) 
   
   cantidadVacunasTotal = selectedUptake * sum(N)
   ritmoVacunacion = cantidadVacunasTotal / diasVacunacion
