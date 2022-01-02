@@ -128,33 +128,15 @@ actualizaPanel <- function (input,output,session) {
 }
 
 actualizaVariables <- function (input,output,session) {
-  capacidadUTI <<- if (input$country=="Argentina") {11676} else
-    if (input$country=="Brazil") {37950} else
-      if (input$country=="Peru") {2804} else
-        if (input$country=="Colombia") {13054} else
-          if (input$country=="Mexico") {11634} else
-            if (input$country=="Costa Rica") {245} else
-              if (input$country=="Uruguay") {822} else
-                if (input$country=="Chile") {4481} else
-                  ### cambiar por los valores de UTI correcto
-                  if (input$country=="Paraguay") {100} else
-                    if (input$country=="Bahamas") {100} else
-                      if (input$country=="Barbados") {100} else
-                        if (input$country=="Belice") {100} else
-                          if (input$country=="Bolivia") {100} else
-                            if (input$country=="Ecuador") {100} else
-                              if (input$country=="Guatemala") {100} else
-                                if (input$country=="Guyana") {100} else
-                                  if (input$country=="Honduras") {100} else
-                                    if (input$country=="Haiti") {100} else
-                                      if (input$country=="Jamaica") {100} else
-                                        if (input$country=="El Salvador") {100} else
-                                          if (input$country=="Nicaragua") {100} else
-                                            if (input$country=="Panama") {100} else
-                                              if (input$country=="Venezuela") {100} else
-                                                if (input$country=="Suriname") {100} else
-                                                  if (input$country=="Trinidad y Tobago") {100} else
-                                                    if (input$country=="Republica Dominicana") {100} 
+  capacidadUTI <<- parametros_epi$CamasUCI[parametros_epi$Pais==iso_country]
+  if (is.null(input$CC_set)==F) {
+    capacidadUTI <<- input$CC_set
+  } 
+  
+  capacidadVent <<- parametros_epi$Respiradores[parametros_epi$Pais==iso_country]
+  if (is.null(input$CC_Vent)==F) {
+    capacidadVent <<- input$Vent_set
+  }
 }
 
 actualizaCM <- function (input,output,session) {

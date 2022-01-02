@@ -654,6 +654,26 @@ getUI <- function () {
                                       )
                           )
                         ),
+                        tabPanel("Recursos",
+                                 br(),
+                                 br(),
+                                 br(),
+                                 fluidRow(
+                                   column(3),
+                                   column(3,uiOutput("CC_set"), align="center"),
+                                   column(3,uiOutput("Vent_set"), align="center"),
+                                   column(3)
+                                   ),
+                                 br(),
+                                 br(),
+                                 br(),
+                                 fluidRow(
+                                   column(3),
+                                   column(3,uiOutput("Porc_crit"), align="center"),
+                                   column(3,uiOutput("Vent_por_CC"), align="center"),
+                                   column(3)
+                                 )
+                        ),
                         tabPanel("Configración avanzada",
                                  br(),
                                  fluidRow(column(3,selectInput("compart_a_graficar","Compartment",choices = NULL)),

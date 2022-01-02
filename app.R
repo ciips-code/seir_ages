@@ -91,6 +91,7 @@ load("data/yearsLost.RData", envir = .GlobalEnv)
 load("data/OWDSummaryData.RData", envir = .GlobalEnv)
 #load("data/EEparams.RData", envir = .GlobalEnv)
 load("data/EEParams2.RData", envir = .GlobalEnv)
+load("data/parametrosEpi.RData", envir = .GlobalEnv)
 
 
 # lee funciones
@@ -3046,9 +3047,49 @@ server <- function (input, output, session) {
                         shinyjs::hide("EETableSens")
                       })
     
-  
-  
-  
+    output$CC_set <- renderUI({
+      numericInputIcon(inputId = "CC_set",
+                       label = "Cantidad de camas críticas", 
+                       value = capacidadUTI,
+                       icon = icon("procedures","fa-5x"), width = "90%")
+    })
+    
+    observeEvent(input$CC_set, {
+      capacidadUTI <- input$CC_set
+      
+    })
+    
+    output$Vent_set <- renderUI({
+      numericInputIcon(inputId = "Vent_set",label = "Cantidad de ventiladores", 
+                       value = capacidadVent,
+                       icon = icon("star-of-life","fa-5x"), width = "90%")
+    })
+    
+    observeEvent(input$Vent_set, {
+      capacidadVent <- input$Vent_set
+    })
+    
+    output$Porc_crit <- renderUI({
+      knobInput(inputId = "Porc_crit",
+                label = HTML("Porcentaje de camas críticas <br/> destinadas a COVID:"),
+                value = 70,
+                min = 0, max = 100,post = "%",
+                displayPrevious = TRUE, width = "80%", height = "80%",
+                lineCap = "round",
+                fgColor = "#d1e1f0",
+                inputColor = "#85abcc")
+    })
+    output$Vent_por_CC <- renderUI({
+      knobInput(inputId = "Vent_por_CC",
+                label = HTML("Tasa de días de uso de ventiladores <br/> por días de uso de cama crítica:"),
+                value = 65,
+                min = 0, max = 100,post = "%",
+                displayPrevious = TRUE, width = "80%", height = "80%",
+                lineCap = "round",
+                fgColor = "#c0edd2",
+                inputColor = "#85abcc")
+    })
+
 }
 
 
