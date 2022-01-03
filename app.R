@@ -1356,7 +1356,6 @@ server <- function (input, output, session) {
         })
         
         if (input$icu_beds==T & nrow(data_comp)>0) {
-          
           plot_comp <-  plot_comp %>% layout(xaxis = list(title="Date"), yaxis = list(title="Value"))    
           plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
           plot_comp <-  add_segments(plot_comp, x= data_comp$fechaDia[1], xend = max(data_comp$fechaDia), y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
@@ -2577,13 +2576,13 @@ server <- function (input, output, session) {
   observeEvent(input$EEgo, {
     withProgress(message = "Cargando...", value = 0, {
       incProgress(.25)
-      EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country)
+      EETableSummaryOptimista <<- runScenario("OPTIMISTA", input$country, iso_country, vent = if (is.null(input$Vent_por_CC)) {NULL} else {input$Vent_por_CC})
       incProgress(.25)
-      EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country)
+      EETableSummaryRealLife <<- runScenario("REAL_LIFE", input$country, iso_country, vent = if (is.null(input$Vent_por_CC)) {NULL} else {input$Vent_por_CC})
       incProgress(.25)
-      EETableSummaryBase <<- runScenario("BASE", input$country, iso_country)
+      EETableSummaryBase <<- runScenario("BASE", input$country, iso_country, vent = if (is.null(input$Vent_por_CC)) {NULL} else {input$Vent_por_CC})
       incProgress(.25)
-      EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country)
+      EESummaryNoVac <<- runScenario("NO_VAC", input$country, iso_country, vent = if (is.null(input$Vent_por_CC)) {NULL} else {input$Vent_por_CC})
       
     })
     
@@ -3082,12 +3081,20 @@ server <- function (input, output, session) {
     output$Vent_por_CC <- renderUI({
       knobInput(inputId = "Vent_por_CC",
                 label = HTML("Tasa de días de uso de ventiladores <br/> por días de uso de cama crítica:"),
-                value = 65,
+                value = unique(EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="porcentajeUtiVent"])*100,
                 min = 0, max = 100,post = "%",
                 displayPrevious = TRUE, width = "80%", height = "80%",
                 lineCap = "round",
                 fgColor = "#c0edd2",
                 inputColor = "#85abcc")
+    })
+    
+    observeEvent(input$Vent_por_CC,{
+      shinyjs::hide("downloadEE")
+      shinyjs::hide("EESummaryTable")
+      shinyjs::hide("EESummaryTable2")
+      shinyjs::hide("EESummaryTable3")
+      
     })
 
 }

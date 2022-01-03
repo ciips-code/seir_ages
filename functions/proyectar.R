@@ -594,8 +594,12 @@ actualizaPlot <- function(input,output,session) {
             # , range = c(0,60000)
           } else if (input$compart_a_graficar == "Ic: Infectious (severe)" |
                      input$compart_checkbox  == "Ic: Infectious (severe)") {
+            if (is.null(input$Porc_crit)==F) {
+              porcAsignadoCovid <- input$Porc_crit/100
+            }
+            
             plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
-            plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = "ICU beds (70%)", line=list(color="#fc9272", dash="dot"))
+            plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = paste0("ICU beds (",round(porcAsignadoCovid*100,0),"%)"), line=list(color="#fc9272", dash="dot"))
             plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
             plot <-  plot %>% layout(xaxis = list(title = "Fecha"), 
                                      yaxis = list(title = paste("Compartimento:",compart_label)))

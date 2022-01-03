@@ -6,7 +6,8 @@ runScenario <- function (escenario,
                          modifEfectividadSens=NULL,
                          modifCostoEventosSens=NULL,
                          modifCoberturaSens=NULL,
-                         sensScenario=NULL
+                         sensScenario=NULL,
+                         vent=NULL
                          ) {
   print(paste(escenario,sensScenario))
   if (sensEE == F) {
@@ -162,8 +163,12 @@ runScenario <- function (escenario,
                                                       EEParams2$costoEvento$pais==iso_country]
   porcentajeAsint <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="porcentajeAsint" & 
                                                    EEParams2$costoEvento$pais==iso_country]
-  porcentajeUtiVent <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="porcentajeUtiVent" & 
-                                                     EEParams2$costoEvento$pais==iso_country]
+  if (is.null(vent)) {
+    porcentajeUtiVent <- EEParams2$costoEvento$valor[EEParams2$costoEvento$costoEvento=="porcentajeUtiVent" & 
+                                                       EEParams2$costoEvento$pais==iso_country]
+  } else {
+    porcentajeUtiVent <- vent / 100
+  }
   
   `AVACs perdidos (d)` <- sum(sapply(proyBaseEE[["ylqd: Years lost Qualy Disc"]][tInicio:tFecha],simplify = T,sum))
   `Casos totales` <- sum(sapply(proyBaseEE[["i: Daily infectious"]][tInicio:tFecha],simplify = T,sum))
