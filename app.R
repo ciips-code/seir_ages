@@ -123,6 +123,9 @@ server <- function (input, output, session) {
   counterEE <<-0
   disable("go")
   
+  addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+  addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+  
   observeEvent(input$go, {
     ejecutarProyeccionConParametrosUI(input, output, session)
   })
