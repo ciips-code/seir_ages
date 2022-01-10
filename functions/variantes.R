@@ -1,4 +1,4 @@
-# Efecto variantes c(transmision, casos moderados, graves, muerte) con respecto a alpha
+# Efecto variantes c(transmision, casos moderados, graves, muerte) con respecto a alpha + efectividad de inmunidad
 variantes <<- list(
   'alpha' = c(1,1,1,1),
   'beta' = c(1,1,1,1),
