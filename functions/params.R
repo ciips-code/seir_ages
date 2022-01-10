@@ -4,6 +4,7 @@ setParameters <- function () {
   # crea matrices de contacto y efectividad - set TRUE si queremos observada
   use_empirical_mc <<- T
   immunityStates <<- c("No immunity", "Recovered", "1Dosis", "2Dosis")
+  # immunityStates <<- c("No immunity", "Recovered", "Parcial", "Completa", "Vencido")
   ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+")
   ageGroupsV <<- c("00","18","30","40","50", "60", "70", "80")
   matrixNames <<- list(immunityStates,

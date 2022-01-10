@@ -124,14 +124,19 @@ getUI <- function () {
                                       ))
                     ),
                     column(5,
-                           radioGroupButtons(
-                             inputId = "select_map",
-                             choices = c("Casos", 
-                                         "Defunciones"),
-                             status = "success"),
                            withSpinner(
-                      
-                      leafletOutput("map"),type = 8, size = .5, color = "#bdbdbd"))
+                             fluidRow(leafletOutput("map"),type = 8, size = .5, color = "#bdbdbd")),
+                             fluidRow(
+                               column(12,  align="right",
+                                      radioGroupButtons(
+                                       inputId = "select_map",
+                                       size="xs",
+                                       choices = c("Casos", 
+                                                   "Defunciones"),
+                                       status = "info"))
+                             )
+                           )
+                           
             ),
             
             br(),

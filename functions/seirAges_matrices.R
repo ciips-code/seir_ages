@@ -32,7 +32,7 @@ seir_ages <- function(dias,
                       relaxFactor,
                       country,
                       modificador_tiempoP = NULL,
-                      usarVariantes = F
+                      usarVariantes = T
                       # tablaDeAnosDeVidaPerdidos
 ){
   print(modif_porc_cr)
@@ -141,7 +141,7 @@ seir_ages <- function(dias,
       # } else if (country == "Costa Rica") {
       #   beta = beta * 1.10
       # }
-      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta
+      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes[5]
     }
     
     # resto seir
@@ -150,9 +150,9 @@ seir_ages <- function(dias,
     
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[2]
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[2]*modificadorVariantes[5]
     
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[3]
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[3]*modificadorVariantes[5]
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     
@@ -160,7 +160,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[4] * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[4] * modif_ifr/porc_cr*modif_porc_cr  * modificadorVariantes[5] # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
       } else if (country == "Peru") {
