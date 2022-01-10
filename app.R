@@ -182,9 +182,10 @@ server <- function (input, output, session) {
   dates <<- seq(as.Date(date1, "%d-%m-%Y"), as.Date(date2, "%d-%m-%Y"), by = "month")
   dateIndex <<- 1
   
-  addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
-  addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
-  
+  # TODO: Agregar que se cargue automaticamente esta cajita en las NPIs
+  # addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+  # addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+   
   if (primeraVez==T) {
     customBeta <<- data.frame(start=NA,
                              end=NA,
