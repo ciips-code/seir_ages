@@ -63,7 +63,10 @@ getUI <- function () {
                      ),
             br(),
             br(),
-            fluidRow(column(5, 
+            fluidRow(br(),
+                     br(),
+                     br(),
+                     column(5, 
                             offset = 1,
                             wellPanel(style = "height:330px;",
                                       em("Ultimos datos disponibles (", 
@@ -120,7 +123,15 @@ getUI <- function () {
                                         )
                                       ))
                     ),
-                    column(5,withSpinner(leafletOutput("map"),type = 8, size = .5, color = "#bdbdbd"))
+                    column(5,
+                           radioGroupButtons(
+                             inputId = "select_map",
+                             choices = c("Casos", 
+                                         "Defunciones"),
+                             status = "success"),
+                           withSpinner(
+                      
+                      leafletOutput("map"),type = 8, size = .5, color = "#bdbdbd"))
             ),
             
             br(),

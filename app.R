@@ -3100,6 +3100,13 @@ server <- function (input, output, session) {
       shinyjs::hide("EESummaryTable3")
       
     })
+    
+    observeEvent(input$select_map, {
+      if (primeraVez) {primeraVez<<-F} else {
+        actualizaMapa(input, output, session)  
+      }
+      
+    })
 
 }
 

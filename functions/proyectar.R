@@ -57,7 +57,7 @@ actualizaMapa <- function(input, output, session) {
   
   
   # print(iso_country)
-  map_tiles <- subset(OWDSummaryData,metric=="totalDeathsPerMillon") %>% dplyr::arrange(value)
+  map_tiles <- subset(OWDSummaryData,metric==if (input$select_map=="Casos") {"totalCasesPerMillon"} else {"totalDeathsPerMillon"}) %>% dplyr::arrange(value)
   map_tiles$tile <- as.numeric(rownames(map_tiles))
   map_tiles$SOV_A3 <- map_tiles$iso_code
   map <- merge(map,map_tiles)
@@ -83,8 +83,7 @@ actualizaMapa <- function(input, output, session) {
                                       pal = pal, 
                                       values = ~value, 
                                       opacity = .6, 
-                                      title = "Muertes Acum. </br>
-                                              c/Mill. hab.") %>%
+                                      title = if (input$select_map=="Casos") {"Casos Acum. </br>c/Mill. hab."} else {"Muertes Acum. </br>c/Mill. hab."}) %>%
                     addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
                     setView(lng = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[1,1],
                             lat = gCentroid(subset(map, ADM0_A3 ==iso_country, byid = T))@bbox[2,1],

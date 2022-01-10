@@ -1706,6 +1706,7 @@ updateDataOWD <- function (countries) {
     totalTestPerMillon <- as.numeric(last(filteredData$total_tests_per_thousand[filteredData$total_tests_per_thousand!=""]))*1000
     dailyTests <- mean(tail(as.numeric(filteredData$new_tests[filteredData$new_tests!=""]), 7))
     totalDeathsPerMillon <- totalDeaths / population * 1000000
+    totalCasesPerMillon <- totalCases / population * 1000000
     filteredData <- data.frame(iso_code=p,
                                metric=c("population",
                                         "totalCases7",
@@ -1717,7 +1718,8 @@ updateDataOWD <- function (countries) {
                                         "lifeExp",
                                         "totalTestPerMillon",
                                         "dailyTests",
-                                        "totalDeathsPerMillon"),
+                                        "totalDeathsPerMillon",
+                                        "totalCasesPerMillon"),
                                value=c(population,
                                        totalCases7,
                                        dailyCases,
@@ -1728,7 +1730,8 @@ updateDataOWD <- function (countries) {
                                        lifeExp,
                                        totalTestPerMillon,
                                        dailyTests,
-                                       totalDeathsPerMillon)
+                                       totalDeathsPerMillon,
+                                       totalCasesPerMillon)
                     )
     OWDSummaryData <- rbind.fill(OWDSummaryData,filteredData)
     print(p)
