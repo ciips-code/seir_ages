@@ -2,12 +2,39 @@
 # fechas_master <<- seq(as.Date("2020-01-01"),
 #                       as.Date("2024-01-01"),by=1)
 
+
+getMatrizModificadoresVariantes <<- function(t,h,c,m,i) {
+  return (matrix(data=c(
+    rep(t,length(ageGroups)), # Modificador de transmision
+    rep(h,length(ageGroups)), # Modificador de hospitalizacion
+    rep(c,length(ageGroups)), # Modificador de criticos
+    rep(m,length(ageGroups)), # Modificador de muerte
+    rep(i,length(ageGroups)) # Modificador de inmunidad (?)
+  ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
+}
+
+getMatrizModificadoresVariantesSingle <<- function(v) {
+  return (matrix(data=c(
+    rep(v,length(ageGroups)), # Modificador de transmision
+    rep(v,length(ageGroups)), # Modificador de hospitalizacion
+    rep(v,length(ageGroups)), # Modificador de criticos
+    rep(v,length(ageGroups)), # Modificador de muerte
+    rep(v,length(ageGroups)) # Modificador de inmunidad (?)
+  ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
+}
+
+sinModificacion = getMatrizModificadoresVariantesSingle(1)
+modificadorCero = getMatrizModificadoresVariantesSingle(0)
+
+modificadores = c('transmision','hospitalizacion','critico','muerte','innumidad')
+
 variantes <<- list(
-  'alpha' = c(1,1,1,1,1),
-  'beta' = c(1,1,1,1,1),
-  'gamma' = c(1,1,1,1,1),
-  'delta' = c(1,1,1,1,1),
-  'omicron' = c(1.3,0.5,0.3,0.1,1)
+  'alpha' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
+  'beta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
+  'gamma' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
+  'delta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
+  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.44),
+                            getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.16),sinModificacion),modificadores)
 )
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
@@ -36,16 +63,20 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   transicionesEpidemiologicas <<- list(
     'ARG' = transicionesEpidemiologicasArg
   )
-  modificador = c(1,1,1,1,1)
+  modificador = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores)
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {
     for (fechaTransicion in names(transicionesEpidemiologicas[[iso_country]])) {
       tFecha <- which(fechas_master == as.Date(fechaTransicion))
       if (t>=tFecha) {
         col = 0
-        modificador = c(0,0,0,0,0)
+        modificador = setNames(list(modificadorCero,modificadorCero,modificadorCero,modificadorCero,modificadorCero),modificadores)
         for (proporcion in  transicionesEpidemiologicas[[iso_country]][[fechaTransicion]]) {
           col = col + 1
-          modificador = modificador + proporcion *  variantes[[col]]
+          print(paste(t,col))
+          # browser( expr = { t == 303 })
+          valorProp = lapply(variantes[[col]],"*",proporcion)
+          modificador = Map("+", modificador, valorProp)
+          # modificador = modificador + proporcion *  variantes[[col]]
         }
       }
     }

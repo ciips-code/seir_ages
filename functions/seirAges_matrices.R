@@ -76,7 +76,7 @@ seir_ages <- function(dias,
     if (usarVariantes) {
       modificadorVariantes = obtenerModificadorDeVariante(t, iso_country)
     } else {
-      modificadorVariantes = c(1,1,1,1)
+      modificadorVariantes = getMatrizModificadoresVariantesSingle(1)
     }
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
@@ -122,9 +122,9 @@ seir_ages <- function(dias,
       e[[t-1]] = apor*bpor/cpor
       e[[t-1]] <- ifelse(is.na(e[[t-1]]),0,e[[t-1]])
       e[[t-1]] <- ifelse(e[[t-1]]<0.1,0,e[[t-1]])
-      e[[t-1]] <- e[[t-1]] * modificadorVariantes[1]
+      e[[t-1]] <- e[[t-1]] * modificadorVariantes[[1]]
     } else {
-      beta       = beta * relaxValue[t] * modificadorVariantes[1]
+      beta       = beta * relaxValue[t]
       # if (country == "Argentina") {
       #   beta = beta * 0.98
       # } else if (country == "Peru") {
@@ -142,7 +142,8 @@ seir_ages <- function(dias,
       # } else if (country == "Costa Rica") {
       #   beta = beta * 1.10
       # }
-      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes[5]
+      # browser(exp={t==600})
+      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes[[1]] * modificadorVariantes[[5]]
     }
     
     # resto seir
@@ -151,9 +152,9 @@ seir_ages <- function(dias,
     
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[2]*modificadorVariantes[5]
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[[2]]*modificadorVariantes[[5]]
     
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[3]*modificadorVariantes[5]
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]*modificadorVariantes[[5]]
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     
@@ -161,7 +162,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[4] * modif_ifr/porc_cr*modif_porc_cr  * modificadorVariantes[5] # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[[4]] * modif_ifr/porc_cr*modif_porc_cr  * modificadorVariantes[[5]] # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
       } else if (country == "Peru") {
