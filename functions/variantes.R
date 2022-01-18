@@ -19,7 +19,7 @@ getMatrizModificadoresVariantesSingle <<- function(v) {
     rep(v,length(ageGroups)), # Modificador de hospitalizacion
     rep(v,length(ageGroups)), # Modificador de criticos
     rep(v,length(ageGroups)), # Modificador de muerte
-    rep(v,length(ageGroups)) # Modificador de inmunidad (?)
+    rep(v,length(ageGroups)) # Modificador de inmunidad (?) Es una matriz pero no deberia serlo, MODIFICAR
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
@@ -34,7 +34,8 @@ variantes <<- list(
   'gamma' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
   'delta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
   'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.44),
-                            getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.16),sinModificacion),modificadores)
+                            getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.16),
+                            getMatrizModificadoresVariantesSingle(0.5)),modificadores)
 )
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
@@ -72,7 +73,7 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
         modificador = setNames(list(modificadorCero,modificadorCero,modificadorCero,modificadorCero,modificadorCero),modificadores)
         for (proporcion in  transicionesEpidemiologicas[[iso_country]][[fechaTransicion]]) {
           col = col + 1
-          print(paste(t,col))
+          # print(paste(t,col))
           # browser( expr = { t == 303 })
           valorProp = lapply(variantes[[col]],"*",proporcion)
           modificador = Map("+", modificador, valorProp)

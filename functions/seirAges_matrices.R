@@ -35,7 +35,6 @@ seir_ages <- function(dias,
                       usarVariantes = T
                       # tablaDeAnosDeVidaPerdidos
 ){
-  print(modif_porc_cr)
   # diasVacunacion = diasVacunacion
   
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
@@ -143,7 +142,7 @@ seir_ages <- function(dias,
       #   beta = beta * 1.10
       # }
       # browser(exp={t==600})
-      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes[[1]] * modificadorVariantes[[5]]
+      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes[[1]]
     }
     
     # resto seir
@@ -152,9 +151,9 @@ seir_ages <- function(dias,
     
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[[2]]*modificadorVariantes[[5]]
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[[2]]
     
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]*modificadorVariantes[[5]]
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     
@@ -162,7 +161,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[[4]] * modif_ifr/porc_cr*modif_porc_cr  * modificadorVariantes[[5]] # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[[4]] * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
       } else if (country == "Peru") {
@@ -215,8 +214,9 @@ seir_ages <- function(dias,
     # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
     losQueHoyPierdenImunidad = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                                       dimnames = matrixNames)
-    if (t>duracion_inmunidad+1) {
-      losQueHoyPierdenImunidad = u[[t-duracion_inmunidad]]
+    duracionInmunidad_loop = duracion_inmunidad * modificadorVariantes[[5]][1,1]
+    if (t>duracionInmunidad_loop+1) {
+      losQueHoyPierdenImunidad = u[[t-duracionInmunidad_loop]]
       U[[t]] = U[[t]] - losQueHoyPierdenImunidad
     }
     R[[t]]      = U[[t]] + D[[t]]

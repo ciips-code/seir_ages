@@ -9,7 +9,7 @@ runScenario <- function (escenario,
                          sensScenario=NULL,
                          vent=NULL
                          ) {
-  print(paste(escenario,sensScenario))
+  # print(paste(escenario,sensScenario))
   if (sensEE == F) {
     modifCostosSens <- c(0,0)  
     modifEfectividadSens <- c(0,0) 
@@ -19,8 +19,8 @@ runScenario <- function (escenario,
   } else {
     sensScenario <- if (sensScenario=="low") {1} else {2}
   }
-  print(modifEfectividadSens)
-  print(sensScenario)
+  # print(modifEfectividadSens)
+  # print(sensScenario)
   
   
   
