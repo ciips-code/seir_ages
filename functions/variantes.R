@@ -2,7 +2,10 @@
 # fechas_master <<- seq(as.Date("2020-01-01"),
 #                       as.Date("2024-01-01"),by=1)
 
-
+ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80+")
+immunityStates <<- c("No immunity", "Recovered", "1Dosis", "2Dosis")
+matrixNames <<- list(immunityStates,
+                     ageGroups)
 getMatrizModificadoresVariantes <<- function(t,h,c,m,i) {
   return (matrix(data=c(
     rep(t,length(ageGroups)), # Modificador de transmision
@@ -33,15 +36,18 @@ variantes <<- list(
   'beta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
   'gamma' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
   'delta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
+  # 'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.10),
+  #                           getMatrizModificadoresVariantesSingle(0.08),getMatrizModificadoresVariantesSingle(0.04),
+  #                           getMatrizModificadoresVariantesSingle(0.5)),modificadores)
   'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.44),
-                            getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.16),
-                            getMatrizModificadoresVariantesSingle(0.5)),modificadores)
+                            getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.09),
+                            getMatrizModificadoresVariantesSingle(0.3)),modificadores)
 )
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
-  fechaTransicionOmicron <- as.Date("2021-11-01")
+  fechaTransicionOmicron <- as.Date("2021-12-01")
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
-  periodoTransicionOmicron <- 45
+  periodoTransicionOmicron <- 60
   fechas_curva <<- seq(fechaTransicionOmicron,
                        fechaTransicionOmicron+periodoTransicionOmicron,by=1)
   

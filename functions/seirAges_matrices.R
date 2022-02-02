@@ -77,6 +77,7 @@ seir_ages <- function(dias,
     } else {
       modificadorVariantes = getMatrizModificadoresVariantesSingle(1)
     }
+    duracionIcLoop = duracionIc * modificadorVariantes[[5]]
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
@@ -153,7 +154,7 @@ seir_ages <- function(dias,
     
     Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[[2]]
     
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIc + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIcLoop + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     
@@ -161,7 +162,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIc * (ifrm) * modificadorVariantes[[4]] * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIc]
+      d[[t]]      = Ic[[t-1]]/duracionIcLoop * (ifrm) * modificadorVariantes[[4]] * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIcLoop]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
       } else if (country == "Peru") {
@@ -209,7 +210,7 @@ seir_ages <- function(dias,
     D[[t]]      = D[[t-1]] + d[[t-1]]
     u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +
                   Ig[[t-1]]/duracionIg +
-                  Ic[[t-1]]/duracionIc * (1-ifr/porc_cr*modif_porc_cr)
+                  Ic[[t-1]]/duracionIcLoop * (1-ifr/porc_cr*modif_porc_cr)
     U[[t]]      = U[[t-1]] + u[[t-1]]
     # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
     losQueHoyPierdenImunidad = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
@@ -278,8 +279,9 @@ seir_ages <- function(dias,
     }
     
     # # Salida de V
-    if (t>tiempoV+1) {
-      totSalidaVHoy = v[[t-tiempoV]][vacuna,]
+    loopTiempoV = tiempoV * modificadorVariantes[[5]][1,1]
+    if (t>loopTiempoV+1) {
+      totSalidaVHoy = v[[t-loopTiempoV]][vacuna,]
       # reasignar entre 3 y 4 de acuerdo a proporciones
       porc3 = V[[t-1]][3,] / (V[[t-1]][3,] + V[[t-1]][4,])
       porc3[is.na(porc3)] <- 0
@@ -318,15 +320,23 @@ seir_ages <- function(dias,
     # Pasar de renglon a "No inmunes" a los vacunados que vencen (tiempoP, index 5 en paramvac)
     # Vuelve a No inmunes los que terminan su tiempo de proteccion
 
-    for (vacuna in c(3:nrow(paramVac))) {
+    for (vacuna in c(4:nrow(paramVac))) {
       if (is.null(modificador_tiempoP)==F) {
         tiempoP = modificador_tiempoP  
       } else {
         tiempoP = as.numeric(paramVac[vacuna,5])  
       }
+      loopTiempoP = tiempoP * modificadorVariantes[[5]][1,1]
+      porcentajeSinRefuerzo = 1
+      S[[t]][vacuna,] =  S[[t]][vacuna,] - (S[[t]][vacuna,]/loopTiempoP) * porcentajeSinRefuerzo
+      S[[t]][1,]=S[[t]][1,] + (S[[t]][vacuna,]/loopTiempoP) * porcentajeSinRefuerzo
       
-      S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[t]][vacuna,]/tiempoP
-      S[[t]][1,]=S[[t]][1,] + S[[t]][vacuna,]/tiempoP
+      # tVacunadosQueVencenHoy = t - tiempoP
+      # if (tVacunadosQueVencenHoy>1) {
+      #   porcentajeSinRefuerzo = .2
+      #   S[[t]][vacuna,] =  S[[t]][vacuna,] - S[[tVacunadosQueVencenHoy]][vacuna,] * porcentajeSinRefuerzo
+      #   S[[t]][1,]=S[[t]][1,] + S[[tVacunadosQueVencenHoy]][vacuna,] * porcentajeSinRefuerzo
+      # }
     }
 
     tot[[t]] = S[[t]] + V[[t]] + E[[t]] + I[[t]] + R[[t]]
