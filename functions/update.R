@@ -22,7 +22,7 @@ update <-  function(pais,diasDeProyeccion) {
     # url <- 'https://sisa.msal.gov.ar/datos/descargas/covid-19/files/Covid19Casos.zip'
     # download.file(url, "Covid19Casos.zip")
     # unzip("Covid19Casos.zip")
-    # file.remove('Covid19Casos.zip')
+    #  
     # file.remove('datos_nomivac_covid19.csv')
     
     data <- read.csv("Covid19Casos.csv", 
@@ -1567,7 +1567,12 @@ update <-  function(pais,diasDeProyeccion) {
   
   eval(parse(text=paste0('countryData$',
                          pais,
-                         ' <- list(def=def,vac=Vacunas, vac2=Vacunas2, vac0=Vacunas0, casos=casos)')))
+                         ' <- list(
+                         def=def,
+                         vac=Vacunas, 
+                         vac2=Vacunas2, 
+                         vac0=Vacunas0, 
+                         casos=casos)')))
   
   print(paste('Actualizado:',pais, Sys.Date()))
   save(countryData,file=paste0('data/data',pais,'.RData'))
@@ -1743,7 +1748,7 @@ updateDataOWD <- function (countries) {
 # actualiza OWD
 #updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHS", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
 
-#update(pais = "BRA", diasDeProyeccion = 1100)
+#update(pais = "ARG", diasDeProyeccion = 1100)
 
 # actualiza argentina y guarda RData
  #update(pais = "BHS", diasDeProyeccion = 1100)
