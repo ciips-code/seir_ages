@@ -36,12 +36,15 @@ variantes <<- list(
   'beta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
   'gamma' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
   'delta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
+  # 'omicron' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores)
+  
   # 'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.10),
   #                           getMatrizModificadoresVariantesSingle(0.08),getMatrizModificadoresVariantesSingle(0.04),
   #                           getMatrizModificadoresVariantesSingle(0.5)),modificadores)
+  
   'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.44),
-                            getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.09),
-                            getMatrizModificadoresVariantesSingle(0.3)),modificadores)
+                           getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.09),
+                           getMatrizModificadoresVariantesSingle(0.3)),modificadores)
 )
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
