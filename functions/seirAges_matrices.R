@@ -218,9 +218,6 @@ seir_ages <- function(dias,
     duracionInmunidad_loop = duracion_inmunidad * modificadorVariantes[[5]][1,1]
     if (t>duracionInmunidad_loop+1) {
       losQueHoyPierdenImunidad = u[[t-duracionInmunidad_loop]]
-      print(paste(t,'---------------'))
-      print(u[[t-duracionInmunidad_loop]])
-      print(U[[t-1]]/duracionInmunidad_loop)
       U[[t]] = U[[t]] - losQueHoyPierdenImunidad
     }
     R[[t]]      = U[[t]] + D[[t]]
