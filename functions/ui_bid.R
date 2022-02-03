@@ -190,7 +190,7 @@ getUI <- function () {
                                 "50%",
                                 "80%",
                                 "95%"),
-                    selected = "50%"
+                    selected = "80%"
                   ),
                   tags$small("% de la población a vacunar hasta el fin de 2021")
                 ),
