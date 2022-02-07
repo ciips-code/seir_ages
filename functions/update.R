@@ -1708,10 +1708,13 @@ updateDataOWD <- function (countries) {
     totalCases <- as.numeric(last(filteredData$total_cases))
     totalDeaths <- as.numeric(last(filteredData$total_deaths))
     lifeExp <- round(as.numeric(unique(filteredData$life_expectancy)), digits= 1)
-    totalTestPerMillon <- as.numeric(last(filteredData$total_tests_per_thousand[filteredData$total_tests_per_thousand!=""]))*1000
-    dailyTests <- mean(tail(as.numeric(filteredData$new_tests[filteredData$new_tests!=""]), 7))
+    totalTestPerMillon <- as.numeric(last(filteredData$total_tests_per_thousand[filteredData$total_tests_per_thousand!="NA"]))*1000
+    dailyTests <- mean(tail(as.numeric(filteredData$new_tests[filteredData$new_tests!="NA"]), 7))
+    if (length(dailyTests)==0) {dailyTests <- NA}
     totalDeathsPerMillon <- totalDeaths / population * 1000000
+    if (length(totalTestPerMillon)==0) {totalTestPerMillon <- NA}
     totalCasesPerMillon <- totalCases / population * 1000000
+    
     filteredData <- data.frame(iso_code=p,
                                metric=c("population",
                                         "totalCases7",
