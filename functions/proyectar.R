@@ -444,6 +444,22 @@ actualizaProy <- function (input,output,session) {
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")
   shinyjs::hide("EESummaryTable3")
+  
+
+  defaultScenario(iso_country)  
+  
+  
+  # customBeta <<- data.frame(start=NA,
+  #                           end=NA,
+  #                           beta=NA)
+  # addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+  # addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+  # tHoy <<- tVacunasCero+4
+  # addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+  # addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+  # dateIndex <<- 1
+  # 
+  
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
@@ -478,6 +494,7 @@ actualizaProy <- function (input,output,session) {
                     country=input$country
   )
   
+
   
 }
 

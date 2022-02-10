@@ -164,6 +164,7 @@ server <- function (input, output, session) {
   
   observeEvent(input$reset, {
     disable("go")
+    
     dateIndex <<- 1
     customBeta <<- data.frame(start=NA,
                               end=NA,

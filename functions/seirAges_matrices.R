@@ -36,7 +36,6 @@ seir_ages <- function(dias,
                       # tablaDeAnosDeVidaPerdidos
 ){
   # diasVacunacion = diasVacunacion
-  
   ifrm = matrix(rep(ifr,length(immunityStates)),length(immunityStates),length(ageGroups),byrow = T)
   matrixNames = list(immunityStates,
                ageGroups)
@@ -56,7 +55,7 @@ seir_ages <- function(dias,
   I[[1]][1,2] = 1 # La semilla del primer infectado
   
   # seir
-  tHoy <<- tVacunasCero
+  tHoy <<- tVacunasCero + 4
   factorModificadorBeta = NULL
   relaxValue = rep(1,dias)
   if (relaxNpi) {
@@ -85,7 +84,6 @@ seir_ages <- function(dias,
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
     # browser()
     if (customMatrix & t>tHoy+3 & is.na(customBeta[1,1]) == F) {
-      # browser()
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
     } else {
