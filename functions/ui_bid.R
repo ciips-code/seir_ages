@@ -1012,6 +1012,11 @@ getUI <- function () {
                                  fluidRow(column(3,selectInput("compartVac",
                                                                "Compartimento:",
                                                                choices = c("Susceptibles vacunados"="S_vac",
+                                                                           "Susceptibles 1"="S1",
+                                                                           "Susceptibles 2"="S2",
+                                                                           "Susceptibles 3"="S3",
+                                                                           "Susceptibles 4"="S4",
+                                                                           "U total"="utotal",
                                                                            "Vacunados"="V")))),
                                  fluidRow(column(12,
                                                  plotlyOutput("graficoVac"))))

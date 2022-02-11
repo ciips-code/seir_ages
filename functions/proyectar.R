@@ -648,13 +648,19 @@ actualizaPlot <- function(input,output,session) {
   })
   
   output$graficoVac <- renderPlotly({
+    # browser()
     data_graf_vac <- 
       bind_rows(
         tibble(Compart = "S_vac", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {colSums(x[3:4,])})) %>% as_tibble()),
+        tibble(Compart = "S1", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[1,]})) %>% as_tibble()),
+        tibble(Compart = "S2", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[2,]})) %>% as_tibble()),
+        tibble(Compart = "S3", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[3,]})) %>% as_tibble()),
+        tibble(Compart = "S4", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[4,]})) %>% as_tibble()),
+        tibble(Compart = "utotal", do.call(rbind, lapply(proy$`U: Survivors`,function (x) {colSums(x)})) %>% as_tibble()),
         tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()))
-    data_graf_vac$fecha <- c(fechas_master,fechas_master)
-    data_graf_vac$total <- rowSums(data_graf_vac[,c(-1,-10)])
-    
+    data_graf_vac$total <- rowSums(data_graf_vac[,c(-1)])
+    data_graf_vac = data_graf_vac[data_graf_vac$Compart==input$compartVac,]
+    data_graf_vac$fecha <- fechas_master
     plot_vac <- plot_ly(data_graf_vac[data_graf_vac$Compart==input$compartVac,])
     plot_vac <- add_trace(plot_vac,
                           x = ~fecha, 
