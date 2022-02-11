@@ -553,7 +553,6 @@ actualizaPlot <- function(input,output,session) {
   muertes$Compart <- "muertes_registradas"
   
   data_graf<<-union_all(data_graf,muertes)
-  browser()
   output$graficoUnico <- renderPlotly({
     # res_t()
     
