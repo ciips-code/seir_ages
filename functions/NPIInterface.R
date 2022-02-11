@@ -159,7 +159,6 @@ defaultScenario <- function (country) {
     rep("Physical distancing + Shielding of older people",1),
     rep("Physical distancing",1)
   )
-  browser()
   if (country=="ARG" & 
       identical(customBeta,default_ARG) |
       country=="ARG" & 
@@ -194,7 +193,6 @@ defaultScenario <- function (country) {
     addBoxTable("Physical distancing + Shielding of older people",input$country)
     addBoxTable("Physical distancing",input$country)
     dateIndex <<- 1
-    browser()
     
   }
   

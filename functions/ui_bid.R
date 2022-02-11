@@ -1007,7 +1007,14 @@ getUI <- function () {
                                                       tags$img(src='davies2.jpg')
                                              )
                                  )
-                        )
+                        ),
+                        tabPanel("Vacunación",
+                                 fluidRow(column(3,selectInput("compartVac",
+                                                               "Compartimento:",
+                                                               choices = c("Susceptibles vacunados"="S_vac",
+                                                                           "Vacunados"="V")))),
+                                 fluidRow(column(12,
+                                                 plotlyOutput("graficoVac"))))
                         # tabPanel("Escenarios guardados", id="SE", 
                         #          fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
                         #                   column(3,

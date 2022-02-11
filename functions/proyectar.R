@@ -553,7 +553,7 @@ actualizaPlot <- function(input,output,session) {
   muertes$Compart <- "muertes_registradas"
   
   data_graf<<-union_all(data_graf,muertes)
-  
+  browser()
   output$graficoUnico <- renderPlotly({
     # res_t()
     
@@ -646,6 +646,28 @@ actualizaPlot <- function(input,output,session) {
         } else (plot)
       }
     }
+  })
+  
+  output$graficoVac <- renderPlotly({
+    data_graf_vac <- 
+      bind_rows(
+        tibble(Compart = "S_vac", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {colSums(x[3:4,])})) %>% as_tibble()),
+        tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()))
+    data_graf_vac$fecha <- c(fechas_master,fechas_master)
+    data_graf_vac$total <- rowSums(data_graf_vac[,c(-1,-10)])
+    
+    plot_vac <- plot_ly(data_graf_vac[data_graf_vac$Compart==input$compartVac,])
+    plot_vac <- add_trace(plot_vac,
+                          x = ~fecha, 
+                          y = ~total,
+                          type = 'scatter', 
+                          mode = 'lines')
+    plot_vac <- layout(plot_vac,
+                       yaxis2 = list(overlaying = "y", side = "right"),
+                       xaxis = list(title = "Fecha"),
+                       yaxis = list(title = paste("Compartimento:", first(data_graf_vac$Compart))))
+    
+    plot_vac
   })
   
 }
