@@ -74,8 +74,8 @@ setParameters <- function () {
   
   paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
                              0,0,0,0,0,0,0,0,
-                             20,.2,30,.6,360,30,"SchemeIncomplete",1
-                             ,20,.4,30,.5,360,30,"SchemeComplete",2
+                             20,0,30,.8,360,30,"SchemeIncomplete",1
+                             ,20,0,30,.9,360,30,"SchemeComplete",2
                              # ,20,.4,0,.5,360,30,"SINOPH",1
                              # ,20,.4,0,.5,360,30,"SINOPH",2
   ), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)

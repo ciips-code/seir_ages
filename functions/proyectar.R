@@ -656,6 +656,8 @@ actualizaPlot <- function(input,output,session) {
         tibble(Compart = "S2", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[2,]})) %>% as_tibble()),
         tibble(Compart = "S3", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[3,]})) %>% as_tibble()),
         tibble(Compart = "S4", do.call(rbind, lapply(proy$`S: Susceptible`,function (x) {x[4,]})) %>% as_tibble()),
+        tibble(Compart = "VA3", do.call(rbind, lapply(proy$`vA: Daily vaccinations`,function (x) {x[3,]})) %>% as_tibble()),
+        tibble(Compart = "VA4", do.call(rbind, lapply(proy$`vA: Daily vaccinations`,function (x) {x[4,]})) %>% as_tibble()),
         tibble(Compart = "utotal", do.call(rbind, lapply(proy$`U: Survivors`,function (x) {colSums(x)})) %>% as_tibble()),
         tibble(Compart = "V", do.call(rbind, lapply(proy$`V: Vaccinated`,colSums)) %>% as_tibble()))
     data_graf_vac$total <- rowSums(data_graf_vac[,c(-1)])

@@ -1017,6 +1017,8 @@ getUI <- function () {
                                                                            "Susceptibles 3"="S3",
                                                                            "Susceptibles 4"="S4",
                                                                            "U total"="utotal",
+                                                                           "VA 3"="VA3",
+                                                                           "VA 4"="VA4",
                                                                            "Vacunados"="V")))),
                                  fluidRow(column(12,
                                                  plotlyOutput("graficoVac"))))
