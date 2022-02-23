@@ -1,3 +1,12 @@
+namesVac <<- list(immunityStates,
+                  c("latencia", "porcV", "tiempoV", "porcProt", "tiempoP", "intervaloInterDosis", "idVacuna", "dosis"))
+
+paramVac <<- matrix(data=c(0,0,0,0,0,0,0,0,
+                           0,0,0,0,0,0,0,0,
+                           20,0,30,.8,360,30,"SchemeIncomplete",1
+                           ,20,0,30,.9,360,30,"SchemeComplete",2
+), nrow=length(immunityStates), ncol=8, byrow=T, dimnames = namesVac)
+
 generaEscenarioSage <- function(uptake, goal, priorities, AvArg, N, tVacunasCero, diaCeroVac) {
   intervaloInterDosis = 30
   # TODO: Obtener intervalo inter dosis de paramvac
