@@ -17,18 +17,22 @@ setParameters <- function () {
   ####################################
   # Parametros externos principales, tomados de la bibliografía
   ####################################
+  diasHospCasosCriticos <<- 23 # Cita:
+  diasHospCasosGraves <<- 5 # Cita:
+  duracionMediaInf <<- 4.8 # Cita:
+  periodoPreinfPromedio <<- 5.84 # Cita:
   porcentajeCasosGraves <<- getMatrixForRow(c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628)) # Cita:
   porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
   porcAsignadoCovid <<- .7 # Cita:
   ifr <<- c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) # (por edad) Cita:
-  duracion_inmunidad <<- 180
-  duracion_proteccion <<- 360
+  duracion_inmunidad <<- 180 # Cita:
+  duracion_proteccion <<- 360 # Cita:
   tiempoP_mean <<- duracion_proteccion
   # Genera matrices de riesgo en base a una columna como c(No inmune, Recuperado, 1 dosis, 2 dosis)
-  modif_beta <<-  modif_beta_param <<- getMatrixForColumn(c(1,0.15,.6,.5))
-  modif_porc_gr <<-  modif_porc_gr_param <<- getMatrixForColumn(c(1,.3,.1,.05))
-  modif_porc_cr <<-  modif_porc_cr_param <<- getMatrixForColumn(c(1,.1,.03,.02))
-  modif_ifr <<-  modif_ifr_param <<- getMatrixForColumn(c(1,.05,.01,.005))
+  modif_beta <<-  modif_beta_param <<- getMatrixForColumn(c(1,0.15,.6,.5)) # Cita:
+  modif_porc_gr <<-  modif_porc_gr_param <<- getMatrixForColumn(c(1,.3,.1,.05)) # Cita:
+  modif_porc_cr <<-  modif_porc_cr_param <<- getMatrixForColumn(c(1,.1,.03,.02)) # Cita:
+  modif_ifr <<-  modif_ifr_param <<- getMatrixForColumn(c(1,.05,.01,.005)) # Cita:
   ## Adevertencia! otros parametros:
   #### Vacunas:  functions/vacunas.R
   #### Variantes:  functions/variantes.R

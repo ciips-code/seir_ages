@@ -190,7 +190,7 @@ getUI <- function () {
                                 "50%",
                                 "80%",
                                 "95%"),
-                    selected = "80%"
+                    selected = "95%"
                   ),
                   tags$small("% de la población a vacunar hasta el fin de 2021")
                 ),
@@ -717,16 +717,17 @@ getUI <- function () {
                                                                                     "Mid-range uptake: 50%",
                                                                                     "Low uptake: 20%",
                                                                                     "No vaccination"),
-                                                                        selected = "Mid-range uptake: 50%"
+                                                                        selected = "High uptake: 95%"
                                                                       ),
                                                                       selectInput(
                                                                         "vacDateGoal",
                                                                         label="Vaccination date goal",
                                                                         choices = c("Mid 2021"="2021-06-30",
                                                                                     "End 2021"="2021-12-31",
+                                                                                    "Early 2022"="2022-02-28",
                                                                                     "Mid 2022"="2022-05-30",
                                                                                     "End 2022"="2022-12-31"),
-                                                                        selected = "2021-12-31"
+                                                                        selected = "2022-02-28"
                                                                       ),
                                                                       selectInput(
                                                                         "vacStrat",

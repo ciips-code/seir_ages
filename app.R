@@ -84,21 +84,19 @@ flags <<- c(
 )
 
 # carga RData
-
-load("data/parameters.RData", envir = .GlobalEnv)
 load("data/map.RData", envir = .GlobalEnv)
 load("data/yearsLost.RData", envir = .GlobalEnv)
 load("data/OWDSummaryData.RData", envir = .GlobalEnv)
-#load("data/EEparams.RData", envir = .GlobalEnv)
 load("data/EEParams2.RData", envir = .GlobalEnv)
 load("data/parametrosEpi.RData", envir = .GlobalEnv)
 
 
 # lee funciones
+source("functions/params.R", encoding = "UTF-8")
+setParameters()
 source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
-source("functions/params.R", encoding = "UTF-8")
 source("functions/NPIInterface.R", encoding = "UTF-8")
 source("functions/ui.R", encoding = "UTF-8")
 source("functions/ui_bid.R", encoding = "UTF-8")
@@ -106,7 +104,6 @@ source("functions/EESummaryFunction.R", encoding = "UTF-8")
 source("functions/proyectar.R", encoding = "UTF-8")
 source("functions/variantes.R", encoding = "UTF-8")
 
-setParameters()
 
 customMatrix <<- F
 
