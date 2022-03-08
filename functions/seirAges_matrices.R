@@ -188,18 +188,22 @@ seir_ages <- function(dias,
     }
     R[[t]]      = U[[t]] + D[[t]]
     
-    # Pasajes S-V-S y U-S
+    S[[t]] = S[[t-1]] - e[[t-1]]
+    S[[t]][2,] = S[[t]][2,] + colSums(losQueHoyPierdenImunidad) - S[[t-1]][2,] / duracionInmunidad_loop
+    S[[t]][1,] = S[[t]][1,] + S[[t-1]][2,] / duracionInmunidad_loop
+    
+    # Pasajes S-V-S
     Vin = VquedaEnS =  Vout = vacunasDelDia = vacunasDelDia2 = vacunadosVacunaDia = vacunadosVacunaDia2 = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                    dimnames = matrixNames)
-    
+
     vacuna = 3
     latencia = as.numeric(paramVac[vacuna,1])
     porcV = as.numeric(paramVac[vacuna,2])
     tiempoV = as.numeric(paramVac[vacuna,3])
     porcProt = as.numeric(paramVac[vacuna,4])
     # agregar if escenarios hi y low
-    
-    
+
+
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
       # browser(expr = {t == 500 })
@@ -226,7 +230,7 @@ seir_ages <- function(dias,
         vacGroupActive = vacGroupActive + 1
       }
     }
-    
+
     # Salida de V
     loopTiempoV = tiempoV * modificadorVariantes$duracionInmumidad[1,1]
     totSalidaVHoy = V[[t-1]] / loopTiempoV
@@ -234,50 +238,56 @@ seir_ages <- function(dias,
     Vout[4,] <- totSalidaVHoy[4,]
     V[[t]][3,] = V[[t-1]][3,] + Vin[3,] - Vout[3,]
     V[[t]][4,] = V[[t-1]][4,] + Vin[4,] - Vout[4,]
-    
+
     v[[t]] = Vin
     # Empiezo a armar el S a partir de las transiciones
-    S[[t]] = S[[t-1]] - e[[t-1]]  + Vout
+    S[[t]] = S[[t]] + Vout
     S[[t]][1,] = S[[t]][1,] - colSums(Vin)
-    S[[t]][2,] = S[[t]][2,] + colSums(losQueHoyPierdenImunidad)
     # # Reasigno de renglon los que quedaron hoy en S luego de vacunarse
     S[[t]][1,]=S[[t]][1,] - colSums(VquedaEnS)
     S[[t]] =  S[[t]] + VquedaEnS
     
+    if (t > tVacunasCero + latencia + 30) {
+      losQuePodemosVacunarConSegundaEnTres = S[[t-1]][3,] / 30
+      S[[t]][3,]=S[[t]][3,] - losQuePodemosVacunarConSegundaEnTres
+      S[[t]][4,]=S[[t]][4,] + losQuePodemosVacunarConSegundaEnTres
+      vA[[t]][4,]=losQuePodemosVacunarConSegundaEnTres
+    }
+    
     
     # Saco de S3 los que cumplen 30 dias y los pasa a 4 (Aplicacion de 2da dosis)
-    if (t > tVacunasCero + latencia + 30) {
-
-      losQueHoyTienenQueRecibirLaSegunda = vA[[t-30]][3,]
-      losQuePodemosVacunarConSegundaEnTres = S[[t-1]][3,] / 30
-      losQueHayQueVacunarConSegundaEnDosRecu = losQueHoyTienenQueRecibirLaSegunda - losQuePodemosVacunarConSegundaEnTres
-      losQueHayQueVacunarConSegundaEnDosRecu[losQueHayQueVacunarConSegundaEnDosRecu<0] = 0
-
-      S[[t]][3,]=S[[t]][3,] - losQuePodemosVacunarConSegundaEnTres
-      S[[t]][2,]=S[[t]][2,] - losQueHayQueVacunarConSegundaEnDosRecu
-      S[[t]][2,][S[[t]][2,]<0]=0
-      S[[t]][4,]=S[[t]][4,] + losQuePodemosVacunarConSegundaEnTres + losQueHayQueVacunarConSegundaEnDosRecu
-      vA[[t]][4,]=losQuePodemosVacunarConSegundaEnTres + losQueHayQueVacunarConSegundaEnDosRecu
-      # Saca las segunda cuando se vence el período de cobertura
-      if (t > tVacunasCero + latencia + 30 + 150) {
-        S[[t]][4,]=S[[t]][4,] - S[[t-1]][4,] / 150
-        S[[t]][1,]=S[[t]][1,] + S[[t-1]][4,] / 150
-      }
-      fecha_fin_refuerzos = which(fechas_master == "2022-12-31")
-      if (t > (tVacunasCero + diasVacunacion) && t < fecha_fin_refuerzos) {
-        losQueHoyTienenQueRecibirElRefuerzo = vA[[t-150]][4,]
-        losQuePodemosVacunarConRefuerzoEnCuatro = S[[t-1]][4,] / 150
-        losQueHayQueVacunarConRefuerzoEnDosRecu = losQueHoyTienenQueRecibirElRefuerzo - losQuePodemosVacunarConRefuerzoEnCuatro
-        losQueHayQueVacunarConRefuerzoEnDosRecu[losQueHayQueVacunarConRefuerzoEnDosRecu<0] = 0
-        S[[t]][1,]=S[[t]][1,] - losQuePodemosVacunarConRefuerzoEnCuatro
-        S[[t]][2,]=S[[t]][2,] - losQueHayQueVacunarConRefuerzoEnDosRecu
-        losQueNoPudeDar = S[[t]][2,]*-1
-        losQueNoPudeDar[losQueNoPudeDar<0]=0
-        S[[t]][2,][S[[t]][2,]<0]=0
-        S[[t]][4,]=S[[t]][4,] + losQuePodemosVacunarConRefuerzoEnCuatro + losQueHayQueVacunarConRefuerzoEnDosRecu
-        vA[[t]][4,]=losQuePodemosVacunarConRefuerzoEnCuatro + losQueHayQueVacunarConRefuerzoEnDosRecu - losQueNoPudeDar
-      }
-    }
+    # if (t > tVacunasCero + latencia + 30) {
+    # 
+    #   losQueHoyTienenQueRecibirLaSegunda = vA[[t-30]][3,]
+    #   losQuePodemosVacunarConSegundaEnTres = S[[t-1]][3,] / 30
+    #   losQueHayQueVacunarConSegundaEnDosRecu = losQueHoyTienenQueRecibirLaSegunda - losQuePodemosVacunarConSegundaEnTres
+    #   losQueHayQueVacunarConSegundaEnDosRecu[losQueHayQueVacunarConSegundaEnDosRecu<0] = 0
+    # 
+    #   S[[t]][3,]=S[[t]][3,] - losQuePodemosVacunarConSegundaEnTres
+    #   S[[t]][2,]=S[[t]][2,] - losQueHayQueVacunarConSegundaEnDosRecu
+    #   S[[t]][2,][S[[t]][2,]<0]=0
+    #   S[[t]][4,]=S[[t]][4,] + losQuePodemosVacunarConSegundaEnTres + losQueHayQueVacunarConSegundaEnDosRecu
+    #   vA[[t]][4,]=losQuePodemosVacunarConSegundaEnTres + losQueHayQueVacunarConSegundaEnDosRecu
+    #   # Saca las segunda cuando se vence el período de cobertura
+    #   if (t > tVacunasCero + latencia + 30 + 150) {
+    #     S[[t]][4,]=S[[t]][4,] - S[[t-1]][4,] / 150
+    #     S[[t]][1,]=S[[t]][1,] + S[[t-1]][4,] / 150
+    #   }
+    #   fecha_fin_refuerzos = which(fechas_master == "2022-12-31")
+    #   if (t > (tVacunasCero + diasVacunacion) && t < fecha_fin_refuerzos) {
+    #     losQueHoyTienenQueRecibirElRefuerzo = vA[[t-150]][4,]
+    #     losQuePodemosVacunarConRefuerzoEnCuatro = S[[t-1]][4,] / 150
+    #     losQueHayQueVacunarConRefuerzoEnDosRecu = losQueHoyTienenQueRecibirElRefuerzo - losQuePodemosVacunarConRefuerzoEnCuatro
+    #     losQueHayQueVacunarConRefuerzoEnDosRecu[losQueHayQueVacunarConRefuerzoEnDosRecu<0] = 0
+    #     S[[t]][1,]=S[[t]][1,] - losQuePodemosVacunarConRefuerzoEnCuatro
+    #     S[[t]][2,]=S[[t]][2,] - losQueHayQueVacunarConRefuerzoEnDosRecu
+    #     losQueNoPudeDar = S[[t]][2,]*-1
+    #     losQueNoPudeDar[losQueNoPudeDar<0]=0
+    #     S[[t]][2,][S[[t]][2,]<0]=0
+    #     S[[t]][4,]=S[[t]][4,] + losQuePodemosVacunarConRefuerzoEnCuatro + losQueHayQueVacunarConRefuerzoEnDosRecu
+    #     vA[[t]][4,]=losQuePodemosVacunarConRefuerzoEnCuatro + losQueHayQueVacunarConRefuerzoEnDosRecu - losQueNoPudeDar
+    #   }
+    # }
     
     
     tot[[t]] = S[[t]] + V[[t]] + E[[t]] + I[[t]] + R[[t]]
