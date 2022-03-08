@@ -17,10 +17,10 @@ setParameters <- function () {
   ####################################
   # Parametros externos principales, tomados de la bibliografía
   ####################################
-  diasHospCasosCriticos <<- 23 # Cita:
-  diasHospCasosGraves <<- 5 # Cita:
-  duracionMediaInf <<- 4.8 # Cita:
-  periodoPreinfPromedio <<- 5.84 # Cita:
+  diasHospCasosCriticos <<- c(24.2,24.2,24.2,27.6,29.4,29.4,24.2,20.7) # Cita:
+  diasHospCasosGraves <<- c(2,3,3,3,4,4.5,5,5) # Cita:
+  duracionMediaInf <<- 6.8 # Cita:
+  periodoPreinfPromedio <<- 3.84 # Cita:
   porcentajeCasosGraves <<- getMatrixForRow(c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628)) # Cita:
   porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
   porcAsignadoCovid <<- .7 # Cita:

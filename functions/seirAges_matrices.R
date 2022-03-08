@@ -76,7 +76,8 @@ seir_ages <- function(dias,
     } else {
       modificadorVariantes = getMatrizModificadoresVariantesSingle(1)
     }
-    duracionIcLoop = duracionIc * modificadorVariantes[[5]]
+    browser()
+    duracionIcLoop = duracionIc * modificadorVariantes$duracionInmunidad
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
@@ -151,7 +152,7 @@ seir_ages <- function(dias,
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
     Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[[2]]
-    
+
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIcLoop + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]

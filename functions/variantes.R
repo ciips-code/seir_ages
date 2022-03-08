@@ -12,7 +12,7 @@ getMatrizModificadoresVariantes <<- function(t,h,c,m,i) {
     rep(h,length(ageGroups)), # Modificador de hospitalizacion
     rep(c,length(ageGroups)), # Modificador de criticos
     rep(m,length(ageGroups)), # Modificador de muerte
-    rep(i,length(ageGroups)) # Modificador de inmunidad (?)
+    rep(i,length(ageGroups)) # Modificador de duracion de la inmunidad (?)
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
@@ -22,29 +22,43 @@ getMatrizModificadoresVariantesSingle <<- function(v) {
     rep(v,length(ageGroups)), # Modificador de hospitalizacion
     rep(v,length(ageGroups)), # Modificador de criticos
     rep(v,length(ageGroups)), # Modificador de muerte
-    rep(v,length(ageGroups)) # Modificador de inmunidad (?) Es una matriz pero no deberia serlo, MODIFICAR
+    rep(v,length(ageGroups)), # Modificador de duracion de inmunidad 
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups))
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
 sinModificacion = getMatrizModificadoresVariantesSingle(1)
 modificadorCero = getMatrizModificadoresVariantesSingle(0)
 
-modificadores = c('transmision','hospitalizacion','critico','muerte','innumidad')
+modificadores = c('transmision',
+                  'hospitalizacion',
+                  'critico',
+                  'muerte',
+                  'duracionInnumidad',
+                  'modVacTransmision',
+                  'modVacGrave',
+                  'modVacCritico',
+                  'modVacMuerte')
 
 variantes <<- list(
-  'alpha' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
-  'beta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
-  'gamma' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
-  'delta' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores),
-  # 'omicron' = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores)
-  
-  # 'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.10),
-  #                           getMatrizModificadoresVariantesSingle(0.08),getMatrizModificadoresVariantesSingle(0.04),
-  #                           getMatrizModificadoresVariantesSingle(0.5)),modificadores)
-  
-  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),getMatrizModificadoresVariantesSingle(0.44),
-                           getMatrizModificadoresVariantesSingle(0.33),getMatrizModificadoresVariantesSingle(0.09),
-                           getMatrizModificadoresVariantesSingle(0.3)),modificadores)
+  'alpha' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
+  'beta' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
+  'gamma' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
+  'delta' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
+  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),
+                            getMatrizModificadoresVariantesSingle(0.44),
+                            getMatrizModificadoresVariantesSingle(0.33),
+                            getMatrizModificadoresVariantesSingle(0.122),
+                            getMatrizModificadoresVariantesSingle(0.31),
+                            getMatrizModificadoresVariantesSingle(0.735),
+                            getMatrizModificadoresVariantesSingle(0.439),
+                            getMatrizModificadoresVariantesSingle(0.377),
+                            getMatrizModificadoresVariantesSingle(0.315)
+                            ),
+                       modificadores)
 )
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
