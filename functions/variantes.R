@@ -6,13 +6,17 @@ ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80
 immunityStates <<- c("No immunity", "Recovered", "1Dosis", "2Dosis")
 matrixNames <<- list(immunityStates,
                      ageGroups)
-getMatrizModificadoresVariantes <<- function(t,h,c,m,i) {
+getMatrizModificadoresVariantes <<- function(t,h,c,m,i,vt,vh,vc,vm) {
   return (matrix(data=c(
     rep(t,length(ageGroups)), # Modificador de transmision
     rep(h,length(ageGroups)), # Modificador de hospitalizacion
     rep(c,length(ageGroups)), # Modificador de criticos
     rep(m,length(ageGroups)), # Modificador de muerte
-    rep(i,length(ageGroups)) # Modificador de duracion de la inmunidad (?)
+    rep(i,length(ageGroups)), # Modificador de duracion de la inmunidad
+    rep(vt,length(ageGroups)),
+    rep(vh,length(ageGroups)),
+    rep(vc,length(ageGroups)),
+    rep(vm,length(ageGroups))
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
@@ -21,12 +25,7 @@ getMatrizModificadoresVariantesSingle <<- function(v) {
     rep(v,length(ageGroups)), # Modificador de transmision
     rep(v,length(ageGroups)), # Modificador de hospitalizacion
     rep(v,length(ageGroups)), # Modificador de criticos
-    rep(v,length(ageGroups)), # Modificador de muerte
-    rep(v,length(ageGroups)), # Modificador de duracion de inmunidad 
-    rep(v,length(ageGroups)),
-    rep(v,length(ageGroups)),
-    rep(v,length(ageGroups)),
-    rep(v,length(ageGroups))
+    rep(v,length(ageGroups)) # Modificador de muerte
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
@@ -37,7 +36,7 @@ modificadores = c('transmision',
                   'hospitalizacion',
                   'critico',
                   'muerte',
-                  'duracionInnumidad',
+                  'duracionInmumidad',
                   'modVacTransmision',
                   'modVacGrave',
                   'modVacCritico',
@@ -87,13 +86,13 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   transicionesEpidemiologicas <<- list(
     'ARG' = transicionesEpidemiologicasArg
   )
-  modificador = setNames(list(sinModificacion,sinModificacion,sinModificacion,sinModificacion,sinModificacion),modificadores)
+  modificador = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores)
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {
     for (fechaTransicion in names(transicionesEpidemiologicas[[iso_country]])) {
       tFecha <- which(fechas_master == as.Date(fechaTransicion))
       if (t>=tFecha) {
         col = 0
-        modificador = setNames(list(modificadorCero,modificadorCero,modificadorCero,modificadorCero,modificadorCero),modificadores)
+        modificador = setNames(lapply(seq_len(9), function(X) modificadorCero),modificadores)
         for (proporcion in  transicionesEpidemiologicas[[iso_country]][[fechaTransicion]]) {
           col = col + 1
           # print(paste(t,col))

@@ -71,13 +71,13 @@ seir_ages <- function(dias,
   }
   vacGroupActive = 1
   for(t in 2:dias){
+    # browser()
     if (usarVariantes) {
       modificadorVariantes = obtenerModificadorDeVariante(t, iso_country)
     } else {
       modificadorVariantes = getMatrizModificadoresVariantesSingle(1)
     }
-    browser()
-    duracionIcLoop = duracionIc * modificadorVariantes$duracionInmunidad
+    duracionIcLoop = duracionIc * modificadorVariantes$duracionInmumidad
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
