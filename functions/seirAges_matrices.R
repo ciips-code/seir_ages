@@ -91,21 +91,6 @@ seir_ages <- function(dias,
       beta = contact_matrix * transmission_probability
       # print(beta)
     }
-    # if (coberturaMas60 > relaxationThreshold) {
-    #   beta[[t]] = contact_matrix_relaxed * transmission_probability[[t]]
-    # 
-    #   } else if (customMatrix==T & t>tHoy+3) {
-    #   rn <- rownames(customBeta[customBeta$start<=t & customBeta$end>=t,])
-    #   beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
-    #   #beta[[t]] = eval(parse(text=(customBeta$beta[as.numeric(rn)])))
-    # 
-    #   
-    #   }
-    #   else {
-    #   beta[[t]] = contact_matrix[[t]] * transmission_probability[[t]]
-    # }
-    
-    
     
     I_edad = colSums(I[[t-1]])
     N_edad = colSums(N)
@@ -124,25 +109,7 @@ seir_ages <- function(dias,
       e[[t-1]] <- e[[t-1]] * modificadorVariantes[[1]]
     } else {
       beta       = beta * relaxValue[t]
-      # if (country == "Argentina") {
-      #   beta = beta * 0.98
-      # } else if (country == "Peru") {
-      #   beta = beta * 1.07
-      # } else if (country == "Colombia") {
-      #   beta = beta * 1.05
-      # } else if (country == "Chile") {
-      #   beta = beta * 1.07
-      # } else if (country == "Mexico") {
-      #   beta = beta * 1.10
-      # } else if (country == "Brazil") {
-      #   beta = beta * .87
-      # } else if (country == "Uruguay") {
-      #   beta = beta * 1.15
-      # } else if (country == "Costa Rica") {
-      #   beta = beta * 1.10
-      # }
-      # browser(exp={t==600})
-      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes[[1]]
+      e[[t-1]] = S[[t-1]] * matrix((beta) %*% I_edad/N_edad, nrow=length(immunityStates), length(ageGroups),byrow = T) * modif_beta * modificadorVariantes$modVacTransmision * modificadorVariantes$transmision
     }
     
     # resto seir
@@ -151,9 +118,9 @@ seir_ages <- function(dias,
     
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes[[2]]
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes$hospitalizacion*modificadorVariantes$modVacGrave
 
-    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIcLoop + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes[[3]]
+    Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIcLoop + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes$critico*modificadorVariantes$modVacCritico
     
     I[[t]]      = Ii[[t]] + Ig[[t]] + Ic[[t]]
     
@@ -161,7 +128,7 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIcLoop * (ifrm) * modificadorVariantes[[4]] * modif_ifr/porc_cr*modif_porc_cr # siendo ifr = d[t]/i[t-duracionIi-duracionIcLoop]
+      d[[t]]      = Ic[[t-1]]/duracionIcLoop * (ifrm) * modificadorVariantes$muerte * modif_ifr/porc_cr*modif_porc_cr * modificadorVariantes$modVacMuerte # siendo ifr = d[t]/i[t-duracionIi-duracionIcLoop]
       if (country == "Argentina") {
         d[[t]] = d[[t]] * 0.89
       } else if (country == "Peru") {
@@ -214,7 +181,7 @@ seir_ages <- function(dias,
     # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
     losQueHoyPierdenImunidad = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,
                                       dimnames = matrixNames)
-    duracionInmunidad_loop = duracion_inmunidad * modificadorVariantes[[5]][1,1]
+    duracionInmunidad_loop = duracion_inmunidad * modificadorVariantes$duracionInmumidad[1,1]
     if (t>duracionInmunidad_loop+1) {
       losQueHoyPierdenImunidad = u[[t-duracionInmunidad_loop]]
       U[[t]] = U[[t]] - losQueHoyPierdenImunidad
@@ -261,7 +228,7 @@ seir_ages <- function(dias,
     }
     
     # Salida de V
-    loopTiempoV = tiempoV * modificadorVariantes[[5]][1,1]
+    loopTiempoV = tiempoV * modificadorVariantes$duracionInmumidad[1,1]
     totSalidaVHoy = V[[t-1]] / loopTiempoV
     Vout[3,] <- totSalidaVHoy[3,]
     Vout[4,] <- totSalidaVHoy[4,]

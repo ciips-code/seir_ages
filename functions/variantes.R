@@ -6,26 +6,22 @@ ageGroups <<- c("0-17", "18-29", "30-39", "40-49","50-59", "60-69", "70-79", "80
 immunityStates <<- c("No immunity", "Recovered", "1Dosis", "2Dosis")
 matrixNames <<- list(immunityStates,
                      ageGroups)
-getMatrizModificadoresVariantes <<- function(t,h,c,m,i,vt,vh,vc,vm) {
-  return (matrix(data=c(
-    rep(t,length(ageGroups)), # Modificador de transmision
-    rep(h,length(ageGroups)), # Modificador de hospitalizacion
-    rep(c,length(ageGroups)), # Modificador de criticos
-    rep(m,length(ageGroups)), # Modificador de muerte
-    rep(i,length(ageGroups)), # Modificador de duracion de la inmunidad
-    rep(vt,length(ageGroups)),
-    rep(vh,length(ageGroups)),
-    rep(vc,length(ageGroups)),
-    rep(vm,length(ageGroups))
-  ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
-}
 
 getMatrizModificadoresVariantesSingle <<- function(v) {
   return (matrix(data=c(
-    rep(v,length(ageGroups)), # Modificador de transmision
-    rep(v,length(ageGroups)), # Modificador de hospitalizacion
-    rep(v,length(ageGroups)), # Modificador de criticos
-    rep(v,length(ageGroups)) # Modificador de muerte
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups)) 
+  ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
+}
+
+getMatrizModificadoresVariantesSingleVac <<- function(v) {
+  return (matrix(data=c(
+    rep(1,length(ageGroups)),
+    rep(1,length(ageGroups)),
+    rep(v,length(ageGroups)),
+    rep(v,length(ageGroups)) 
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
@@ -52,10 +48,10 @@ variantes <<- list(
                             getMatrizModificadoresVariantesSingle(0.33),
                             getMatrizModificadoresVariantesSingle(0.122),
                             getMatrizModificadoresVariantesSingle(0.31),
-                            getMatrizModificadoresVariantesSingle(0.735),
-                            getMatrizModificadoresVariantesSingle(0.439),
-                            getMatrizModificadoresVariantesSingle(0.377),
-                            getMatrizModificadoresVariantesSingle(0.315)
+                            getMatrizModificadoresVariantesSingleVac(0.735),
+                            getMatrizModificadoresVariantesSingleVac(0.439),
+                            getMatrizModificadoresVariantesSingleVac(0.377),
+                            getMatrizModificadoresVariantesSingleVac(0.315)
                             ),
                        modificadores)
 )
