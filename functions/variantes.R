@@ -36,22 +36,24 @@ modificadores = c('transmision',
                   'modVacTransmision',
                   'modVacGrave',
                   'modVacCritico',
-                  'modVacMuerte')
+                  'modVacMuerte',
+                  'duracionDiasInternacion')
 
 variantes <<- list(
-  'alpha' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
-  'beta' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
-  'gamma' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
-  'delta' = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores),
-  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(1.365),
+  'alpha' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+  'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+  'gamma' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+  'delta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(2),
                             getMatrizModificadoresVariantesSingle(0.44),
                             getMatrizModificadoresVariantesSingle(0.33),
                             getMatrizModificadoresVariantesSingle(0.122),
-                            getMatrizModificadoresVariantesSingle(0.31),
-                            getMatrizModificadoresVariantesSingleVac(0.735),
-                            getMatrizModificadoresVariantesSingleVac(0.439),
-                            getMatrizModificadoresVariantesSingleVac(0.377),
-                            getMatrizModificadoresVariantesSingleVac(0.315)
+                            getMatrizModificadoresVariantesSingle(0.5),
+                            getMatrizModificadoresVariantesSingleVac(1.45),
+                            getMatrizModificadoresVariantesSingleVac(2.277),
+                            getMatrizModificadoresVariantesSingleVac(2.652),
+                            getMatrizModificadoresVariantesSingleVac(3.174),
+                            getMatrizModificadoresVariantesSingle(0.31)
                             ),
                        modificadores)
 )
@@ -82,13 +84,13 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   transicionesEpidemiologicas <<- list(
     'ARG' = transicionesEpidemiologicasArg
   )
-  modificador = setNames(lapply(seq_len(9), function(X) sinModificacion),modificadores)
+  modificador = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores)
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {
     for (fechaTransicion in names(transicionesEpidemiologicas[[iso_country]])) {
       tFecha <- which(fechas_master == as.Date(fechaTransicion))
       if (t>=tFecha) {
         col = 0
-        modificador = setNames(lapply(seq_len(9), function(X) modificadorCero),modificadores)
+        modificador = setNames(lapply(seq_len(10), function(X) modificadorCero),modificadores)
         for (proporcion in  transicionesEpidemiologicas[[iso_country]][[fechaTransicion]]) {
           col = col + 1
           # print(paste(t,col))

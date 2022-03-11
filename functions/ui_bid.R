@@ -203,7 +203,7 @@ getUI <- function () {
                     choices = c("Baja"="Low",
                                 "Media"="Middle",
                                 "Alta"="High"),
-                    selected = "Middle"
+                    selected = "High"
                   ),
                   tags$small(
                     "* Eficacia (muerte, caso critico, hospitalización) Alta: 100%, 80%, 80%; Media: 100%, 80%, 50%; Baja: 80%, 50%, 50%"
@@ -746,7 +746,7 @@ getUI <- function () {
                                                                                     "B2. 100%, 80%, 50%",
                                                                                     "C1. 80%, 80%, 50%",
                                                                                     "C2. 80%, 50%, 50%"),
-                                                                        selected = "B2. 100%, 80%, 50%"
+                                                                        selected = "B1. 100%, 80%, 80%"
                                                                       )
                                                                       # ,
                                                                       # selectInput(

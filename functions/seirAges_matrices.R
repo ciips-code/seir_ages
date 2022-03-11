@@ -77,7 +77,8 @@ seir_ages <- function(dias,
     } else {
       modificadorVariantes = getMatrizModificadoresVariantesSingle(1)
     }
-    duracionIcLoop = duracionIc * modificadorVariantes$duracionInmumidad
+    duracionIcLoop = duracionIc * modificadorVariantes$duracionDiasInternacion
+    duracionIgLoop = duracionIg * modificadorVariantes$duracionDiasInternacion
     # Calculo de cobertura para escenario de cambio de NPIs
     cantidadVacunas = Reduce('+',vA)
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
@@ -118,7 +119,7 @@ seir_ages <- function(dias,
     
     Ii[[t]]     = Ii[[t-1]] + i[[t-1]] - Ii[[t-1]]/duracionIi
     
-    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIg + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes$hospitalizacion*modificadorVariantes$modVacGrave
+    Ig[[t]]     = Ig[[t-1]] - Ig[[t-1]]/duracionIgLoop + Ii[[t-1]]/duracionIi*porc_gr*modif_porc_gr*modificadorVariantes$hospitalizacion*modificadorVariantes$modVacGrave
 
     Ic[[t]]     = Ic[[t-1]] - Ic[[t-1]]/duracionIcLoop + Ii[[t-1]]/duracionIi*porc_cr*modif_porc_cr*modificadorVariantes$critico*modificadorVariantes$modVacCritico
     
@@ -128,24 +129,25 @@ seir_ages <- function(dias,
     if (t<tHoy){
       d[[t]][1,] = as.numeric(defunciones_reales[t,])
     } else {
-      d[[t]]      = Ic[[t-1]]/duracionIcLoop * (ifrm) * modificadorVariantes$muerte * modif_ifr/porc_cr*modif_porc_cr * modificadorVariantes$modVacMuerte # siendo ifr = d[t]/i[t-duracionIi-duracionIcLoop]
-      if (country == "Argentina") {
-        d[[t]] = d[[t]] * 0.89
-      } else if (country == "Peru") {
-        d[[t]] = d[[t]] * 1.2
-      } else if (country == "Colombia") {
-        d[[t]] = d[[t]] * 1.10
-      } else if (country == "Chile") {
-        d[[t]] = d[[t]] * 1.10
-      } else if (country == "Mexico") {
-        d[[t]] = d[[t]] * 1.25
-      } else if (country == "Brazil") {
-        d[[t]] = d[[t]] * 1
-      } else if (country == "Uruguay") {
-        d[[t]] = d[[t]] * 1.70
-      } else if (country == "Costa Rica") {
-        d[[t]] = d[[t]] * 1.40
-      }
+      # browser(expr = { t==500 })
+      d[[t]]      = Ic[[t-1]]/duracionIcLoop * (ifrm) * modificadorVariantes$muerte * modif_ifr / porc_cr * modif_porc_cr * modificadorVariantes$modVacMuerte # siendo ifr = d[t]/i[t-duracionIi-duracionIcLoop]
+      # if (country == "Argentina") {
+      #   d[[t]] = d[[t]] * 0.89
+      # } else if (country == "Peru") {
+      #   d[[t]] = d[[t]] * 1.2
+      # } else if (country == "Colombia") {
+      #   d[[t]] = d[[t]] * 1.10
+      # } else if (country == "Chile") {
+      #   d[[t]] = d[[t]] * 1.10
+      # } else if (country == "Mexico") {
+      #   d[[t]] = d[[t]] * 1.25
+      # } else if (country == "Brazil") {
+      #   d[[t]] = d[[t]] * 1
+      # } else if (country == "Uruguay") {
+      #   d[[t]] = d[[t]] * 1.70
+      # } else if (country == "Costa Rica") {
+      #   d[[t]] = d[[t]] * 1.40
+      # }
     }
     # Acá calculamos los años de vida perdidos
     # Multiplicamos el total de muertos por grupo de edad
@@ -175,7 +177,7 @@ seir_ages <- function(dias,
     
     D[[t]]      = D[[t-1]] + d[[t-1]]
     u[[t]]      = Ii[[t-1]]/duracionIi * (1-porc_gr*modif_porc_gr-porc_cr*modif_porc_cr) +
-                  Ig[[t-1]]/duracionIg +
+                  Ig[[t-1]]/duracionIgLoop +
                   Ic[[t-1]]/duracionIcLoop * (1-ifr/porc_cr*modif_porc_cr)
     U[[t]]      = U[[t-1]] + u[[t-1]]
     # Transicion U -> S, sumamos los recuperados que pierden inmunidad hoy (U-S)
@@ -188,9 +190,11 @@ seir_ages <- function(dias,
     }
     R[[t]]      = U[[t]] + D[[t]]
     
-    S[[t]] = S[[t-1]] - e[[t-1]]
-    S[[t]][2,] = S[[t]][2,] + colSums(losQueHoyPierdenImunidad) - S[[t-1]][2,] / duracionInmunidad_loop
-    S[[t]][1,] = S[[t]][1,] + S[[t-1]][2,] / duracionInmunidad_loop
+    losQueHoyPierdenImunidad[2,] = losQueHoyPierdenImunidad[1,]
+    losQueHoyPierdenImunidad[1,] = losQueHoyPierdenImunidad[1,] * 0
+    S[[t]] = S[[t-1]] - e[[t-1]] + losQueHoyPierdenImunidad
+    # S[[t]][2,] = S[[t]][2,] - S[[t-1]][2,] / duracionInmunidad_loop
+    # S[[t]][1,] = S[[t]][1,] + S[[t-1]][2,] / duracionInmunidad_loop
     
     # Pasajes S-V-S
     Vin = VquedaEnS =  Vout = vacunasDelDia = vacunasDelDia2 = vacunadosVacunaDia = vacunadosVacunaDia2 = matrix(data=0,length(immunityStates),length(ageGroups), byrow = T,

@@ -19,8 +19,8 @@ setParameters <- function () {
   ####################################
   diasHospCasosCriticos <<- c(24.2,24.2,24.2,27.6,29.4,29.4,24.2,20.7) # Cita:
   diasHospCasosGraves <<- c(2,3,3,3,4,4.5,5,5) # Cita:
-  duracionMediaInf <<- 6.8 # Cita:
-  periodoPreinfPromedio <<- 3.84 # Cita:
+  duracionMediaInf <<- 6.8 # 6.8 # Cita:
+  periodoPreinfPromedio <<- 3.84 # 3.84 # Cita:
   porcentajeCasosGraves <<- getMatrixForRow(c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628)) # Cita:
   porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
   porcAsignadoCovid <<- .7 # Cita:
@@ -68,7 +68,7 @@ setParameters <- function () {
   porcentajeCasosGraves <<- porcentajeCasosGraves * 0.7
   porcentajeCasosCriticos <<- porcentajeCasosCriticos * 0.7
   ifr <<- ifr * 1.3
-  transmission_probability <<- transmission_probability * 0.68
+  transmission_probability <<- transmission_probability * 0.52 # 0.68
   
   ####################################
   # Parametros de configuracion de la proyección
