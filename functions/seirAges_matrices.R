@@ -190,7 +190,7 @@ seir_ages <- function(dias,
     }
     R[[t]]      = U[[t]] + D[[t]]
     
-    losQueHoyPierdenImunidad[2,] = losQueHoyPierdenImunidad[1,]
+    losQueHoyPierdenImunidad[2,] = losQueHoyPierdenImunidad[2,] + losQueHoyPierdenImunidad[1,]
     losQueHoyPierdenImunidad[1,] = losQueHoyPierdenImunidad[1,] * 0
     S[[t]] = S[[t-1]] - e[[t-1]] + losQueHoyPierdenImunidad
     # S[[t]][2,] = S[[t]][2,] - S[[t-1]][2,] / duracionInmunidad_loop
