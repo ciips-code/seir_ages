@@ -58,10 +58,11 @@ variantes <<- list(
                        modificadores)
 )
 
+fechaTransicionOmicron <<- as.Date("2021-12-01")
+periodoTransicionOmicron <<- 60
+
 obtenerModificadorDeVariante <<- function(t,iso_country) {
-  fechaTransicionOmicron <- as.Date("2021-12-01")
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
-  periodoTransicionOmicron <- 60
   fechas_curva <<- seq(fechaTransicionOmicron,
                        fechaTransicionOmicron+periodoTransicionOmicron,by=1)
   

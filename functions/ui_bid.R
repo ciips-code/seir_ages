@@ -1022,7 +1022,10 @@ getUI <- function () {
                                                                            "VA 4"="VA4",
                                                                            "Vacunados"="V")))),
                                  fluidRow(column(12,
-                                                 plotlyOutput("graficoVac"))))
+                                                 plotlyOutput("graficoVac")))),
+                        tabPanel("Calibracion",
+                                 tags$div(id="omicron")
+                        )
                         # tabPanel("Escenarios guardados", id="SE", 
                         #          fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
                         #                   column(3,

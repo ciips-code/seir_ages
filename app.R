@@ -120,6 +120,10 @@ server <- function (input, output, session) {
   counterEE <<-0
   disable("go")
   
+  for (i in 1:length(variantes$omicron)) {
+    insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][1,1]))
+  }
+  
   observeEvent(input$go, {
     ejecutarProyeccionConParametrosUI(input, output, session)
   })

@@ -29,6 +29,7 @@ setParameters <- function () {
   duracion_proteccion <<- 360 # Cita:
   tiempoP_mean <<- duracion_proteccion
   # Genera matrices de riesgo en base a una columna como c(No inmune, Recuperado, 1 dosis, 2 dosis)
+  # SE USA??? PROBABLEMENTE NO
   modif_beta <<-  modif_beta_param <<- getMatrixForColumn(c(1,0.15,.6,.5)) # Cita:
   modif_porc_gr <<-  modif_porc_gr_param <<- getMatrixForColumn(c(1,.3,.1,.05)) # Cita:
   modif_porc_cr <<-  modif_porc_cr_param <<- getMatrixForColumn(c(1,.1,.03,.02)) # Cita:
@@ -65,9 +66,11 @@ setParameters <- function () {
   ####################################
   # Calibración
   ####################################
+  # Mover a dentro de proyectar
   porcentajeCasosGraves <<- porcentajeCasosGraves * 0.7
   porcentajeCasosCriticos <<- porcentajeCasosCriticos * 0.7
-  ifr <<- ifr * 1.3
+  ifrCalibrador <<- 1.3
+  ifr <<- ifr * ifrCalibrador 
   transmission_probability <<- transmission_probability * 0.52 # 0.68
   
   ####################################
