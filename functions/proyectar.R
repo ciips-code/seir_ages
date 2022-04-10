@@ -1,5 +1,4 @@
 ejecutarProyeccionConParametrosUI = function(input, output, session) {
-  
   withProgress(
     message = 'Cargando...', value = 0, {
       incProgress(0.1)

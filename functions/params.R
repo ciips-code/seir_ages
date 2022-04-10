@@ -67,11 +67,14 @@ setParameters <- function () {
   # Calibración
   ####################################
   # Mover a dentro de proyectar
-  porcentajeCasosGraves <<- porcentajeCasosGraves * 0.7
-  porcentajeCasosCriticos <<- porcentajeCasosCriticos * 0.7
+  porcentajeCasosCriticosCalibrador <<- 0.7
+  porcentajeCasosGravesCalibrador <<- 0.7
+  porcentajeCasosGraves <<- porcentajeCasosGraves * porcentajeCasosGravesCalibrador
+  porcentajeCasosCriticos <<- porcentajeCasosCriticos * porcentajeCasosCriticosCalibrador
   ifrCalibrador <<- 1.3
   ifr <<- ifr * ifrCalibrador 
-  transmission_probability <<- transmission_probability * 0.52 # 0.68
+  transmission_probabilityCalibrador <<- 0.52
+  transmission_probability <<- transmission_probability * transmission_probabilityCalibrador # 0.68
   
   ####################################
   # Parametros de configuracion de la proyección

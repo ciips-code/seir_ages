@@ -124,44 +124,126 @@ server <- function (input, output, session) {
     insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][1,1]))
   }
   
-  observeEvent(input$go, {
-    ejecutarProyeccionConParametrosUI(input, output, session)
+  insertUI("#omicron", ui = dateInput(inputId = "input-fechaTransicionOmicron",
+                                         label = "fechaTransicionOmicron",
+                                         value = fechaTransicionOmicron))
+  
+  insertUI("#omicron", ui = numericInput(inputId =  "input-periodoTransicionOmicron",
+                                         label = "periodoTransicionOmicron",
+                                         value = periodoTransicionOmicron))
+  
+  output$paramVac_editada <- renderDT({
+    DT::datatable(data = paramVac %>% as.data.frame(), 
+                  editable = T, 
+                  caption = 'paramVac', 
+                  options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
-  # observeEvent(list(input$run_proy,
-  #                   input$run_basico), {
-  #   
-  #   if ("uptakeSlider" %in% names(reactiveValuesToList(input))) {
-  #     customMatrix <<- T
-  #     if (input$uptakeSlider == "0%") {
-  #       updateSelectInput(session, "vacUptake", selected = "No vaccination")
-  #     } else if (input$uptakeSlider == "20%") {
-  #       updateSelectInput(session, "vacUptake", selected = "Low uptake: 20%")
-  #     } else if (input$uptakeSlider == "50%") {
-  #       updateSelectInput(session, "vacUptake", selected = "Mid-range uptake: 50%")
-  #     } else if (input$uptakeSlider == "80%") {
-  #       updateSelectInput(session, "vacUptake", selected = "High uptake: 80%")
-  #     } else if (input$uptakeSlider == "95%") {
-  #       updateSelectInput(session, "vacUptake", selected = "High uptake: 95%")
-  #     }
-  #     
-  #     if (input$effectivenessSlider == 'Low') {
-  #       updateSelectInput(session, "vacEfficacy", selected = "C2. 80%, 50%, 50%")
-  #     } else if (input$effectivenessSlider  == 'Middle') {
-  #       updateSelectInput(session, "vacEfficacy", selected = "B2. 100%, 80%, 50%")
-  #     } else if (input$effectivenessSlider ==  'High') {
-  #       updateSelectInput(session, "vacEfficacy", selected = "B1. 100%, 80%, 80%")
-  #     }  
-  #   }
-  #   
-  #   
-  #   # choices = c("A. 100% all",
-  #   #             "B1. 100%, 80%, 80%",
-  #   #             "B2. 100%, 80%, 50%",
-  #   #             "C1. 80%, 80%, 50%",
-  #   #             "C2. 80%, 50%, 50%")
-  #   
-  # })
+  insertUI("#omicron2", ui = DTOutput("paramVac_editada"))
+  
+  lapply(seq_along(defaultEfficacy), function (i) {
+    outputName <- names(defaultEfficacy[i])
+      output[[outputName]] <- renderDT({
+        DT::datatable(data = defaultEfficacy[[outputName]],
+                      editable = T,
+                      caption = names(defaultEfficacy[outputName]),
+                      options = list(ordering=F, searching=F, paging=F, info=F))
+      })
+  })
+  
+  lapply(seq_along(defaultEfficacy), function (i) {
+    outputName <- names(defaultEfficacy[i])
+    insertUI("#omicron2", ui = DTOutput(names(defaultEfficacy[outputName])))
+  })
+  
+  if (exists("porcentajeCasosCriticosCalibrador")) {
+    for (i in c("porcentajeCasosCriticosCalibrador",
+                "porcentajeCasosGravesCalibrador",
+                "ifrCalibrador",
+                "transmission_probabilityCalibrador")) {
+      insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
+    
+    lista <- list(porcentajeCasosGraves=porcentajeCasosGraves,
+                  porcentajeCasosCriticos=porcentajeCasosCriticos,
+                  ifr=ifr,
+                  transmission_probability=transmission_probability)
+    }
+    
+    lapply(seq_along(lista),
+           function (i) {
+             output[[names(lista[i])]] <- renderDT({
+               DT::datatable(data = lista[[i]] %>% as.data.frame(),
+                             editable = T,
+                             caption = names(lista[i]),
+                             options = list(ordering=F, searching=F, paging=F, info=F))
+             })
+             insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
+             
+           })
+           
+  }
+
+  observe({
+    if (is.null(input$paramVac_editada_cell_edit)==F) {
+      paramVac[as.numeric(input$paramVac_editada_cell_edit[1]),
+               as.numeric(input$paramVac_editada_cell_edit[2])] <<- as.character(input$paramVac_editada_cell_edit[3])
+    }
+    
+    if (is.null(input$modif_beta_cell_edit)==F) {
+      defaultEfficacy$modif_beta[as.numeric(input$modif_beta_cell_edit[1]),
+                                 as.numeric(input$modif_beta_cell_edit[2])] <<- as.numeric(input$modif_beta_cell_edit_cell_edit[3])
+    }
+    
+    if (is.null(input$modif_porc_gr_cell_edit)==F) {
+      defaultEfficacy$modif_porc_gr[as.numeric(input$modif_porc_gr_cell_edit[1]),
+                                    as.numeric(input$modif_porc_gr_cell_edit[2])] <<- as.numeric(input$modif_porc_gr_cell_edit[3])
+    }
+    
+    if (is.null(input$modif_porc_cr_cell_edit)==F) {
+      defaultEfficacy$modif_porc_cr[as.numeric(input$modif_porc_cr_cell_edit[1]),
+                                    as.numeric(input$modif_porc_cr_cell_edit[2])] <<- as.numeric(input$modif_porc_cr_cell_edit[3])
+    }
+    if (is.null(input$modif_ifr_cell_edit)==F) {
+      defaultEfficacy$modif_ifr[as.numeric(input$modif_ifr_cell_edit[1]),
+                                as.numeric(input$modif_ifr_cell_edit[2])] <<- as.numeric(input$modif_ifr_cell_edit[3])
+    }
+    if (is.null(input$porcentajeCasosGraves_cell_edit)==F) {
+      porcentajeCasosGraves[as.numeric(input$porcentajeCasosGraves_cell_edit[1]),
+                            as.numeric(input$porcentajeCasosGraves_cell_edit[2])] <<- as.numeric(input$porcentajeCasosGraves_cell_edit[3])
+    }
+    
+    if (is.null(input$porcentajeCasosCriticos_cell_edit)==F) {
+      porcentajeporcentajeCasosCriticos[as.numeric(input$porcentajeCasosCriticos_cell_edit[1]),
+                                        as.numeric(input$porcentajeCasosCriticos_cell_edit[2])] <<- as.numeric(input$porcentajeCasosCriticos_cell_edit[3])
+    }
+
+    if (is.null(input$transmission_probability_cell_edit)==F) {
+      transmission_probability[as.numeric(input$transmission_probability_cell_edit[1]),
+                               as.numeric(input$transmission_probability_cell_edit[2])] <<- as.numeric(input$transmission_probability_cell_edit[3])
+    }
+    
+    if (is.null(input$ifr_cell_edit)==F) {
+      ifr[as.numeric(input$ifr_cell_edit[1])] <<- as.numeric(input$ifr_cell_edit[3])
+    }
+  
+  })
+  
+  
+  
+  observeEvent(input$go, {
+    for (i in 1:length(variantes$omicron)) {
+      browser()
+      variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
+      fechaTransicionOmicron <- input$`input-fechaTransicionOmicron`
+      periodoTransicionOmicron <- input$`input-periodoTransicionOmicron`
+      porcentajeCasosCriticosCalibrador <- input$`input-porcentajeCasosCriticosCalibrador`
+      porcentajeCasosGravesCalibrador <- input$`input-porcentajeCasosGravesCalibrador`
+      ifrCalibrador <- input$`input-ifrCalibrador`
+      transmission_probabilityCalibrador <- input$`input-transmission_probabilityCalibrador`
+    }
+    
+    ejecutarProyeccionConParametrosUI(input, output, session)
+  })
   
   observeEvent(input$reset, {
     disable("go")

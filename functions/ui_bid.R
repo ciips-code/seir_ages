@@ -1024,7 +1024,19 @@ getUI <- function () {
                                  fluidRow(column(12,
                                                  plotlyOutput("graficoVac")))),
                         tabPanel("Calibracion",
-                                 tags$div(id="omicron")
+                                 fluidRow(
+                                   column(2,
+                                          br(),
+                                          tags$div(p("Modificadores Omicron")),
+                                          tags$div(id="omicron")
+                                          ),
+                                   column(2),
+                                   column(4,
+                                          br(),
+                                          br(),
+                                          tags$div(id="omicron2"))
+                                 )
+                                 
                         )
                         # tabPanel("Escenarios guardados", id="SE", 
                         #          fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
