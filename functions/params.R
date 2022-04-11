@@ -26,7 +26,7 @@ setParameters <- function () {
   porcAsignadoCovid <<- .7 # Cita:
   ifr <<- c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) # (por edad) Cita:
   duracion_inmunidad <<- 180 # Cita:
-  duracion_proteccion <<- 360 # Cita:
+  duracion_proteccion <<- 280 # Cita:
   tiempoP_mean <<- duracion_proteccion
   # Genera matrices de riesgo en base a una columna como c(No inmune, Recuperado, 1 dosis, 2 dosis)
   # SE USA??? PROBABLEMENTE NO
@@ -71,14 +71,14 @@ setParameters <- function () {
   porcentajeCasosGravesCalibrador <<- 0.7
   porcentajeCasosGraves_base <<- porcentajeCasosGraves
   porcentajeCasosCriticos_base <<- porcentajeCasosCriticos
-  # porcentajeCasosGraves <<- porcentajeCasosGraves * porcentajeCasosGravesCalibrador
-  # porcentajeCasosCriticos <<- porcentajeCasosCriticos * porcentajeCasosCriticosCalibrador
+  porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
+  porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   ifrCalibrador <<- 1.3
   ifr_base <<- ifr 
-  #   ifr <<- ifr * ifrCalibrador 
+  ifr <<- ifr_base * ifrCalibrador
   transmission_probabilityCalibrador <<- 0.52
   transmission_probability_base <<- transmission_probability
-  # transmission_probability <<- transmission_probability * transmission_probabilityCalibrador # 0.68
+  transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
   
   ####################################
   # Parametros de configuracion de la proyección

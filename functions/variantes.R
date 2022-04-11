@@ -47,8 +47,8 @@ variantes <<- list(
   'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(2),
                             getMatrizModificadoresVariantesSingle(0.44),
                             getMatrizModificadoresVariantesSingle(0.33),
-                            getMatrizModificadoresVariantesSingle(0.122),
-                            getMatrizModificadoresVariantesSingle(0.5),
+                            getMatrizModificadoresVariantesSingle(0.3),
+                            getMatrizModificadoresVariantesSingle(0.8),
                             getMatrizModificadoresVariantesSingleVac(1.45),
                             getMatrizModificadoresVariantesSingleVac(2.277),
                             getMatrizModificadoresVariantesSingleVac(2.652),
@@ -58,8 +58,8 @@ variantes <<- list(
                        modificadores)
 )
 
-fechaTransicionOmicron <<- as.Date("2021-12-01")
-periodoTransicionOmicron <<- 60
+fechaTransicionOmicron <<- as.Date("2021-11-01")
+periodoTransicionOmicron <<- 30
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
