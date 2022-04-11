@@ -233,15 +233,30 @@ server <- function (input, output, session) {
   
   
   observeEvent(input$go, {
-    for (i in 1:length(variantes$omicron)) {
-      variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
-      fechaTransicionOmicron <- input$`input-fechaTransicionOmicron`
-      periodoTransicionOmicron <- input$`input-periodoTransicionOmicron`
-      porcentajeCasosCriticosCalibrador <- input$`input-porcentajeCasosCriticosCalibrador`
-      porcentajeCasosGravesCalibrador <- input$`input-porcentajeCasosGravesCalibrador`
-      ifrCalibrador <- input$`input-ifrCalibrador`
-      transmission_probabilityCalibrador <- input$`input-transmission_probabilityCalibrador`
-    }
+    # for (i in 1:length(variantes$omicron)) {
+    #   variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
+    # }
+    # browser()
+    variantes$omicron <<- setNames(list(
+                  getMatrizModificadoresVariantesSingle(input[['input-transmision']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-hospitalizacion']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-critico']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-muerte']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-duracionInmumidad']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacTransmision']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacGrave']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacCritico']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacMuerte']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-duracionDiasInternacion']])
+    ),
+    modificadores)
+    
+    fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
+    periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
+    porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
+    porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
+    ifrCalibrador <<- input$`input-ifrCalibrador`
+    transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
     
     ejecutarProyeccionConParametrosUI(input, output, session)
   })

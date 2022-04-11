@@ -28,7 +28,7 @@ getMatrizModificadoresVariantesSingleVac <<- function(v) {
 sinModificacion = getMatrizModificadoresVariantesSingle(1)
 modificadorCero = getMatrizModificadoresVariantesSingle(0)
 
-modificadores = c('transmision',
+modificadores <<- c('transmision',
                   'hospitalizacion',
                   'critico',
                   'muerte',
