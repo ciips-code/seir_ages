@@ -120,8 +120,37 @@ server <- function (input, output, session) {
   counterEE <<-0
   disable("go")
   
+  if (exists("porcentajeCasosCriticosCalibrador")) {
+    for (i in c("porcentajeCasosCriticosCalibrador",
+                "porcentajeCasosGravesCalibrador",
+                "ifrCalibrador",
+                "transmission_probabilityCalibrador")) {
+      insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
+      
+      lista <- list(porcentajeCasosGraves=porcentajeCasosGraves,
+                    porcentajeCasosCriticos=porcentajeCasosCriticos,
+                    ifr=ifr,
+                    transmission_probability=transmission_probability)
+    }
+    
+    lapply(seq_along(lista),
+           function (i) {
+             data <- lista[[i]] %>% as.data.frame()
+             if (i==3) {rownames(data) <- ageGroups}
+             output[[names(lista[i])]] <- renderDT({
+               DT::datatable(data = data,
+                             editable = T,
+                             caption = paste("Parametros base del virus",names(lista[i])),
+                             options = list(ordering=F, searching=F, paging=F, info=F))
+             })
+             insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
+             
+           })
+    
+  }
+  
   for (i in 1:length(variantes$omicron)) {
-    insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][1,1]))
+    insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]))
   }
   
   insertUI("#omicron", ui = dateInput(inputId = "input-fechaTransicionOmicron",
@@ -156,35 +185,6 @@ server <- function (input, output, session) {
     insertUI("#omicron2", ui = DTOutput(names(defaultEfficacy[outputName])))
   })
   
-  if (exists("porcentajeCasosCriticosCalibrador")) {
-    for (i in c("porcentajeCasosCriticosCalibrador",
-                "porcentajeCasosGravesCalibrador",
-                "ifrCalibrador",
-                "transmission_probabilityCalibrador")) {
-      insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
-    
-    lista <- list(porcentajeCasosGraves=porcentajeCasosGraves,
-                  porcentajeCasosCriticos=porcentajeCasosCriticos,
-                  ifr=ifr,
-                  transmission_probability=transmission_probability)
-    }
-    
-    lapply(seq_along(lista),
-           function (i) {
-             data <- lista[[i]] %>% as.data.frame()
-             if (i==3) {rownames(data) <- ageGroups}
-             output[[names(lista[i])]] <- renderDT({
-               DT::datatable(data = data,
-                             editable = T,
-                             caption = paste("Parametros base del virus",names(lista[i])),
-                             options = list(ordering=F, searching=F, paging=F, info=F))
-             })
-             insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
-             
-           })
-           
-  }
-
   observe({
     if (is.null(input$paramVac_editada_cell_edit)==F) {
       paramVac[as.numeric(input$paramVac_editada_cell_edit[1]),
