@@ -110,8 +110,8 @@ getUptakeCoverage <- function(uptake) {
 }
 
 defaultEfficacy = list()
-defaultEfficacy$modif_beta =    matrix(rep(c(1,1,.3,.3),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
-defaultEfficacy$modif_porc_gr = matrix(rep(c(1,1,.3,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
+defaultEfficacy$modif_beta =    matrix(rep(c(1,.3,.3,.3),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
+defaultEfficacy$modif_porc_gr = matrix(rep(c(1,.3,.3,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
 defaultEfficacy$modif_porc_cr = matrix(rep(c(1,.1,.2,.2),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
 defaultEfficacy$modif_ifr =     matrix(rep(c(1,0,.1,0),length(ageGroups)),4,length(ageGroups),byrow=F,dimnames = matrixNames)
 
