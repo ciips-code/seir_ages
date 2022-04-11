@@ -71,7 +71,6 @@ seir_ages <- function(dias,
   }
   vacGroupActive = 1
   for(t in 2:dias){
-    # browser()
     if (usarVariantes) {
       modificadorVariantes = obtenerModificadorDeVariante(t, iso_country)
     } else {

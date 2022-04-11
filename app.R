@@ -171,8 +171,10 @@ server <- function (input, output, session) {
     
     lapply(seq_along(lista),
            function (i) {
+             data <- lista[[i]] %>% as.data.frame()
+             if (i==3) {rownames(data) <- ageGroups}
              output[[names(lista[i])]] <- renderDT({
-               DT::datatable(data = lista[[i]] %>% as.data.frame(),
+               DT::datatable(data = data,
                              editable = T,
                              caption = paste("Parametros base del virus",names(lista[i])),
                              options = list(ordering=F, searching=F, paging=F, info=F))
@@ -232,7 +234,6 @@ server <- function (input, output, session) {
   
   observeEvent(input$go, {
     for (i in 1:length(variantes$omicron)) {
-      browser()
       variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
       fechaTransicionOmicron <- input$`input-fechaTransicionOmicron`
       periodoTransicionOmicron <- input$`input-periodoTransicionOmicron`
