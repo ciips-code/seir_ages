@@ -257,6 +257,10 @@ server <- function (input, output, session) {
     porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
     ifrCalibrador <<- input$`input-ifrCalibrador`
     transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
+    ifr <<- ifr_base * ifrCalibrador
+    porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
+    porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
+    transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador
     
     ejecutarProyeccionConParametrosUI(input, output, session)
   })
