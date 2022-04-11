@@ -135,7 +135,7 @@ server <- function (input, output, session) {
   output$paramVac_editada <- renderDT({
     DT::datatable(data = paramVac %>% as.data.frame(), 
                   editable = T, 
-                  caption = 'paramVac', 
+                  caption = 'Descripcion de Vacunas: paramVac', 
                   options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
@@ -146,7 +146,7 @@ server <- function (input, output, session) {
       output[[outputName]] <- renderDT({
         DT::datatable(data = defaultEfficacy[[outputName]],
                       editable = T,
-                      caption = names(defaultEfficacy[outputName]),
+                      caption = paste("Efectividad de las vacunas",names(defaultEfficacy[outputName])),
                       options = list(ordering=F, searching=F, paging=F, info=F))
       })
   })
@@ -174,7 +174,7 @@ server <- function (input, output, session) {
              output[[names(lista[i])]] <- renderDT({
                DT::datatable(data = lista[[i]] %>% as.data.frame(),
                              editable = T,
-                             caption = names(lista[i]),
+                             caption = paste("Parametros base del virus",names(lista[i])),
                              options = list(ordering=F, searching=F, paging=F, info=F))
              })
              insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
