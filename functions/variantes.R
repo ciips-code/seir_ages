@@ -44,7 +44,7 @@ variantes <<- list(
   'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'gamma' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'delta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
-  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(2),
+  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(4),
                             getMatrizModificadoresVariantesSingle(0.44),
                             getMatrizModificadoresVariantesSingle(0.33),
                             getMatrizModificadoresVariantesSingle(0.3),

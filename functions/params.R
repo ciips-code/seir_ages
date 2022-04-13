@@ -25,8 +25,8 @@ setParameters <- function () {
   porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
   porcAsignadoCovid <<- .7 # Cita:
   ifr <<- c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) # (por edad) Cita:
-  duracion_inmunidad <<- 180 # Cita:
-  duracion_proteccion <<- 280 # Cita:
+  duracion_inmunidad <<- 120 # Cita:
+  duracion_proteccion <<- 180 # Cita:
   tiempoP_mean <<- duracion_proteccion
   # Genera matrices de riesgo en base a una columna como c(No inmune, Recuperado, 1 dosis, 2 dosis)
   # SE USA??? PROBABLEMENTE NO
