@@ -119,35 +119,37 @@ server <- function (input, output, session) {
   sensScenarios <<- data.frame()
   counterEE <<-0
   disable("go")
-  
-  if (exists("porcentajeCasosCriticosCalibrador")) {
-    for (i in c("porcentajeCasosCriticosCalibrador",
-                "porcentajeCasosGravesCalibrador",
-                "ifrCalibrador",
-                "transmission_probabilityCalibrador")) {
-      insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
+  observeEvent(input$TSP, {
+    if (input$TSP=="Calibracion") {
+      for (i in c("porcentajeCasosCriticosCalibrador",
+                  "porcentajeCasosGravesCalibrador",
+                  "ifrCalibrador",
+                  "transmission_probabilityCalibrador")) {
+        insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
+        
+        lista <- list(porcentajeCasosGraves=porcentajeCasosGraves,
+                      porcentajeCasosCriticos=porcentajeCasosCriticos,
+                      ifr=ifr,
+                      transmission_probability=transmission_probability)
+      }
       
-      lista <- list(porcentajeCasosGraves=porcentajeCasosGraves,
-                    porcentajeCasosCriticos=porcentajeCasosCriticos,
-                    ifr=ifr,
-                    transmission_probability=transmission_probability)
-    }
-    
-    lapply(seq_along(lista),
-           function (i) {
-             data <- lista[[i]] %>% as.data.frame()
-             if (i==3) {rownames(data) <- ageGroups}
-             output[[names(lista[i])]] <- renderDT({
-               DT::datatable(data = data,
-                             editable = T,
-                             caption = paste("Parametros base del virus",names(lista[i])),
-                             options = list(ordering=F, searching=F, paging=F, info=F))
+      lapply(seq_along(lista),
+             function (i) {
+               data <- lista[[i]] %>% as.data.frame()
+               if (i==3) {rownames(data) <- ageGroups}
+               output[[names(lista[i])]] <- renderDT({
+                 DT::datatable(data = data,
+                               editable = T,
+                               caption = paste("Parametros base del virus",names(lista[i])),
+                               options = list(ordering=F, searching=F, paging=F, info=F))
+               })
+               insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
+               
              })
-             insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
-             
-           })
-    
-  }
+      
+    }
+  })
+  
   
   for (i in 1:length(variantes$omicron)) {
     insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]))
@@ -193,7 +195,7 @@ server <- function (input, output, session) {
     
     if (is.null(input$modif_beta_cell_edit)==F) {
       defaultEfficacy$modif_beta[as.numeric(input$modif_beta_cell_edit[1]),
-                                 as.numeric(input$modif_beta_cell_edit[2])] <<- as.numeric(input$modif_beta_cell_edit_cell_edit[3])
+                                 as.numeric(input$modif_beta_cell_edit[2])] <<- as.numeric(input$modif_beta_cell_edit[3])
     }
     
     if (is.null(input$modif_porc_gr_cell_edit)==F) {
@@ -215,7 +217,7 @@ server <- function (input, output, session) {
     }
     
     if (is.null(input$porcentajeCasosCriticos_cell_edit)==F) {
-      porcentajeporcentajeCasosCriticos[as.numeric(input$porcentajeCasosCriticos_cell_edit[1]),
+      porcentajeCasosCriticos[as.numeric(input$porcentajeCasosCriticos_cell_edit[1]),
                                         as.numeric(input$porcentajeCasosCriticos_cell_edit[2])] <<- as.numeric(input$porcentajeCasosCriticos_cell_edit[3])
     }
 
@@ -250,7 +252,6 @@ server <- function (input, output, session) {
                   getMatrizModificadoresVariantesSingle(input[['input-duracionDiasInternacion']])
     ),
     modificadores)
-    
     fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
     periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
     porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
@@ -668,7 +669,7 @@ server <- function (input, output, session) {
                                  paging=F, 
                                  info=F))
   })
-  ##### PROY #####
+  ##### <- #####
   # proy <- eventReactive(list(input$country,
   #                            input$go),{
   #   # paste activa reactive (no comentar)
