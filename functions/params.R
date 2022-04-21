@@ -21,10 +21,10 @@ setParameters <- function () {
   diasHospCasosGraves <<- c(2,3,3,3,4,4.5,5,5) # Cita:
   duracionMediaInf <<- 6.8 # 6.8 # Cita:
   periodoPreinfPromedio <<- 3.84 # 3.84 # Cita:
-  porcentajeCasosGraves <<- getMatrixForRow(c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628)) # Cita:
-  porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
+  # porcentajeCasosGraves <<- getMatrixForRow(c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628)) # Cita:
+  # porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
   porcAsignadoCovid <<- .7 # Cita:
-  ifr <<- c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) # (por edad) Cita:
+  # ifr <<- c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) # (por edad) Cita:
   duracion_inmunidad <<- 120 # Cita:
   duracion_proteccion <<- 180 # Cita:
   tiempoP_mean <<- duracion_proteccion
@@ -53,32 +53,17 @@ setParameters <- function () {
                               .5,1,1,1,1,1,5,5,
                               .5,1,1,1,1,1,5,5),8,byrow = T)
   colnames(contact_matrix) <<- rownames(contact_matrix) <<- ageGroups
-  transmission_probability <<- matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.3097, 0.3211, 0.3211,
-                                        0.47795, 0.50165, 0.52535, 0.553, 0.58855, 0.64385, 0.66755, 0.66755,
-                                        0.5203, 0.5461, 0.5719, 0.602, 0.6407, 0.7009, 0.7267, 0.7267,
-                                        0.484, 0.508, 0.532, 0.56, 0.596, 0.652, 0.676, 0.676,
-                                        0.4961, 0.5207, 0.5453, 0.574, 0.6109, 0.6683, 0.6929, 0.6929,
-                                        0.5324, 0.5588, 0.5852, 0.616, 0.6556, 0.7172, 0.7436, 0.7436,
-                                        0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253,
-                                        0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253),length(ageGroups),length(ageGroups),byrow= T)
-  colnames(transmission_probability) <- rownames(transmission_probability) <<- ageGroups
+  # transmission_probability <<- matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.3097, 0.3211, 0.3211,
+  #                                       0.47795, 0.50165, 0.52535, 0.553, 0.58855, 0.64385, 0.66755, 0.66755,
+  #                                       0.5203, 0.5461, 0.5719, 0.602, 0.6407, 0.7009, 0.7267, 0.7267,
+  #                                       0.484, 0.508, 0.532, 0.56, 0.596, 0.652, 0.676, 0.676,
+  #                                       0.4961, 0.5207, 0.5453, 0.574, 0.6109, 0.6683, 0.6929, 0.6929,
+  #                                       0.5324, 0.5588, 0.5852, 0.616, 0.6556, 0.7172, 0.7436, 0.7436,
+  #                                       0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253,
+  #                                       0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253),length(ageGroups),length(ageGroups),byrow= T)
+  # colnames(transmission_probability) <- rownames(transmission_probability) <<- ageGroups
   
-  ####################################
-  # Calibración
-  ####################################
-  # Mover a dentro de proyectar
-  porcentajeCasosCriticosCalibrador <<- 0.7
-  porcentajeCasosGravesCalibrador <<- 0.7
-  porcentajeCasosGraves_base <<- porcentajeCasosGraves
-  porcentajeCasosCriticos_base <<- porcentajeCasosCriticos
-  porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
-  porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
-  ifrCalibrador <<- 1.3
-  ifr_base <<- ifr 
-  ifr <<- ifr_base * ifrCalibrador
-  transmission_probabilityCalibrador <<- 0.52
-  transmission_probability_base <<- transmission_probability
-  transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
+  
   
   ####################################
   # Parametros de configuracion de la proyección
