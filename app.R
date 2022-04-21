@@ -94,6 +94,8 @@ load("data/parametrosEpi.RData", envir = .GlobalEnv)
 # lee funciones
 source("functions/params.R", encoding = "UTF-8")
 setParameters()
+source("functions/modeloEco.R", encoding = "UTF-8")
+setEcoParameters()
 source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
