@@ -223,9 +223,9 @@ server <- function (input, output, session) {
                                         as.numeric(input$porcentajeCasosCriticos_cell_edit[2])] <<- as.numeric(input$porcentajeCasosCriticos_cell_edit[3])
     }
 
-    if (is.null(input$transmission_probability_cell_edit)==F) {
-      transmission_probability[as.numeric(input$transmission_probability_cell_edit[1]),
-                               as.numeric(input$transmission_probability_cell_edit[2])] <<- as.numeric(input$transmission_probability_cell_edit[3])
+    if (is.null(input$transmission_probability_base_cell_edit)==F) {
+      transmission_probability_base[as.numeric(input$transmission_probability_base_cell_edit[1]),
+                               as.numeric(input$transmission_probability_base_cell_edit[2])] <<- as.numeric(input$transmission_probability_base_cell_edit[3])
     }
     
     if (is.null(input$ifr_cell_edit)==F) {

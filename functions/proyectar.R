@@ -46,14 +46,18 @@ calibra <- function (input, output, session) {
     porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
     ifrCalibrador <<- input$`input-ifrCalibrador`
     transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
-    transmission_probability_base <<- transmission_probability
-    
+    fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
+    periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
   }
   
   porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
   porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   ifr <<- ifr_base * ifrCalibrador
   transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
+  
+  print(paste("transmission_probabilityCalibrador",transmission_probabilityCalibrador))
+  print(transmission_probability_base)
+  print(transmission_probability)
   
 }
 
@@ -494,7 +498,7 @@ actualizaProy <- function (input,output,session) {
                     contact_matrix = contact_matrix_scenario,
                     relaxationThreshold = input$relaxationThreshold,
                     contact_matrix_relaxed = contact_matrix_relaxed,
-                    transmission_probability = trans_prob_param,
+                    transmission_probability = transmission_probability,
                     N = N,
                     defunciones_reales=def_p,
                     modif_beta=efficacy$modif_beta,
