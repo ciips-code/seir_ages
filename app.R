@@ -94,6 +94,7 @@ load("data/parametrosEpi.RData", envir = .GlobalEnv)
 # lee funciones
 source("functions/params.R", encoding = "UTF-8")
 setParameters()
+print(ifr_base)
 source("functions/modeloEco.R", encoding = "UTF-8")
 setEcoParameters()
 source("functions/update.R", encoding = "UTF-8")
@@ -128,11 +129,10 @@ server <- function (input, output, session) {
                   "ifrCalibrador",
                   "transmission_probabilityCalibrador")) {
         insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
-        
-        lista <- list(porcentajeCasosGraves=porcentajeCasosGraves,
-                      porcentajeCasosCriticos=porcentajeCasosCriticos,
-                      ifr=ifr,
-                      transmission_probability=transmission_probability)
+        lista <- list(porcentajeCasosGraves_base=porcentajeCasosGraves_base,
+                      porcentajeCasosCriticos_base=porcentajeCasosCriticos_base,
+                      ifr_base=ifr_base,
+                      transmission_probability_base=transmission_probability_base)
       }
       
       lapply(seq_along(lista),
@@ -254,19 +254,19 @@ server <- function (input, output, session) {
                   getMatrizModificadoresVariantesSingle(input[['input-duracionDiasInternacion']])
     ),
     modificadores)
-    fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
-    periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
-    porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
-    porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
-    ifrCalibrador <<- input$`input-ifrCalibrador`
-    transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
-    
+    # fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
+    # periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
+    # porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
+    # porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
+    # ifrCalibrador <<- input$`input-ifrCalibrador`
+    # transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
+    # 
     # Aplica calibradores
-    ifr <<- ifr_base * ifrCalibrador
-    porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
-    porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
-    transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador
-    
+    # ifr <<- ifr_base * ifrCalibrador
+    # porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
+    # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
+    # transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador
+    # 
     ejecutarProyeccionConParametrosUI(input, output, session)
   })
   

@@ -3,71 +3,57 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     message = 'Cargando...', value = 0, {
       calibra(input,output,session)
       incProgress(0.1)
+      print(paste("1",ifr_base))
       actualizaMapa(input,output,session)
       incProgress(0.1)
+      print(paste("2",ifr_base))
       actualizaPanel(input,output,session)
       incProgress(0.1)
       incProgress(0.1)
+      print(paste("3",ifr_base))
       actualizaVariables(input,output,session)
       incProgress(0.1)
+      print(paste("4",ifr_base))
       actualizaCM(input,output,session)
       incProgress(0.1)
+      print(paste("5",ifr_base))
       actualizaDTTables(input,output,session)
       incProgress(0.1)
+      print(paste("6",ifr_base))
       actualizaParametros(input,output,session)
       incProgress(0.1)
+      print(paste("7",ifr_base))
       actualizaProy(input,output,session)
       incProgress(0.1)
+      print(paste("8",ifr_base))
       actualizaPlot(input,output,session)
       incProgress(0.1)
+      print(paste("9",ifr_base))
       actualizaTablas(input,output,session)
+      print(paste("U",ifr_base))
     }) 
   
 }
 
 calibra <- function (input, output, session) {
-  porcentajeCasosGraves <<- getMatrixForRow(c(0.003634, 0.003644, 0.005372, 0.008520, 0.025740, 0.044253, 0.099200, 0.205628)) # Cita:
-  porcentajeCasosCriticos <<- getMatrixForRow(c(0.000966,0.000969,0.001428,0.00348,0.01326,0.024747,0.0608,0.094372)) # Cita:
-  ifr <<- c(8.8e-05,0.000284,0.000745,0.001868,0.004608,0.011231,0.026809,0.079684) # (por edad) Cita:
-  transmission_probability <<- matrix(c(0.2299, 0.2413, 0.2527, 0.266, 0.2831, 0.3097, 0.3211, 0.3211,
-                                        0.47795, 0.50165, 0.52535, 0.553, 0.58855, 0.64385, 0.66755, 0.66755,
-                                        0.5203, 0.5461, 0.5719, 0.602, 0.6407, 0.7009, 0.7267, 0.7267,
-                                        0.484, 0.508, 0.532, 0.56, 0.596, 0.652, 0.676, 0.676,
-                                        0.4961, 0.5207, 0.5453, 0.574, 0.6109, 0.6683, 0.6929, 0.6929,
-                                        0.5324, 0.5588, 0.5852, 0.616, 0.6556, 0.7172, 0.7436, 0.7436,
-                                        0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253,
-                                        0.4477, 0.4699, 0.4921, 0.518, 0.5513, 0.6031, 0.6253, 0.6253),length(ageGroups),length(ageGroups),byrow= T)
-  colnames(transmission_probability) <- rownames(transmission_probability) <<- ageGroups
+  
   ####################################
   # Calibración
   ####################################
   
-  porcentajeCasosCriticosCalibrador <<- 0.7
-  porcentajeCasosGravesCalibrador <<- 0.7
-  porcentajeCasosGraves_base <<- porcentajeCasosGraves
-  porcentajeCasosCriticos_base <<- porcentajeCasosCriticos
-  porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
-  porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
-  ifrCalibrador <<- 1
-  ifr_base <<- ifr 
-  ifr <<- ifr_base * ifrCalibrador
-  transmission_probabilityCalibrador <<- 0.52
-  transmission_probability_base <<- transmission_probability
-  transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
-  
   if (input$TSP=="Calibracion") {
     porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
     porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
-    porcentajeCasosGraves_base <<- porcentajeCasosGraves
-    porcentajeCasosCriticos_base <<- porcentajeCasosCriticos
     ifrCalibrador <<- input$`input-ifrCalibrador`
-    # ifr_base <<- ifr 
-    # ifr <<- ifr_base * ifrCalibrador
     transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
     transmission_probability_base <<- transmission_probability
-    #transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
     
   }
+  
+  porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
+  porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
+  ifr <<- ifr_base * ifrCalibrador
+  transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
   
 }
 
@@ -484,24 +470,19 @@ actualizaParametros <- function(input,output,session) {
   
 actualizaProy <- function (input,output,session) {
   
-  ifr_base <<- ifrProy
   shinyjs::hide("downloadEE")
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")
   shinyjs::hide("EESummaryTable3")
-  browser()
   
   defaultScenario(iso_country) 
   
   
-  ifrProy <<- ifrProy * ifrCalibrador
-  trans_prob_param <<- trans_prob_param * transmission_probabilityCalibrador
-  porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
-  porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
-  
-  print(mean(porcentajeCasosGraves))
-  print(mean(porcentajeCasosCriticos))
-  
+  # ifrProy <<- ifrProy * ifrCalibrador
+  # trans_prob_param <<- trans_prob_param * transmission_probabilityCalibrador
+  # porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
+  # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
+  # 
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
@@ -509,7 +490,7 @@ actualizaProy <- function (input,output,session) {
                     porc_cr = porcentajeCasosCriticos,
                     duracionIg = diasHospCasosGraves,
                     duracionIc = diasHospCasosCriticos,
-                    ifr = ifrProy,
+                    ifr = ifr,#ifrProy
                     contact_matrix = contact_matrix_scenario,
                     relaxationThreshold = input$relaxationThreshold,
                     contact_matrix_relaxed = contact_matrix_relaxed,
