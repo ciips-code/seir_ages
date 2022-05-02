@@ -89,7 +89,7 @@ load("data/yearsLost.RData", envir = .GlobalEnv)
 load("data/OWDSummaryData.RData", envir = .GlobalEnv)
 load("data/EEParams2.RData", envir = .GlobalEnv)
 load("data/parametrosEpi.RData", envir = .GlobalEnv)
-
+workingHours <<- readxl::read_xlsx('data/workingHours.xlsx')
 
 # lee funciones
 source("functions/params.R", encoding = "UTF-8")
