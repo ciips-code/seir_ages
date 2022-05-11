@@ -73,7 +73,7 @@ addBoxTable <- function (matrixName,country) {
                                                                                              contact_matrix_other = contact_matrix_other),
                                                                                            ages= as.numeric(ageGroupsV)) * trans_prob_param
   
-  print(`Physical distancing + Shielding of older people + Self isolation + School closures`)
+  #print(`Physical distancing + Shielding of older people + Self isolation + School closures`)
   `Physical distancing + Shielding of older people + Lockdown + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Lockdown + School closures",
                                                                                                              matrix_list = list(
                                                                                                                contact_matrix = contact_matrix,
@@ -128,7 +128,7 @@ get_custom_matrix <- function(scenario,
            1 * contact_matrix_school +
            cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
     out <- out * .65
-    print(modificador_eco)
+    #print(modificador_eco)
   }
   
   if(scenario == "Physical distancing + Shielding of older people + Self isolation + School closures"){

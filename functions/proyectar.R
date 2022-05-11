@@ -1,25 +1,35 @@
 ejecutarProyeccionConParametrosUI = function(input, output, session) {
   withProgress(
     message = 'Cargando...', value = 0, {
+      print("calibra")
       calibra(input,output,session)
       incProgress(0.1)
+      print("actualiza mapa")
       actualizaMapa(input,output,session)
       incProgress(0.1)
+      print("actualiza panel")
       actualizaPanel(input,output,session)
       incProgress(0.1)
       incProgress(0.1)
+      print("actualiza variables")
       actualizaVariables(input,output,session)
       incProgress(0.1)
+      print("actualiza cm")
       actualizaCM(input,output,session)
       incProgress(0.1)
+      print("actualiza dttables")
       actualizaDTTables(input,output,session)
       incProgress(0.1)
+      print("actualiza parametros")
       actualizaParametros(input,output,session)
       incProgress(0.1)
+      print("actualiza proy")
       actualizaProy(input,output,session)
       incProgress(0.1)
+      print("actualiza plot")
       actualizaPlot(input,output,session)
       incProgress(0.1)
+      print("actualiza tablas")
       actualizaTablas(input,output,session)
     }) 
   
@@ -474,12 +484,12 @@ actualizaProy <- function (input,output,session) {
   # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   # 
   
-  print("Bug paises:")
-  print(porcentajeCasosGraves)
-  print(porcentajeCasosCriticos)
-  print(diasHospCasosGraves)
-  print(diasHospCasosCriticos)
-  print(ifr)
+  # print("Bug paises:")
+  # print(porcentajeCasosGraves)
+  # print(porcentajeCasosCriticos)
+  # print(diasHospCasosGraves)
+  # print(diasHospCasosCriticos)
+  # print(ifr)
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
