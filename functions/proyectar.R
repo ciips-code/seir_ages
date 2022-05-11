@@ -469,7 +469,6 @@ actualizaParametros <- function(input,output,session) {
 }
   
 actualizaProy <- function (input,output,session) {
-  
   shinyjs::hide("downloadEE")
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")

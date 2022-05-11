@@ -92,9 +92,16 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
     "CRI" = transicionesEpidemiologicasArg
   )
   modificador = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores)
+  
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {
     for (fechaTransicion in names(transicionesEpidemiologicas[[iso_country]])) {
-      tFecha <- which(fechas_master == as.Date(fechaTransicion))
+
+      if (length(which(fechas_master == as.Date(fechaTransicion)))==0) {
+        tFecha <- fechas_master[1]
+      } else {
+        tFecha <- which(fechas_master == as.Date(fechaTransicion))
+      }
+      
       if (t>=tFecha) {
         col = 0
         modificador = setNames(lapply(seq_len(10), function(X) modificadorCero),modificadores)

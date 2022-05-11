@@ -86,7 +86,6 @@ seir_ages <- function(dias,
     # browser()
     
     # TODO: Llamar a la funcion ECO, para modificar la variable contact_matrix
-    
     if (customMatrix & t>tHoy+3 & is.na(customBeta[1,1]) == F) {
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
@@ -242,10 +241,7 @@ seir_ages <- function(dias,
       # haySparaVacunar[haySparaVacunar == TRUE] = 1
       # haySparaVacunar[is.na(haySparaVacunar)] = 0
       # haySparaVacunar = haySparaVacunar * prioridadesHoy
-<<<<<<< HEAD
-      # print(t)
-=======
->>>>>>> dcf3661366c60f50e5f483a351af9b8a0cdf0b46
+
       if (sum(haySparaVacunar) > 0) {
         vectorVacunacion = vectorVacunacion * haySparaVacunar
         vA[[t]][vacuna,] = vectorVacunacion
