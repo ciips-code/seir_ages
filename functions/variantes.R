@@ -83,7 +83,13 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   }
   
   transicionesEpidemiologicas <<- list(
-    'ARG' = transicionesEpidemiologicasArg
+    'ARG' = transicionesEpidemiologicasArg,
+    "BRA" = transicionesEpidemiologicasArg,
+    "CHL" = transicionesEpidemiologicasArg,
+    "COL" = transicionesEpidemiologicasArg,
+    "PER" = transicionesEpidemiologicasArg,
+    "MEX" = transicionesEpidemiologicasArg,
+    "CRI" = transicionesEpidemiologicasArg
   )
   modificador = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores)
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {

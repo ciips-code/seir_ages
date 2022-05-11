@@ -242,8 +242,6 @@ seir_ages <- function(dias,
       # haySparaVacunar[haySparaVacunar == TRUE] = 1
       # haySparaVacunar[is.na(haySparaVacunar)] = 0
       # haySparaVacunar = haySparaVacunar * prioridadesHoy
-      browser(expr = { t == 332 })
-      print(t)
       if (sum(haySparaVacunar) > 0) {
         vectorVacunacion = vectorVacunacion * haySparaVacunar
         vA[[t]][vacuna,] = vectorVacunacion

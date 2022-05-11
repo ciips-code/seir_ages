@@ -474,12 +474,6 @@ actualizaProy <- function (input,output,session) {
   # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   # 
   
-  print("Bug paises:")
-  print(porcentajeCasosGraves)
-  print(porcentajeCasosCriticos)
-  print(diasHospCasosGraves)
-  print(diasHospCasosCriticos)
-  print(ifr)
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
