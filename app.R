@@ -94,7 +94,6 @@ workingHours <<- readxl::read_xlsx('data/workingHours.xlsx')
 # lee funciones
 source("functions/params.R", encoding = "UTF-8")
 setParameters()
-print(ifr_base)
 source("functions/modeloEco.R", encoding = "UTF-8")
 setEcoParameters()
 source("functions/update.R", encoding = "UTF-8")

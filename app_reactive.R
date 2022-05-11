@@ -1322,7 +1322,7 @@ server <- function (input, output, session) {
   
   proy_low <- eventReactive(input$runWithSens,{
     #paste activa reactive (no comentar)
-    print("low")
+    # print("low")
     paste(input$go)
     paste(input$paramVac_cell_edit)
     paste(input$ifrt_cell_edit)
@@ -1692,7 +1692,7 @@ server <- function (input, output, session) {
                            value=dValue)
     
     sensScenarios <<- union_all(sensScenarios,insertDF)
-    print(sensScenarios)
+    # print(sensScenarios)
     
     return(proy)
     
@@ -2375,7 +2375,6 @@ server <- function (input, output, session) {
                            value=dValue)
     
     sensScenarios <<- union_all(sensScenarios,insertDF)
-    print(sensScenarios)
     
     return(proy)
     
@@ -2383,7 +2382,6 @@ server <- function (input, output, session) {
   
   EESummary <- eventReactive(list(input$EEgo,
                                   input$country),{
-    print("pasa")
                                     fecha <- "2021-12-31"
     tFecha <- which(fechas_master == "2021-12-31")
     costoVacuna <- EEParams$costoVacuna$costoVacuna[EEParams$costoVacuna$iso_country==iso_country]

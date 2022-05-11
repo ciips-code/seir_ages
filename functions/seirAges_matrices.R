@@ -212,18 +212,28 @@ seir_ages <- function(dias,
 
     intervalo = as.numeric(paramVac[vacuna,6])
     if (t > (tVacunasCero + latencia) && t < (tVacunasCero + diasVacunacion)) {
-      # browser(expr = {t == 500 })
+      # browser(expr = {S[[t-1]][1,6] < 101000 })
       prioridadesHoy <- selectedPriority
       prioridadesHoy[prioridadesHoy != vacGroupActive] = 0
       prioridadesHoy[prioridadesHoy == vacGroupActive] = 1
       numeroDeGrupos = length(prioridadesHoy[prioridadesHoy == 1])
-      ritmoPorGrupo = ritmoVacunacion/numeroDeGrupos
+      if (numeroDeGrupos > 0) {
+        ritmoPorGrupo = ritmoVacunacion/numeroDeGrupos
+      } else {
+        ritmoPorGrupo = 0
+      }
+      
       vectorVacunacion = prioridadesHoy * ritmoPorGrupo
-      limitesPorGrupoDeEdad = N[1,] * selectedUptake
-      haySparaVacunar = (Reduce("+",vA)[vacuna,] < limitesPorGrupoDeEdad)
-      haySparaVacunar[haySparaVacunar == TRUE] = 1
-      haySparaVacunar[is.na(haySparaVacunar)] = 0
-      haySparaVacunar = haySparaVacunar * prioridadesHoy
+      haySparaVacunar = vectorVacunacion - S[[t-1]][1,]
+      haySparaVacunar[haySparaVacunar<1] = 0
+      haySparaVacunar[haySparaVacunar>0] = 1
+      # limitesPorGrupoDeEdad = N[1,] * selectedUptake
+      # haySparaVacunar = (Reduce("+",vA)[vacuna,] < limitesPorGrupoDeEdad)
+      # haySparaVacunar[haySparaVacunar == TRUE] = 1
+      # haySparaVacunar[is.na(haySparaVacunar)] = 0
+      # haySparaVacunar = haySparaVacunar * prioridadesHoy
+      browser(expr = { t == 332 })
+      print(t)
       if (sum(haySparaVacunar) > 0) {
         vectorVacunacion = vectorVacunacion * haySparaVacunar
         vA[[t]][vacuna,] = vectorVacunacion

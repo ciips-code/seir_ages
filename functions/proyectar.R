@@ -3,34 +3,24 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
     message = 'Cargando...', value = 0, {
       calibra(input,output,session)
       incProgress(0.1)
-      print(paste("1",ifr_base))
       actualizaMapa(input,output,session)
       incProgress(0.1)
-      print(paste("2",ifr_base))
       actualizaPanel(input,output,session)
       incProgress(0.1)
       incProgress(0.1)
-      print(paste("3",ifr_base))
       actualizaVariables(input,output,session)
       incProgress(0.1)
-      print(paste("4",ifr_base))
       actualizaCM(input,output,session)
       incProgress(0.1)
-      print(paste("5",ifr_base))
       actualizaDTTables(input,output,session)
       incProgress(0.1)
-      print(paste("6",ifr_base))
       actualizaParametros(input,output,session)
       incProgress(0.1)
-      print(paste("7",ifr_base))
       actualizaProy(input,output,session)
       incProgress(0.1)
-      print(paste("8",ifr_base))
       actualizaPlot(input,output,session)
       incProgress(0.1)
-      print(paste("9",ifr_base))
       actualizaTablas(input,output,session)
-      print(paste("U",ifr_base))
     }) 
   
 }
@@ -54,10 +44,6 @@ calibra <- function (input, output, session) {
   porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   ifr <<- ifr_base * ifrCalibrador
   transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
-  
-  print(paste("transmission_probabilityCalibrador",transmission_probabilityCalibrador))
-  print(transmission_probability_base)
-  print(transmission_probability)
   
 }
 
@@ -487,6 +473,13 @@ actualizaProy <- function (input,output,session) {
   # porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
   # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   # 
+  
+  print("Bug paises:")
+  print(porcentajeCasosGraves)
+  print(porcentajeCasosCriticos)
+  print(diasHospCasosGraves)
+  print(diasHospCasosCriticos)
+  print(ifr)
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,

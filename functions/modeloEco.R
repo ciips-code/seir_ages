@@ -17,5 +17,5 @@ getModificadorActividadLaboral <<- function(t, muertesTmenosUno) {
 }
 
 
-getModificadorActividadLaboral(which(fechas_master=="2021-01-01"))
+# getModificadorActividadLaboral(which(fechas_master=="2021-01-01"))
 
