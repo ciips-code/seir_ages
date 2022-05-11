@@ -73,7 +73,7 @@ addBoxTable <- function (matrixName,country) {
                                                                                              contact_matrix_other = contact_matrix_other),
                                                                                            ages= as.numeric(ageGroupsV)) * trans_prob_param
   
-  
+  print(`Physical distancing + Shielding of older people + Self isolation + School closures`)
   `Physical distancing + Shielding of older people + Lockdown + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Lockdown + School closures",
                                                                                                              matrix_list = list(
                                                                                                                contact_matrix = contact_matrix,
@@ -100,12 +100,14 @@ addBoxTable <- function (matrixName,country) {
 
 
 get_custom_matrix <- function(scenario, 
+                              dia_loop=0,
                               matrix_list = NULL,
                               ages= c(0, 18, 30, 40, 50, 60, 70, 80)){
   
   list2env(matrix_list, .GlobalEnv)
   # columns of olders 
   cols_70_older <- which((ages)>=70)
+  if (dia_loop==0) {modificador_eco <- 1} else {modificador_eco <- getModificadorActividadLaboral(dia_loop)}
   # scenarios
   if(scenario == "Physical distancing"){
     out <- 1 * contact_matrix_home + 1 * contact_matrix_work + 1 * contact_matrix_school + 0.5 * contact_matrix_other
@@ -122,11 +124,11 @@ get_custom_matrix <- function(scenario,
   
   if(scenario == "Physical distancing + Shielding of older people + Self isolation"){
     out <- 1 * contact_matrix_home + 
-           cbind(.50 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+           cbind(.50 * (contact_matrix_work*modificador_eco)[,-cols_70_older], .25 * (contact_matrix_work*modificador_eco)[,cols_70_older]) +
            1 * contact_matrix_school +
            cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
     out <- out * .65
-    
+    print(modificador_eco)
   }
   
   if(scenario == "Physical distancing + Shielding of older people + Self isolation + School closures"){
@@ -135,7 +137,6 @@ get_custom_matrix <- function(scenario,
            0 * contact_matrix_school +
            cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
     out <- out * .65
-    
   }
   
   if(scenario == "Physical distancing + Shielding of older people + Lockdown + School closures"){
