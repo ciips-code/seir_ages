@@ -107,48 +107,87 @@ get_custom_matrix <- function(scenario,
   list2env(matrix_list, .GlobalEnv)
   # columns of olders 
   cols_70_older <- which((ages)>=70)
-  if (dia_loop==0) {modificador_eco <- 1} else {modificador_eco <- getModificadorActividadLaboral(dia_loop)}
-  # scenarios
-  if(scenario == "Physical distancing"){
-    out <- 1 * contact_matrix_home + 1 * contact_matrix_work + 1 * contact_matrix_school + 0.5 * contact_matrix_other
-  }
+  # if (dia_loop==0) { <- 1} else {modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, )}
   
-  if(scenario == "Physical distancing + Shielding of older people"){
-    out <- 1 * contact_matrix_home + 
-           cbind(.50 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
-           1 * contact_matrix_school +
-           cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
-           
-      
-  }
+  modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, iso_country) # agregar country y asegurarse que devuelva NA cuando t ==0 y cuando pais no modelo
+  usar_davies <- is.na(modificador_eco) 
   
-  if(scenario == "Physical distancing + Shielding of older people + Self isolation"){
-    out <- 1 * contact_matrix_home + 
-           cbind(.50 * (contact_matrix_work*modificador_eco)[,-cols_70_older], .25 * (contact_matrix_work*modificador_eco)[,cols_70_older]) +
-           1 * contact_matrix_school +
-           cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
-    out <- out * .65
-    #print(modificador_eco)
-  }
-  
-  if(scenario == "Physical distancing + Shielding of older people + Self isolation + School closures"){
-    out <- 1 * contact_matrix_home + 
-           cbind(.50 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
-           0 * contact_matrix_school +
-           cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
-    out <- out * .65
-  }
-  
-  if(scenario == "Physical distancing + Shielding of older people + Lockdown + School closures"){
-    out <- 1 * contact_matrix_home + 
-           .10 * contact_matrix_work +
-           0 * contact_matrix_school +
-           .10 * contact_matrix_other
-    out <- out * .65
+  if (usar_davies) {
+    # scenarios
+    if(scenario == "Physical distancing"){
+      out <- 1 * contact_matrix_home + 1 * contact_matrix_work + 1 * contact_matrix_school + 0.5 * contact_matrix_other
+    }
     
+    if(scenario == "Physical distancing + Shielding of older people"){
+      out <- 1 * contact_matrix_home + 
+        cbind(.50 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+        1 * contact_matrix_school +
+        cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people + Self isolation"){
+      out <- 1 * contact_matrix_home + 
+        cbind(.50 * (contact_matrix_work*modificador_eco)[,-cols_70_older], .25 * (contact_matrix_work*modificador_eco)[,cols_70_older]) +
+        1 * contact_matrix_school +
+        cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
+      out <- out * .65
+      #print(modificador_eco)
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people + Self isolation + School closures"){
+      out <- 1 * contact_matrix_home + 
+        cbind(.50 * contact_matrix_work [,-cols_70_older], .25 * contact_matrix_work [,cols_70_older]) +
+        0 * contact_matrix_school +
+        cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
+      out <- out * .65
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people + Lockdown + School closures"){
+      out <- 1 * contact_matrix_home + 
+        .10 * contact_matrix_work +
+        0 * contact_matrix_school +
+        .10 * contact_matrix_other
+      out <- out * .65
+      
+    }
+  } else { # Usa modelo eco
+    # scenarios
+    if(scenario == "Physical distancing"){
+      out <- 1 * contact_matrix_home + modificador_eco * contact_matrix_work + 1 * contact_matrix_school + 0.5 * contact_matrix_other
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people"){
+      out <- 1 * contact_matrix_home + 
+        modificador_eco * contact_matrix_work +
+        1 * contact_matrix_school +
+        cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people + Self isolation"){
+      out <- 1 * contact_matrix_home + 
+        modificador_eco * contact_matrix_work +
+        1 * contact_matrix_school +
+        cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
+      out <- out * .65
+      #print(modificador_eco)
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people + Self isolation + School closures"){
+      out <- 1 * contact_matrix_home + 
+        modificador_eco * contact_matrix_work +
+        0 * contact_matrix_school +
+        cbind(.50 * contact_matrix_other [,-cols_70_older], .25 * contact_matrix_other [,cols_70_older])
+      out <- out * .65
+    }
+    
+    if(scenario == "Physical distancing + Shielding of older people + Lockdown + School closures"){
+      out <- 1 * contact_matrix_home + 
+        modificador_eco * contact_matrix_work +
+        0 * contact_matrix_school +
+        .10 * contact_matrix_other
+      out <- out * .65
+    }
   }
-  
-  
   return(out)
 }
 
