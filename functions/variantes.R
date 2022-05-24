@@ -38,28 +38,30 @@ modificadores <<- c('transmision',
                   'modVacCritico',
                   'modVacMuerte',
                   'duracionDiasInternacion')
+iso_country="CHL"
 
 variantes <<- list(
   'alpha' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'gamma' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'delta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
-  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(4),
-                            getMatrizModificadoresVariantesSingle(0.44),
-                            getMatrizModificadoresVariantesSingle(0.33),
-                            getMatrizModificadoresVariantesSingle(0.3),
-                            getMatrizModificadoresVariantesSingle(0.8),
-                            getMatrizModificadoresVariantesSingleVac(1.45),
-                            getMatrizModificadoresVariantesSingleVac(2.277),
-                            getMatrizModificadoresVariantesSingleVac(2.652),
-                            getMatrizModificadoresVariantesSingleVac(3.174),
-                            getMatrizModificadoresVariantesSingle(0.31)
+  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['transmision']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['hospitalizacion']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['critico']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['muerte']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['duracionInmumidad']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country)[['modVacTransmision']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country)[['modVacGrave']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country)[['modVacCritico']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country)[['modVacMuerte']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['duracionDiasInternacion']])
                             ),
                        modificadores)
 )
 
-fechaTransicionOmicron <<- as.Date("2021-11-01")
-periodoTransicionOmicron <<- 30
+
+fechaTransicionOmicron <<- getCalibracion(iso_country)[["fechaTransicionOmicron"]]
+periodoTransicionOmicron <<- getCalibracion(iso_country)[["periodoTransicionOmicron"]]
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)

@@ -28,13 +28,18 @@ setParameters <- function () {
   duracion_proteccion <<- 180 # Cita:
   tiempoP_mean <<- duracion_proteccion
   
-  # CALIBRAION
-  porcentajeCasosCriticosCalibrador <<- 1
-  porcentajeCasosGravesCalibrador <<- 1
-  ifrCalibrador <<- 1.3
-  transmission_probabilityCalibrador <<- 0.52
-  
-  
+  # CALIBRAcION
+  if (exists("iso_country")) {
+    porcentajeCasosCriticosCalibrador<<-getCalibracion(iso_country)[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibrador<<-getCalibracion(iso_country)[['porcentajeCasosGravesCalibrador']]
+    ifrCalibrador<<-getCalibracion(iso_country)[['ifrCalibrador']]
+    transmission_probabilityCalibrador<<-getCalibracion(iso_country)[['transmission_probabilityCalibrador']]
+  } else {
+    porcentajeCasosCriticosCalibrador<<-getCalibracion("ARG")[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibrador<<-getCalibracion("ARG")[['porcentajeCasosGravesCalibrador']]
+    ifrCalibrador<<-getCalibracion("ARG")[['ifrCalibrador']]
+    transmission_probabilityCalibrador<<-getCalibracion("ARG")[['transmission_probabilityCalibrador']]
+  }
   
   # Genera matrices de riesgo en base a una columna como c(No inmune, Recuperado, 1 dosis, 2 dosis)
   # SE USA??? PROBABLEMENTE NO

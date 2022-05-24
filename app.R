@@ -92,6 +92,7 @@ load("data/parametrosEpi.RData", envir = .GlobalEnv)
 workingHours <<- readxl::read_xlsx('data/workingHours.xlsx')
 
 # lee funciones
+source("functions/calibracion.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
 setParameters()
 source("functions/modeloEco.R", encoding = "UTF-8")
@@ -105,6 +106,7 @@ source("functions/ui_bid.R", encoding = "UTF-8")
 source("functions/EESummaryFunction.R", encoding = "UTF-8")
 source("functions/proyectar.R", encoding = "UTF-8")
 source("functions/variantes.R", encoding = "UTF-8")
+
 
 
 customMatrix <<- F
