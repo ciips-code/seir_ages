@@ -102,27 +102,20 @@ addBoxTable <- function (matrixName,country) {
 get_custom_matrix <- function(scenario, 
                               dia_loop=0,
                               matrix_list = NULL,
-                              ages= c(0, 18, 30, 40, 50, 60, 70, 80)){
+                              ages= c(0, 18, 30, 40, 50, 60, 70, 80),
+                              muertes=0){
   
   list2env(matrix_list, .GlobalEnv)
   # columns of olders 
   cols_70_older <- which((ages)>=70)
   # if (dia_loop==0) { <- 1} else {modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, )}
-  
   # modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, iso_country) # agregar country y asegurarse que devuelva NA cuando t ==0 y cuando pais no modelo
-  
-  if (exists("d")==F) {
-    print("muertes=0")
-    muertes=0  
-  } else {
-    print("muertes=dia_loop")
-    browser()
-    muertes=d[[(dia_loop-100)]]
-  }
-  modificador_eco <- work_mob(dia_loop,workplace_closure,sum(muertes))
+  modificador_eco <- work_mob(dia_loop,workplace_closure,muertes)
   usar_davies <- is.na(modificador_eco) 
   
   if (usar_davies) {
+    print(dia_loop)
+    print('davies')
     # scenarios
     if(scenario == "Physical distancing"){
       out <- 1 * contact_matrix_home + 
@@ -165,7 +158,8 @@ get_custom_matrix <- function(scenario,
     }
   } else { # Usa modelo eco
     # scenarios
-    print("eco")
+    print(dia_loop)
+    print('eco')
     if(scenario == "Physical distancing"){
       out <- 1 * contact_matrix_home + modificador_eco * contact_matrix_work + 1 * contact_matrix_school + 0.5 * contact_matrix_other
     }

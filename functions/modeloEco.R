@@ -66,7 +66,7 @@ setEcoParameters <- function () {
 
 work_mob <- function(t, w_closure,deaths) {
   año <- substring(fechas_master[t+1],1,4)
-  if (año == '2021') {
+  if (is.na(año) | año == '2021') {
     return(1+workplace_mob(t,w_closure,deaths)/100)
   } else {
     return(NA)
