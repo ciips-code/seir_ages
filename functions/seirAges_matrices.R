@@ -40,12 +40,21 @@ seir_ages <- function(dias,
   matrixNames = list(immunityStates,
                ageGroups)
             
-  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = d = U = u = V = v = vA = tot = yl = ylq = yld = ylqd = lapply(1:dias, 
-                                                                                                                      matrix, 
-                                                                                                                      data= 0, 
-                                                                                                                      nrow=length(immunityStates), 
-                                                                                                                      ncol=length(ageGroups), 
-                                                                                                                      dimnames = matrixNames)
+  e = E = S = i = Ss = I = Ii = Ig = Ic = r = R = D = U = u = V = v = vA = tot = yl = ylq = yld = ylqd = lapply(1:dias, 
+                                                                                                                  matrix, 
+                                                                                                                  data= 0, 
+                                                                                                                  nrow=length(immunityStates), 
+                                                                                                                  ncol=length(ageGroups), 
+                                                                                                                  dimnames = matrixNames)
+
+  
+  d <<- lapply(1:dias, matrix, 
+                       data= 0, 
+                       nrow=length(immunityStates), 
+                       ncol=length(ageGroups), 
+                       dimnames = matrixNames)
+  
+  
   
   S[[1]][1,] = N
   N = S[[1]]

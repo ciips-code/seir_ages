@@ -109,7 +109,17 @@ get_custom_matrix <- function(scenario,
   cols_70_older <- which((ages)>=70)
   # if (dia_loop==0) { <- 1} else {modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, )}
   
-  modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, iso_country) # agregar country y asegurarse que devuelva NA cuando t ==0 y cuando pais no modelo
+  # modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, iso_country) # agregar country y asegurarse que devuelva NA cuando t ==0 y cuando pais no modelo
+  
+  if (exists("d")==F) {
+    print("muertes=0")
+    muertes=0  
+  } else {
+    print("muertes=dia_loop")
+    browser()
+    muertes=d[[(dia_loop-100)]]
+  }
+  modificador_eco <- work_mob(dia_loop,workplace_closure,sum(muertes))
   usar_davies <- is.na(modificador_eco) 
   
   if (usar_davies) {
