@@ -113,6 +113,7 @@ get_custom_matrix <- function(scenario,
   modificador_eco <- work_mob(dia_loop,workplace_closure,muertes)
   usar_davies <- is.na(modificador_eco) 
   
+  
   if (usar_davies) {
     print(dia_loop)
     print('davies')
@@ -158,6 +159,17 @@ get_custom_matrix <- function(scenario,
     }
   } else { # Usa modelo eco
     # scenarios
+    if (exists("costo_economico")==F) {
+      costo_economico <<- data.frame(fecha=NA,
+                                     costo=NA)[-1,]
+      costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[(dia_loop)])
+      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,workplace_closure,muertes))
+      
+    } else {
+      
+      costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[dia_loop])
+      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,workplace_closure,muertes))
+    }
     print(dia_loop)
     print('eco')
     if(scenario == "Physical distancing"){

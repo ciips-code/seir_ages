@@ -3,17 +3,17 @@ setEcoParameters <- function () {
  coef_mob <<- c(-42.17619,-0.0005177,5.89e-08,-3.673106,0.15,15.33772*2,-0.0004777*2)
  
  ## Pre-pandemic (equilibrium) level of working hours for each sector
- w_star <- c(0.065,0.002,0.007,0.133,0.006,0.088,0.206,0.035,0.075,0.015,0.069,0.086,0.053,0.060,0.050,0.051)
- w_star <- w_star * 32548570.3923792
+ w_star <<- c(0.065,0.002,0.007,0.133,0.006,0.088,0.206,0.035,0.075,0.015,0.069,0.086,0.053,0.060,0.050,0.051)
+ w_star <<- w_star * 32548570.3923792
  
  ## Working hours modifier
  # Measures the sensitivity of working hours to mobility
  # Depends on the capability to switch efforts to remote work
- hours_mod <- c(0,0,0.5,0.75,0.25,0.75,1,1,0.75,0.5,0.5,1,1,0,0,0.5)
+ hours_mod <<- c(0,0,0.5,0.75,0.25,0.75,1,1,0.75,0.5,0.5,1,1,0,0,0.5)
  
  # output_per_worker
  # measured in ARS mn
- output_pw <- c(0.49,1.17,3.75,0.76,1.99,0.29,0.48,0.38,0.50,1.33,0.90,0.56,0.63,0.52,0.35,0.08)
+ output_pw <<- c(0.49,1.17,3.75,0.76,1.99,0.29,0.48,0.38,0.50,1.33,0.90,0.56,0.63,0.52,0.35,0.08)
  
 }
 
