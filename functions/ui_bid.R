@@ -1038,6 +1038,9 @@ getUI <- function () {
                                  )
                         ),
                         tabPanel("ECO Model",
+                                 br(),
+                                 fluidRow(column(12,h3("Definir secuencia de NPIs"))),
+                                 br(),
                                  fluidRow(tags$div(id="meses")),
                                  br(),
                                  fluidRow(column(2,

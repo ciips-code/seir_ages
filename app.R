@@ -3312,7 +3312,10 @@ server <- function (input, output, session) {
     }
   
     observeEvent(input$TSP, {
-      uiECO()
+      if(is.null(input$enero)) {
+        uiECO()  
+      }
+      
     })  
   
   stringency <- eventReactive(input$ECO_go, {
