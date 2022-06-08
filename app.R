@@ -3242,9 +3242,12 @@ server <- function (input, output, session) {
         data <- left_join(costo_economico[costo_economico$escenario=="DEFAULT",],
                           costo_economico[costo_economico$escenario=="ALTERNATIVO 1",],
                           by="fecha")
+        data$fecha <- as.Date(data$fecha)
         fig <- plot_ly(data, x = ~fecha, y = ~costo.x, name = 'Costo Default', type = 'scatter', mode = 'lines',
                        line = list(color = 'rgb(205, 12, 24)', width = 4)) 
-        fig %>% add_trace(y = ~costo.y, name = 'Costo Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4))
+        fig %>% add_trace(y = ~costo.y, name = 'Costo Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4)) %>% layout(title = 'Costo económico', 
+                                                                                                                                     xaxis = list(title='Fecha'), 
+                                                                                                                                     yaxis = list(title='Costo económico'))
       }
       
       
@@ -3256,10 +3259,13 @@ server <- function (input, output, session) {
         data <- left_join(costo_economico[costo_economico$escenario=="DEFAULT",],
                           costo_economico[costo_economico$escenario=="ALTERNATIVO 1",],
                           by="fecha")
+        data$fecha <- as.Date(data$fecha)
         costo_economico <<- costo_economico[costo_economico$escenario=="DEFAULT",]
         fig <- plot_ly(data, x = ~fecha, y = ~muertes.x, name = 'Muertes Default', type = 'scatter', mode = 'lines',
                        line = list(color = 'rgb(205, 12, 24)', width = 4)) 
-        fig %>% add_trace(y = ~muertes.y, name = 'Muertes Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4))
+        fig %>% add_trace(y = ~muertes.y, name = 'Muertes Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4)) %>% layout(title = 'Muertes', 
+                                                                                                                                         xaxis = list(title='Fecha'), 
+                                                                                                                                         yaxis = list(title='Defunciones diarias'))
       }
       
     })
@@ -3284,22 +3290,23 @@ server <- function (input, output, session) {
         insertUI(
           selector = "#meses",
           where = "beforeEnd",
-          ui = pickerInput(inputId = tolower(m),
-                           label = m,
-                           choices = c("Distanciamiento social, uso de mascarillas faciales",
-                                       "Agrega aislamiento de ancianos",
-                                       "Agrega aislamiento personal",
-                                       "Agrega cierre de escuelas",
-                                       "Implementa confinamiento total"),
-                           choicesOpt = list(
-                             style = c('color: #222426; background: #40AA59',
-                                       'color: #222426; background: #B5DF73',
-                                       'color: #222426; background: #FFFFBF',
-                                       'color: #222426; background: #FDBC6D',
-                                       'color: #222426; background: #E54E34'
+          ui = column(3,pickerInput(inputId = tolower(m),
+                                    label = m,
+                                    choices = c("Distanciamiento social, uso de mascarillas faciales",
+                                                "Agrega aislamiento de ancianos",
+                                                "Agrega aislamiento personal",
+                                                "Agrega cierre de escuelas",
+                                                "Implementa confinamiento total"),
+                                    choicesOpt = list(
+                                     style = c('color: #222426; background: #40AA59',
+                                               'color: #222426; background: #B5DF73',
+                                               'color: #222426; background: #FFFFBF',
+                                               'color: #222426; background: #FDBC6D',
+                                               'color: #222426; background: #E54E34'
+                                               )
                                        )
-                             )
                            )
+              )
         )
       }
     }
