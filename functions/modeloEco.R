@@ -1,5 +1,6 @@
 setEcoParameters <- function () {
- workplace_closure <<- c(2,2,2,2,2,2,2,2,2,2,1,1,1)
+ # workplace_closure <<- c(2,2,2,2,2,2,2,2,2,2,1,1,1)
+ # workplace_closure <<- c(3,3,3,3,3,3,3,3,3,2,2,1,1) # suponiendo que van de 1 a 4
  coef_mob <<- c(-42.17619,-0.0005177,5.89e-08,-3.673106,0.15,15.33772*2,-0.0004777*2)
  
  ## Pre-pandemic (equilibrium) level of working hours for each sector
@@ -139,8 +140,21 @@ loss_t <- function(work_mob_t) {
   return(y_t/y_star -1)
 }
 
-
-
+matchDavies <- function(NPIs) {
+  val <- NPIs
+  for (i in 1:length(NPIs)) {
+    val[i] <- if (NPIs[i]=="Physical distancing") {0} else
+              if (NPIs[i]=="Physical distancing + Shielding of older people") {0} else
+              if (NPIs[i]=="Physical distancing + Shielding of older people + Self isolation") {1} else
+              if (NPIs[i]=="Physical distancing + Shielding of older people + Self isolation + School closures") {2} else
+              if (NPIs[i]=="Physical distancing + Shielding of older people + Lockdown + School closures") {3}
+  }
+  lengthVal <- length(val)
+  if (lengthVal<12) {
+    val <- c(val,rep(tail(val,1),12-lengthVal))
+  }
+  as.numeric(val)
+}
 
 
 

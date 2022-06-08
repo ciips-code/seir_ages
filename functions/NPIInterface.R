@@ -73,7 +73,6 @@ addBoxTable <- function (matrixName,country) {
                                                                                              contact_matrix_other = contact_matrix_other),
                                                                                            ages= as.numeric(ageGroupsV)) * trans_prob_param
   
-  #print(`Physical distancing + Shielding of older people + Self isolation + School closures`)
   `Physical distancing + Shielding of older people + Lockdown + School closures` <<- get_custom_matrix(scenario = "Physical distancing + Shielding of older people + Lockdown + School closures",
                                                                                                              matrix_list = list(
                                                                                                                contact_matrix = contact_matrix,
@@ -110,13 +109,13 @@ get_custom_matrix <- function(scenario,
   cols_70_older <- which((ages)>=70)
   # if (dia_loop==0) { <- 1} else {modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, )}
   # modificador_eco <- getModificadorActividadLaboral(dia_loop, 0, iso_country) # agregar country y asegurarse que devuelva NA cuando t ==0 y cuando pais no modelo
-  modificador_eco <- work_mob(dia_loop,workplace_closure,muertes)
+  modificador_eco <- work_mob(dia_loop,matchDavies(customBeta$beta),muertes)
   usar_davies <- is.na(modificador_eco) 
   
   
   if (usar_davies) {
-    print(dia_loop)
-    print('davies')
+    # print(dia_loop)
+    # print('davies')
     # scenarios
     if(scenario == "Physical distancing"){
       out <- 1 * contact_matrix_home + 
@@ -161,17 +160,35 @@ get_custom_matrix <- function(scenario,
     # scenarios
     if (exists("costo_economico")==F) {
       costo_economico <<- data.frame(fecha=NA,
-                                     costo=NA)[-1,]
+                                     costo=NA,
+                                     muertes=NA,
+                                     escenario=NA)[-1,]
       costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[(dia_loop)])
-      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,workplace_closure,muertes))
+      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))
+      costo_economico[nrow(costo_economico),3] <<- muertes
+      if (ECORunning==F) {
+        costo_economico[nrow(costo_economico),4] <<- "DEFAULT"  
+      } else {
+        costo_economico[nrow(costo_economico),4] <<- nombreEscenario  
+      }
+      
+      
       
     } else {
-      
       costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[dia_loop])
-      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,workplace_closure,muertes))
+      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))
+      costo_economico[nrow(costo_economico),3] <<- muertes
+      if (ECORunning==F) {
+        costo_economico[nrow(costo_economico),4] <<- "DEFAULT"  
+      } else {
+        costo_economico[nrow(costo_economico),4] <<- nombreEscenario  
+      }
     }
-    print(dia_loop)
-    print('eco')
+    
+    
+    
+    # print(dia_loop)
+    # print('eco')
     if(scenario == "Physical distancing"){
       out <- 1 * contact_matrix_home + modificador_eco * contact_matrix_work + 1 * contact_matrix_school + 0.5 * contact_matrix_other
     }
@@ -213,14 +230,24 @@ get_custom_matrix <- function(scenario,
 
 
 defaultScenario <- function (country) {
+  
   default_ARG <- c(
     rep("Physical distancing + Shielding of older people + Self isolation + School closures", 8),
     rep("Physical distancing + Shielding of older people + Self isolation", 2),
     rep("Physical distancing + Shielding of older people",1),
     rep("Physical distancing",1)
   )
+  
+  default_COL <- c(
+    rep("Physical distancing",3),
+    rep("Physical distancing + Shielding of older people + Lockdown + School closures",2),
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",1),
+    rep("Physical distancing + Shielding of older people",3),
+    rep("Physical distancing",3)
+  )
+  
   if (country=="ARG" & 
-      identical(customBeta,default_ARG) |
+      identical(customBeta$beta,default_ARG) |
       country=="ARG" & 
       primeraVez==T){
     
@@ -252,6 +279,89 @@ defaultScenario <- function (country) {
     addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
     addBoxTable("Physical distancing + Shielding of older people",input$country)
     addBoxTable("Physical distancing",input$country)
+    dateIndex <<- 1
+    
+  }
+  if (country=="COL" & 
+      identical(customBeta$beta,default_COL)==F |
+      country=="COL" & 
+      primeraVez==T){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    
+    removeUI(selector = "#npis-output")
+    insertUI(selector = "#npis-col",
+             where = "beforeEnd",
+             fluidRow(id = "npis-output",
+                      div(id = "tail", tags$span("Seleccionar medidas..."), style = 'float:left;')
+             )
+    )
+    
+
+    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(2,"Distanciamiento social,<br>uso de mascarillas faciales<br>y aislamiento de ancianos<br><br>")
+    addBox(2,"Distanciamiento social,<br>uso de mascarillas faciales<br>y aislamiento de ancianos<br><br>")
+    addBox(2,"Distanciamiento social,<br>uso de mascarillas faciales<br>y aislamiento de ancianos<br><br>")
+    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    tHoy <<- tVacunasCero+4
+    addBoxTable("Physical distancing",input$country)
+    addBoxTable("Physical distancing",input$country)
+    addBoxTable("Physical distancing",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people",input$country)
+    addBoxTable("Physical distancing + Shielding of older people",input$country)
+    addBoxTable("Physical distancing + Shielding of older people",input$country)
+    addBoxTable("Physical distancing",input$country)
+    addBoxTable("Physical distancing",input$country)
+    addBoxTable("Physical distancing",input$country)
+    
+    dateIndex <<- 1
+    
+  }
+  
+}
+
+
+altScenario <- function (country,stringency) {
+  scenarios <- c ('Physical distancing',
+                  'Physical distancing + Shielding of older people',
+                  'Physical distancing + Shielding of older people + Self isolation',
+                  'Physical distancing + Shielding of older people + Self isolation + School closures',
+                  'Physical distancing + Shielding of older people + Lockdown + School closures')
+  
+  label <- c('Distanciamiento social, uso de mascarillas faciales',
+             'Agrega aislamiento de ancianos',
+             'Agrega aislamiento personal',
+             'Agrega cierre de escuelas',
+             'Implementa confinamiento total')
+  
+  for (i in 1:length(st)) {
+    st[i] <<- scenarios[which(label==st[i])]
+  }
+  alt_ARG <- st
+  
+  if (country=="ARG"){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    tHoy <<- tVacunasCero+4
+    
+    for (i in 1:length(alt_ARG)) {
+      addBoxTable(alt_ARG[i],input$country)
+    }
+    
     dateIndex <<- 1
     
   }

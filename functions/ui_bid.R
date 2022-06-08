@@ -1036,8 +1036,35 @@ getUI <- function () {
                                           br(),
                                           tags$div(id="omicron2"))
                                  )
+                        ),
+                        tabPanel("ECO Model",
                                  
-                        )
+                                 fluidRow(column(9,
+                                                 column(6,
+                                                        h4("Costo económico"),
+                                                        br(),
+                                                        withSpinner(plotlyOutput("grafEcoGasto"),type = 8, size = .5, color = "#bdbdbd"), align="center"),
+                                                 column(6,
+                                                        h4("Muertes diarias"),
+                                                        br(),
+                                                        withSpinner(plotlyOutput("grafEcoMuertes"),type = 8, size = .5, color = "#bdbdbd")), align="center"),
+                                          column(3,
+                                                 fluidRow(h3("NPIs por mes")),
+                                                 br(),
+                                                 fluidRow(tags$div(id="meses")),
+                                                 fluidRow(
+                                                   column(3,
+                                                          br(),
+                                                          actionButton("ECO_go",
+                                                                       "Modelo macro"))
+                                                 ),
+                                                 br(),
+                                                 fluidRow(
+                                                   
+                                                    )
+                                                 )
+                                          )
+                                 )
                         # tabPanel("Escenarios guardados", id="SE", 
                         #          fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
                         #                   column(3,

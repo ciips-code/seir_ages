@@ -468,14 +468,20 @@ actualizaParametros <- function(input,output,session) {
   
 }
   
-actualizaProy <- function (input,output,session) {
+actualizaProy <- function (input,output,session, altScenario=NA
+                           ) {
   shinyjs::hide("downloadEE")
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")
   shinyjs::hide("EESummaryTable3")
+  if (is.na(altScenario)) {
+    defaultScenario(iso_country) 
+  } else {
+    altScenario(iso_country,stringency()) 
+  }
   
-  defaultScenario(iso_country) 
   
+  #altScenario(iso_country)
   
   # ifrProy <<- ifrProy * ifrCalibrador
   # trans_prob_param <<- trans_prob_param * transmission_probabilityCalibrador
@@ -516,8 +522,6 @@ actualizaProy <- function (input,output,session) {
                     relaxFactor=input$relaxationFactor,
                     country=input$country
   )
-  
-
   
 }
 
@@ -776,40 +780,47 @@ actualizaTablas <- function(input,output,session) {
                   sum(sapply(proy[["yl: Years lost"]][1:tFechas[2]],simplify = T,sum)),
                   sum(sapply(proy[["yl: Years lost"]][1:tFechas[3]],simplify = T,sum)))
   
-  
+  costo_ec_1 <- mean(costo_economico[costo_economico$escenario=="DEFAULT" &
+                                     costo_economico$fecha<"2021-06-30","costo"])*100
+  costo_ec_2 <- mean(costo_economico[costo_economico$escenario=="DEFAULT" &
+                                     costo_economico$fecha<"2021-12-31","costo"])*100
   
   var=c("Defunciones acumuladas",
         "Infecciones acumuladas",
         "Vacunas aplicadas",
         "Cobertura con 1 dosis (%)",
         "Cobertura con 2 dosis (%)",
-        "Años de vida perdidos")
+        "Años de vida perdidos",
+        "Costo económico")
   C1 = c(def_ac[1],
          casos_ac[1],
          vacunas_ac[1],
          poblacion_vac[1],
          poblacion_vac2[1],
-         years_lost[1])
+         years_lost[1],
+         costo_ec_1)
   
   C2 = c(def_ac[2],
          casos_ac[2],
          vacunas_ac[2],
          poblacion_vac[2],
          poblacion_vac2[2],
-         years_lost[2])
+         years_lost[2],
+         costo_ec_2)
   
   C3 = c(def_ac[3],
          casos_ac[3],
          vacunas_ac[3],
          poblacion_vac[3],
          poblacion_vac2[3],
-         years_lost[3])
+         years_lost[3],
+         0)
   
   tabla <- cbind(var,
                  format(round(C1,0), big.mark = ','),
                  format(round(C2,0), big.mark = ','),
                  format(round(C3,0), big.mark = ','))
-  
+  tabla[7,4] <- "-"
   colnames(tabla) <- c(" ",fechas)
   tabla <<- tabla
   

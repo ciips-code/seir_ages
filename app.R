@@ -107,10 +107,8 @@ source("functions/EESummaryFunction.R", encoding = "UTF-8")
 source("functions/proyectar.R", encoding = "UTF-8")
 source("functions/variantes.R", encoding = "UTF-8")
 
-
-
+ECORunning <<- F
 customMatrix <<- F
-
 sensEE <<- F
 
 
@@ -3217,6 +3215,118 @@ server <- function (input, output, session) {
       }
       
     })
+    
+    observeEvent(input$ECO_go, {
+      ECORunning <<- T
+      st <<- c(input$enero,
+              input$febrero,
+              input$marzo,
+              input$abril,
+              input$mayo,
+              input$junio,
+              input$julio,
+              input$agosto,
+              input$septiembre,
+              input$octubre,
+              input$noviembre,
+              input$diciembre
+      )
+      nombreEscenario <<- "ALTERNATIVO 1"
+      actualizaProy(input,output,session,T)
+      ECORunning <<- F
+    })
+    
+    output$grafEcoGasto <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(unique(costo_economico$escenario))>1) {
+        data <- left_join(costo_economico[costo_economico$escenario=="DEFAULT",],
+                          costo_economico[costo_economico$escenario=="ALTERNATIVO 1",],
+                          by="fecha")
+        fig <- plot_ly(data, x = ~fecha, y = ~costo.x, name = 'Costo Default', type = 'scatter', mode = 'lines',
+                       line = list(color = 'rgb(205, 12, 24)', width = 4)) 
+        fig %>% add_trace(y = ~costo.y, name = 'Costo Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4))
+      }
+      
+      
+    })
+    
+    output$grafEcoMuertes <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(unique(costo_economico$escenario))>1) {
+        data <- left_join(costo_economico[costo_economico$escenario=="DEFAULT",],
+                          costo_economico[costo_economico$escenario=="ALTERNATIVO 1",],
+                          by="fecha")
+        costo_economico <<- costo_economico[costo_economico$escenario=="DEFAULT",]
+        fig <- plot_ly(data, x = ~fecha, y = ~muertes.x, name = 'Muertes Default', type = 'scatter', mode = 'lines',
+                       line = list(color = 'rgb(205, 12, 24)', width = 4)) 
+        fig %>% add_trace(y = ~muertes.y, name = 'Muertes Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4))
+      }
+      
+    })
+    
+    uiECO <- function() {
+      meses <- c(
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+      )
+      
+      for (m in meses) {
+        insertUI(
+          selector = "#meses",
+          where = "beforeEnd",
+          ui = pickerInput(inputId = tolower(m),
+                           label = m,
+                           choices = c("Distanciamiento social, uso de mascarillas faciales",
+                                       "Agrega aislamiento de ancianos",
+                                       "Agrega aislamiento personal",
+                                       "Agrega cierre de escuelas",
+                                       "Implementa confinamiento total"),
+                           choicesOpt = list(
+                             style = c('color: #222426; background: #40AA59',
+                                       'color: #222426; background: #B5DF73',
+                                       'color: #222426; background: #FFFFBF',
+                                       'color: #222426; background: #FDBC6D',
+                                       'color: #222426; background: #E54E34'
+                                       )
+                             )
+                           )
+        )
+      }
+    }
+  
+    observeEvent(input$TSP, {
+      uiECO()
+    })  
+  
+  stringency <- eventReactive(input$ECO_go, {
+    st <- c(input$enero,
+            input$febrero,
+            input$marzo,
+            input$abril,
+            input$mayo,
+            input$junio,
+            input$julio,
+            input$agosto,
+            input$septiembre,
+            input$octubre,
+            input$noviembre,
+            input$diciembre
+            )
+    as.numeric(st)
+  })
+ 
+      
+    
 
 }
 

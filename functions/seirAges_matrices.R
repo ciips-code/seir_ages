@@ -328,6 +328,8 @@ seir_ages <- function(dias,
 
     # Diferencias: print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
+  
+
   salida <- list("S: Susceptible"=S,
                  "V: Vaccinated"=V,
                  "vA: Daily vaccinations"=vA,
