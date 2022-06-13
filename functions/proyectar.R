@@ -522,7 +522,7 @@ actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
   
   if (trade_off) {
     agregados <- nrow(costo_economico)-rows_costo_economico
-    costo_economico$escenario[(nrow(costo_economico)-agregados+1):nrow(costo_economico)] <- nombreEscenario
+    costo_economico$escenario[(nrow(costo_economico)-agregados+1):nrow(costo_economico)] <<- nombreEscenario
     costo_1 <- mean(costo_economico$costo[costo_economico$fecha<="2021-06-30" &
                                           costo_economico$escenario==nombreEscenario])
     costo_2 <- mean(costo_economico$costo[costo_economico$fecha<="2021-12-31" &
