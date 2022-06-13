@@ -468,17 +468,14 @@ actualizaParametros <- function(input,output,session) {
   
 }
   
-actualizaProy <- function (input,output,session, altScenario=NA
-                           ) {
+actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
   shinyjs::hide("downloadEE")
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")
   shinyjs::hide("EESummaryTable3")
-  if (is.na(altScenario)) {
-    defaultScenario(iso_country) 
-  } else {
-    altScenario(iso_country,stringency()) 
-  }
+  if (is.na(altScenario)) {defaultScenario(iso_country)} 
+  if (ECORunning == T) {altScenario(iso_country,stringency())} 
+  
   
   
   #altScenario(iso_country)
@@ -523,6 +520,25 @@ actualizaProy <- function (input,output,session, altScenario=NA
                     country=input$country
   )
   
+  if (trade_off) {
+    agregados <- nrow(costo_economico)-rows_costo_economico
+    costo_economico$escenario[(nrow(costo_economico)-agregados+1):nrow(costo_economico)] <- nombreEscenario
+    costo_1 <- mean(costo_economico$costo[costo_economico$fecha<="2021-06-30" &
+                                          costo_economico$escenario==nombreEscenario])
+    costo_2 <- mean(costo_economico$costo[costo_economico$fecha<="2021-12-31" &
+                                          costo_economico$escenario==nombreEscenario])
+    
+    muertes_1 <- mean(costo_economico$muertes[costo_economico$fecha<="2021-06-30" &
+                                              costo_economico$escenario==nombreEscenario])
+    muertes_2 <- mean(costo_economico$muertes[costo_economico$fecha<="2021-12-31" &
+                                              costo_economico$escenario==nombreEscenario])
+    
+    trade_off_summary[[nombreEscenario]] <<- list(costo_1,
+                                                  costo_2,
+                                                  muertes_1,
+                                                  muertes_2)
+    
+  }
 }
 
 

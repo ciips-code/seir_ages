@@ -347,13 +347,12 @@ altScenario <- function (country,stringency) {
              'Agrega aislamiento personal',
              'Agrega cierre de escuelas',
              'Implementa confinamiento total')
-  
   for (i in 1:length(st)) {
     st[i] <<- scenarios[which(label==st[i])]
   }
   alt_ARG <- st
   
-  if (country=="ARG"){
+    if (country=="ARG"){
     
     customBeta <<- data.frame(start=NA,
                               end=NA,
@@ -369,5 +368,25 @@ altScenario <- function (country,stringency) {
   }
   
 }
+
+
+tradeOffScenario <- function (country, scenario) {
+  rows_costo_economico <<- nrow(costo_economico)
+  customBeta <<- data.frame(start=NA,
+                            end=NA,
+                            beta=NA)
+  tHoy <<- tVacunasCero+4
+  
+  for (i in 1:length(trade_off_scenarios()[[scenario]])) {
+    addBoxTable(trade_off_scenarios()[[scenario]],input$country)
+  }
+
+  dateIndex <<- 1
+  nombreEscenario <<- paste("Trade-off:",
+                            scenario)
+  
+}
+  
+
 
 

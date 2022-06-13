@@ -28,6 +28,7 @@ library(formattable)
 library(openxlsx)
 library(shinycssloaders)
 library(sf)
+library(data.table)
 
 options(dplyr.summarise.inform = FALSE)
 
@@ -110,6 +111,9 @@ source("functions/variantes.R", encoding = "UTF-8")
 ECORunning <<- F
 customMatrix <<- F
 sensEE <<- F
+trade_off_running <<- F
+trade_off_summary <<- list()
+trade_off_plot_show <<- F
 
 
 server <- function (input, output, session) {
@@ -3217,6 +3221,7 @@ server <- function (input, output, session) {
     })
     
     observeEvent(input$ECO_go, {
+      
       ECORunning <<- T
       st <<- c(input$enero,
               input$febrero,
@@ -3318,6 +3323,83 @@ server <- function (input, output, session) {
       
     })  
   
+    # observeEvent(input$trade_off_go, {
+    #   tradeOffScenario(iso_country,1)
+    #   actualizaProy(input,output,session,trade_off=T)   
+    #   tradeOffScenario(iso_country,2)
+    #   actualizaProy(input,output,session,trade_off=T)   
+    #   tradeOffScenario(iso_country,3)
+    #   actualizaProy(input,output,session,trade_off=T)   
+    #   tradeOffScenario(iso_country,4)
+    #   actualizaProy(input,output,session,trade_off=T)   
+    #   tradeOffScenario(iso_country,5)
+    #   actualizaProy(input,output,session,trade_off=T)   
+    #   
+    # })
+    
+    observeEvent(input$trade_off_go, {
+      output$grafico_trade_off <- renderPlotly({
+        withProgress(message = "Corriendo simulaciones...", value = 0, {
+          tradeOffScenario(iso_country,1)
+          actualizaProy(input,output,session,trade_off=T)
+          incProgress(.2)
+          tradeOffScenario(iso_country,2)
+          actualizaProy(input,output,session,trade_off=T)
+          incProgress(.2)
+          tradeOffScenario(iso_country,3)
+          actualizaProy(input,output,session,trade_off=T)
+          incProgress(.2)
+          tradeOffScenario(iso_country,4)
+          actualizaProy(input,output,session,trade_off=T)
+          incProgress(.2)
+          tradeOffScenario(iso_country,5)
+          actualizaProy(input,output,session,trade_off=T)
+          incProgress(.2)
+        }
+      )
+              
+          
+      nombres_scn <- names(trade_off_summary)
+      nombres_col <- c("costo_primer_semestre",
+                       "costo_segundo_semestre",
+                       "muertes_primer_semestre",
+                       "muertes_segundo_semestre")               
+      trade_off_summary <<- cbind(nombres_scn,data.table::rbindlist(trade_off_summary))
+      colnames(trade_off_summary)[-1] <<- nombres_col
+      
+      plot_ly(trade_off_summary, x = ~costo_primer_semestre, y = ~muertes_primer_semestre, name = ~nombres_scn, type = 'scatter',
+              mode = "markers", marker = list(color = "black")) %>% layout(
+                title = "Primer semestre",
+                xaxis = list(title = "Costo económico"),
+                yaxis = list(title = "Defunciones"),
+                margin = list(l = 100),
+                showlegend = FALSE
+              )
+          
+      })
+
+      output$grafico_trade_off2 <- renderPlotly({
+        plot_ly(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = ~nombres_scn, type = 'scatter',
+                mode = "markers", marker = list(color = "black")) %>% layout(
+                  title = "Año completo",
+                  xaxis = list(title = "Costo económico"),
+                  yaxis = list(title = "Defunciones"),
+                  margin = list(l = 100),
+                  showlegend = FALSE
+                )
+
+
+
+
+
+      })
+
+      
+    })
+      
+    
+    
+    
   stringency <- eventReactive(input$ECO_go, {
     st <- c(input$enero,
             input$febrero,
@@ -3344,101 +3426,3 @@ server <- function (input, output, session) {
 
 shinyApp(ui = getUI(), server = server)
 
-
-# output$graficoVac <- renderPlotly({
-#   # res_t()
-#   
-#   if (length(proy) > 0 & (input$compart_a_graficar != "" | mode_ui=="basico")) {
-#     
-#     if (mode_ui=="basico") {
-#       col_id=str_trim(str_replace_all(substring(input$compart_checkbox,1,3),":",""))
-#       compart_label <- input$compart_checkbox
-#     } else {
-#       col_id=str_trim(str_replace_all(substring(input$compart_a_graficar,1,3),":",""))
-#       compart_label <- input$compart_a_graficar
-#     }
-#     
-#     data_graf <- 
-#       bind_rows(
-#         tibble(Compart = "S", do.call(rbind,lapply(proy$`S: Susceptible`, function (x) {colSums(x[3:4,])})) %>% as_tibble()),
-#         tibble(Compart = "V", do.call(rbind,lapply(proy$`V: Vaccinated`, function (x) {colSums(x[3:4,])})) %>% as_tibble())
-#       )
-#     
-#     dataTemp <<- data_graf %>% dplyr::filter(Compart == col_id)
-#     dataTemp$fechaDia <<- fechas_master 
-#     dataRep_cases <<- data_graf %>% dplyr::filter(Compart == "casos_registrados")
-#     dataRep_cases$fechaDia <<- fechas_master
-#     dataRep_deaths <<- data_graf %>% dplyr::filter(Compart == "muertes_registradas")
-#     dataRep_deaths$fechaDia = fechas_master
-#     
-#     #colnames(dataTemp)[8] <- "70-79"
-#     # dataTemp$fechaDia = seq(min(dataEcdc$dateRep),min(dataEcdc$dateRep)+diasDeProyeccion-1,by=1)
-#     valx = dataTemp$fechaDia[tVacunasCero]
-#     maxy = max(dataTemp$total)
-#     
-#     if (is.null(input$edad)==F & is.na(input$diasProy)==F) {
-#       #data=dataTemp[1:(input$t+input$diasProy),]
-#       data=dataTemp
-#       data[data<0] = 0
-#       plot=plot_ly(data=data, x=~fechaDia)          
-#       
-#       if (length(input$edad)>0) {
-#         lapply(X=input$edad, FUN = function(edad) {
-#           
-#           plot <<- add_trace(plot, y=~eval(parse(text=paste0('`',edad,'`'))), type="scatter", mode="lines", name=edad, line = list(dash = ifelse(edad=='total','','dot')))
-#           if (input$check_cases==T) {
-#             plot <<- add_trace(p=plot, data=dataRep_cases, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
-#           }
-#           
-#           if (input$check_deaths==T) {
-#             plot <<- add_trace(p=plot, data=dataRep_deaths, y=~eval(parse(text=paste0('`',edad,'`'))), type="bar", name=edad)
-#           }
-#           
-#           
-#         })
-#         
-#         if (input$compart_a_graficar == "Ig: Infectious (moderate) SKIP") {
-#           plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = camasGenerales*porcAsignadoCovid, yend = camasGenerales*porcAsignadoCovid, name = "General beds", line=list(color="#fc9272", dash="dot"))
-#           plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,camasGenerales*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
-#           plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
-#                                   yaxis = list(title = paste("Compartimento:",compart_label)))
-#           # , range = c(0,60000)
-#         } else if (input$compart_a_graficar == "Ic: Infectious (severe)" |
-#                    input$compart_checkbox  == "Ic: Infectious (severe)") {
-#           if (is.null(input$Porc_crit)==F) {
-#             porcAsignadoCovid <- input$Porc_crit/100
-#           }
-#           
-#           plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI, yend = capacidadUTI, name = "ICU beds: (100%)", line=list(color="#fc9272", dash="dot"))
-#           plot <-  add_segments(plot, x= data$fechaDia[1], xend = data$fechaDia[diasDeProyeccion], y = capacidadUTI*porcAsignadoCovid, yend = capacidadUTI*porcAsignadoCovid, name = paste0("ICU beds (",round(porcAsignadoCovid*100,0),"%)"), line=list(color="#fc9272", dash="dot"))
-#           plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = max(maxy,capacidadUTI*porcAsignadoCovid*1.1) , name = paste(valx), line=list(color="#bdbdbd"))    
-#           plot <-  plot %>% layout(xaxis = list(title = "Fecha"), 
-#                                    yaxis = list(title = paste("Compartimento:",compart_label)))
-#           
-#         } else {
-#           plot <-  add_segments(plot, x= valx, xend = valx, y = 0, yend = maxy, name = paste(valx), line=list(color="#bdbdbd"))    
-#           plot <- plot %>% layout(xaxis = list(title = "Fecha"), 
-#                                   yaxis = list(title = paste("Compartimento:",compart_label)))
-#         }
-#         
-#       }
-#       
-#       
-#       if (input$check_rt==T) {
-#         days_before_rt <- c(rep(0,7))
-#         days_after_rt <- c(rep(NA,nrow(data[is.na(data$Compart),])))
-#         
-#         r <- c(days_before_rt,
-#                proy$`Rt: Effective reproduction number`$`Median(R)`,
-#                days_after_rt)
-#         
-#         plot <- 
-#           plot %>% add_trace(y = ~r, mode = "dotted", line=list(dash="dot"), type="scatter", yaxis = "y2", name = "Rt") %>%
-#           layout(yaxis2 = list(overlaying = "y", side = "right"),
-#                  xaxis = list(title = "Fecha"),
-#                  yaxis = list(title = paste("Compartimento:", compart_label)))
-#         plot %>% add_trace(y=~rep(1,1100), mode = "dotted", line=list(dash="dash", color="#bdbdbd"), type="scatter", yaxis = "y2", name = "Rt = 1")
-#       } else (plot)
-#     }
-#   }
-# })

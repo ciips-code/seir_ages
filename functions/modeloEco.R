@@ -156,7 +156,16 @@ matchDavies <- function(NPIs) {
   as.numeric(val)
 }
 
+trade_off_scenarios <- function () {
+  list(scenario_1 <- rep('Physical distancing',12),
+       scenario_2 <- rep('Physical distancing + Shielding of older people',12),
+       scenario_3 <- rep('Physical distancing + Shielding of older people + Self isolation',12),
+       scenario_4 <- rep('Physical distancing + Shielding of older people + Self isolation + School closures',12),
+       scenario_5 <- rep('Physical distancing + Shielding of older people + Lockdown + School closures',12)
+  )
+}
 
+trade_off_scenarios()
 
 
 

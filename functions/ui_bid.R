@@ -1051,48 +1051,20 @@ getUI <- function () {
                                  fluidRow(column(6,withSpinner(plotlyOutput("grafEcoGasto"),type = 8, size = .5, color = "#bdbdbd")),
                                           column(6,withSpinner(plotlyOutput("grafEcoMuertes"),type = 8, size = .5, color = "#bdbdbd"))
                                           )
-                                 )
-                        # ,
-                        # tabPanel("ECO Model",
-                        #          
-                        #          fluidRow(column(9,
-                        #                          column(6,
-                        #                                 h4("Costo económico"),
-                        #                                 br(),
-                        #                                 withSpinner(plotlyOutput("grafEcoGasto"),type = 8, size = .5, color = "#bdbdbd"), align="center"),
-                        #                          column(6,
-                        #                                 h4("Muertes diarias"),
-                        #                                 br(),
-                        #                                 withSpinner(plotlyOutput("grafEcoMuertes"),type = 8, size = .5, color = "#bdbdbd")), align="center"),
-                        #                   column(3,
-                        #                          fluidRow(h3("NPIs por mes")),
-                        #                          br(),
-                        #                          fluidRow(tags$div(id="meses")),
-                        #                          fluidRow(
-                        #                            column(3,
-                        #                                   br(),
-                        #                                   actionButton("ECO_go",
-                        #                                                "Modelo macro"))
-                        #                          ),
-                        #                          br(),
-                        #                          fluidRow(
-                        #                            
-                        #                             )
-                        #                          )
-                        #                   )
-                        #          )
-                        # tabPanel("Escenarios guardados", id="SE", 
-                        #          fluidRow(column(2,selectInput("saved_series", "Saved series", choices="", multiple = T)),
-                        #                   column(3,
-                        #                          br(),
-                        #                          prettyCheckbox("icu_beds","Show ICU beds endowment"))),
-                        #          #selectInput("age_groups_comp", "Age groups", choices=c("All ages"="total",ageGroups)),
-                        #          plotlyOutput("graficoComp"),
-                        #          br(),
-                        #          div(uiOutput("tables")),
-                        #          br(),
-                        #          column(2,actionButton("del_scenarios","Delete all scenarios"))),
-                        # tabPanel("Compartmientos", fluidRow(id="content"))
+                                 ),
+                        tabPanel("Trade-off",
+                                 fluidRow(column(3,
+                                                 br(),
+                                                 actionButton("trade_off_go",
+                                                              "Correr simulación"))),
+                                 br(),
+                                 fluidRow(column(6,
+                                                 plotlyOutput("grafico_trade_off")),
+                                          column(6,
+                                                 plotlyOutput("grafico_trade_off2"))
+                                                 )
+                                                 
+                                  )
             ),
             # fluidRow(column(12,id="content")),
             br(),
