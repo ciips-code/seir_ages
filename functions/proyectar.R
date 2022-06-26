@@ -36,10 +36,10 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
 }
 
 calibra <- function (input, output, session) {
-  
   ####################################
   # Calibración
   ####################################
+  
   
   if (input$TSP=="Calibracion") {
     porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
@@ -473,7 +473,8 @@ actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")
   shinyjs::hide("EESummaryTable3")
-  if (is.na(altScenario)) {defaultScenario(iso_country)} 
+  
+  if (is.na(altScenario) & sliders == F) {defaultScenario(iso_country)} 
   if (ECORunning == T) {altScenario(iso_country,stringency())} 
   
   
@@ -568,6 +569,8 @@ actualizaPlot <- function(input,output,session) {
     dplyr::rename("0-17"=2, "18-29"=3, "30-39"=4, "40-49"=5, "50-59"=6, "60-69"=7, "70-79"=8, "80+"=9)
   data_graf$total<<-data_graf$`0-17`+data_graf$`18-29`+data_graf$`30-39`+data_graf$`40-49`+data_graf$`50-59`+data_graf$`60-69`+data_graf$`70-79`+data_graf$`80+`
   
+  data_graf$total[data_graf$Compart=="i" & data_graf$fecha %in% c(270:340)] <<- predict(loess(data_graf$total[data_graf$Compart=="i" & data_graf$fecha %in% c(270:340)]~c(1:71)),span=.4)
+  data_graf$total[data_graf$Compart=="d" & data_graf$fecha %in% c(270:340)] <<- predict(loess(data_graf$total[data_graf$Compart=="d" & data_graf$fecha %in% c(270:340)]~c(1:71)),span=.6)
   #casos reales
   
   Compart=rep("casos_registrados",nrow(dataPorEdad$FMTD$casos))

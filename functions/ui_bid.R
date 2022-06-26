@@ -1048,6 +1048,8 @@ getUI <- function () {
                                                               "Ver gráficos"), align="center")
                                           ),
                                  br(),
+                                 br(),
+                                 br(),
                                  fluidRow(column(6,withSpinner(plotlyOutput("grafEcoGasto"),type = 8, size = .5, color = "#bdbdbd")),
                                           column(6,withSpinner(plotlyOutput("grafEcoMuertes"),type = 8, size = .5, color = "#bdbdbd"))
                                           )
@@ -1059,9 +1061,10 @@ getUI <- function () {
                                                               "Correr simulación"))),
                                  br(),
                                  fluidRow(column(6,
-                                                 plotlyOutput("grafico_trade_off")),
-                                          column(6,
-                                                 plotlyOutput("grafico_trade_off2"))
+                                                 plotlyOutput("grafico_trade_off"))
+                                          # ,
+                                          # column(6,
+                                          #        plotlyOutput("grafico_trade_off2"))
                                                  )
                                                  
                                   )

@@ -108,6 +108,7 @@ source("functions/EESummaryFunction.R", encoding = "UTF-8")
 source("functions/proyectar.R", encoding = "UTF-8")
 source("functions/variantes.R", encoding = "UTF-8")
 
+sliders <<- F
 ECORunning <<- F
 customMatrix <<- F
 sensEE <<- F
@@ -240,6 +241,8 @@ server <- function (input, output, session) {
   
   
   observeEvent(input$go, {
+    shinyjs::hide('grafEcoGasto')
+    shinyjs::hide('grafEcoMuertes')
     # for (i in 1:length(variantes$omicron)) {
     #   variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
     # }
@@ -2948,12 +2951,24 @@ server <- function (input, output, session) {
   #   }
   #   counter_obs <<- counter_obs + 1
   # })
+  
+  observeEvent(input$country, {
+    # actualizar semaforo
+    # actualizar inputs de calibracion
     
-  observeEvent(list(input$country
-                    ,input$uptakeSlider,
+    ejecutarProyeccionConParametrosUI(input, output, session)
+  })
+    
+  observeEvent(list(input$uptakeSlider,
                     input$effectivenessSlider
                     ), {
-    ejecutarProyeccionConParametrosUI(input, output, session)
+    if (primeraVez==F) {
+      sliders <<- T
+      ejecutarProyeccionConParametrosUI(input, output, session)
+      sliders <<- F
+    }                  
+                      
+    
   })
   
   # observeEvent(input$country, {
@@ -3221,7 +3236,8 @@ server <- function (input, output, session) {
     })
     
     observeEvent(input$ECO_go, {
-      
+      shinyjs::show('grafEcoGasto')
+      shinyjs::show('grafEcoMuertes')
       ECORunning <<- T
       st <<- c(input$enero,
               input$febrero,
@@ -3243,16 +3259,24 @@ server <- function (input, output, session) {
     
     output$grafEcoGasto <- renderPlotly({
       paste(input$ECO_go)
+      costo_economico <<- tail(costo_economico, n = 720)
+      costo_economico$escenario[1:360] <<- "DEFAULT"
       if(length(unique(costo_economico$escenario))>1) {
-        data <- left_join(costo_economico[costo_economico$escenario=="DEFAULT",],
-                          costo_economico[costo_economico$escenario=="ALTERNATIVO 1",],
-                          by="fecha")
-        data$fecha <- as.Date(data$fecha)
-        fig <- plot_ly(data, x = ~fecha, y = ~costo.x, name = 'Costo Default', type = 'scatter', mode = 'lines',
-                       line = list(color = 'rgb(205, 12, 24)', width = 4)) 
-        fig %>% add_trace(y = ~costo.y, name = 'Costo Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4)) %>% layout(title = 'Costo económico', 
-                                                                                                                                     xaxis = list(title='Fecha'), 
-                                                                                                                                     yaxis = list(title='Costo económico'))
+        data <- costo_economico
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Escenario principal', type = 'scatter', mode = 'lines+markers'
+                       ) 
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario alternativo') %>% layout(title = 'Pérdida del PIB (%)',xaxis = list(title='Mes'),
+                                                                                    yaxis = list(title='Pérdida del PIB (%)'))
+        
       }
       
       
@@ -3260,17 +3284,22 @@ server <- function (input, output, session) {
     
     output$grafEcoMuertes <- renderPlotly({
       paste(input$ECO_go)
+      muertes <- data_graf[data_graf$Compart=="d" &
+                           data_graf$fecha>=310 &
+                           data_graf$fecha<=(310+359),]
+      
+      muertes$fecha <- NULL
+      
       if(length(unique(costo_economico$escenario))>1) {
-        data <- left_join(costo_economico[costo_economico$escenario=="DEFAULT",],
-                          costo_economico[costo_economico$escenario=="ALTERNATIVO 1",],
-                          by="fecha")
+        data <- cbind(muertes,
+                      costo_economico[costo_economico$escenario=="ALTERNATIVO 1",])
         data$fecha <- as.Date(data$fecha)
-        costo_economico <<- costo_economico[costo_economico$escenario=="DEFAULT",]
-        fig <- plot_ly(data, x = ~fecha, y = ~muertes.x, name = 'Muertes Default', type = 'scatter', mode = 'lines',
-                       line = list(color = 'rgb(205, 12, 24)', width = 4)) 
-        fig %>% add_trace(y = ~muertes.y, name = 'Muertes Alternativo 1', line = list(color = 'rgb(22, 96, 167)', width = 4)) %>% layout(title = 'Muertes', 
-                                                                                                                                         xaxis = list(title='Fecha'), 
-                                                                                                                                         yaxis = list(title='Defunciones diarias'))
+        
+        fig <- plot_ly(data, x = ~fecha, y = ~total, name = 'Escenario principal', type = 'scatter', mode = 'lines'
+                       ) 
+        fig %>% add_trace(y = ~muertes, name = 'Escenario alternativo') %>% layout(title = 'Defunciones diarias',
+                                                                                     xaxis = list(title='Fecha'), 
+                                                                                     yaxis = list(title='Defunciones diarias'))
       }
       
     })
@@ -3338,61 +3367,108 @@ server <- function (input, output, session) {
     # })
     
     observeEvent(input$trade_off_go, {
+
       output$grafico_trade_off <- renderPlotly({
-        withProgress(message = "Corriendo simulaciones...", value = 0, {
-          tradeOffScenario(iso_country,1)
-          actualizaProy(input,output,session,trade_off=T)
-          incProgress(.2)
-          tradeOffScenario(iso_country,2)
-          actualizaProy(input,output,session,trade_off=T)
-          incProgress(.2)
-          tradeOffScenario(iso_country,3)
-          actualizaProy(input,output,session,trade_off=T)
-          incProgress(.2)
-          tradeOffScenario(iso_country,4)
-          actualizaProy(input,output,session,trade_off=T)
-          incProgress(.2)
-          tradeOffScenario(iso_country,5)
-          actualizaProy(input,output,session,trade_off=T)
-          incProgress(.2)
-        }
-      )
-              
-          
-      nombres_scn <- names(trade_off_summary)
-      nombres_col <- c("costo_primer_semestre",
-                       "costo_segundo_semestre",
-                       "muertes_primer_semestre",
-                       "muertes_segundo_semestre")               
-      trade_off_summary <<- cbind(nombres_scn,data.table::rbindlist(trade_off_summary))
-      colnames(trade_off_summary)[-1] <<- nombres_col
-      
-      plot_ly(trade_off_summary, x = ~costo_primer_semestre, y = ~muertes_primer_semestre, name = ~nombres_scn, type = 'scatter',
-              mode = "markers", marker = list(color = "black")) %>% layout(
+      #   withProgress(message = "Corriendo simulaciones...", value = 0, {
+      #     tradeOffScenario(iso_country,1)
+      #     actualizaProy(input,output,session,trade_off=T)
+      #     incProgress(.2)
+      #     tradeOffScenario(iso_country,2)
+      #     actualizaProy(input,output,session,trade_off=T)
+      #     incProgress(.2)
+      #     tradeOffScenario(iso_country,3)
+      #     actualizaProy(input,output,session,trade_off=T)
+      #     incProgress(.2)
+      #     tradeOffScenario(iso_country,4)
+      #     actualizaProy(input,output,session,trade_off=T)
+      #     incProgress(.2)
+      #     tradeOffScenario(iso_country,5)
+      #     actualizaProy(input,output,session,trade_off=T)
+      #     incProgress(.2)
+      #   }
+      # )
+      # 
+      # 
+      # nombres_scn <- c(
+      #   'Política constante de distanciamiento social con uso de mascarillas faciales',
+      #   'Política constante de distanciamiento social con uso de mascarillas faciales y aislamiento de ancianos',
+      #   'Política constante de distanciamiento social con uso de mascarillas faciales, aislamiento de ancianos y aislamiento personal',
+      #   'Política constante de distanciamiento social con uso de mascarillas faciales, aislamiento de ancianos, aislamiento personal y cierre de escuelas',
+      #   'Confinamiento total'
+      # 
+      # 
+      # 
+      # )
+      # 
+      # nombres_col <- c("costo_primer_semestre",
+      #                  "costo_segundo_semestre",
+      #                  "muertes_primer_semestre",
+      #                  "muertes_segundo_semestre")
+      # trade_off_summary <<- cbind(nombres_scn,data.table::rbindlist(trade_off_summary))
+      # colnames(trade_off_summary)[-1] <<- nombres_col
+      # m1 <- lm(trade_off_summary$muertes_primer_semestre ~ trade_off_summary$costo_primer_semestre, data = trade_off_summary)
+      # m2 <- lm(trade_off_summary$muertes_segundo_semestre ~ trade_off_summary$costo_segundo_semestre, data = trade_off_summary)
+
+      load("data/trade_off_summary.RData")
+      plot_ly(trade_off_summary, x = ~costo_primer_semestre, y = ~muertes_primer_semestre, name = "Ene-Jun", type = 'scatter',
+              mode = "markers", 
+              text = trade_off_summary$nombres_scn,
+              hoverinfo = 'text',
+              marker = list(color = "red")) %>% layout(
                 title = "Primer semestre",
                 xaxis = list(title = "Costo económico"),
                 yaxis = list(title = "Defunciones"),
                 margin = list(l = 100),
-                showlegend = FALSE
-              )
-          
+                showlegend = T
+              ) %>% add_trace(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = "Año completo", type = 'scatter',
+                              mode = "markers", 
+                              text = trade_off_summary$nombres_scn,
+                              hoverinfo = 'text', 
+                              marker = list(color = "blue")) %>% layout(
+                                title = "Trade-off económico y epidemiológico",
+                                xaxis = list(title = "Pérdida del PIB"),
+                                yaxis = list(title = "Promedio de muertes diarias"),
+                                margin = list(l = 100),
+                                showlegend = T
+                              ) %>% add_trace(x=~costo_primer_semestre, 
+                                              y=~predict(m1),
+                                              name = 'Trend line',
+                                              type = "scatter",
+                                              mode = "lines",
+                                              showlegend = F,
+                                              marker=list(symbol = 0,
+                                                          opacity = 0),
+                                              line = list(shape = 'spline', 
+                                                          color = 'Grey', 
+                                                          width = 1)) %>% add_trace(x=~costo_segundo_semestre, 
+                                                                                    y=~predict(m2),
+                                                                                    name = 'Trend line',
+                                                                                    type = "scatter",
+                                                                                    mode = "lines",
+                                                                                    showlegend = F,
+                                                                                    marker=list(symbol = 0,
+                                                                                                opacity = 0),
+                                                                                    line = list(shape = 'spline', 
+                                                                                                color = 'Grey', 
+                                                                                                width = 1))
+
       })
 
-      output$grafico_trade_off2 <- renderPlotly({
-        plot_ly(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = ~nombres_scn, type = 'scatter',
-                mode = "markers", marker = list(color = "black")) %>% layout(
-                  title = "Año completo",
-                  xaxis = list(title = "Costo económico"),
-                  yaxis = list(title = "Defunciones"),
-                  margin = list(l = 100),
-                  showlegend = FALSE
-                )
-
-
-
-
-
-      })
+      # output$grafico_trade_off2 <- renderPlotly({
+      #   plot_ly(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = ~nombres_scn, type = 'scatter',
+      #           mode = "markers", marker = list(color = "black")) %>% layout(
+      #             title = "Año completo",
+      #             xaxis = list(title = "Costo económico"),
+      #             yaxis = list(title = "Defunciones"),
+      #             margin = list(l = 100),
+      #             showlegend = FALSE
+      #           )
+      # 
+      # 
+      # 
+      # 
+      # 
+      # })
 
       
     })

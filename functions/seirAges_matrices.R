@@ -92,10 +92,10 @@ seir_ages <- function(dias,
     cantidadVacunasMas60 = cantidadVacunas[3,6] + cantidadVacunas[3,7] + cantidadVacunas[3,8]
     poblacionMayores60 = N[1,6] + N[1,7] + N[1,8]
     coberturaMas60 = cantidadVacunasMas60 / poblacionMayores60
-    # browser()
-    
     # TODO: Llamar a la funcion ECO, para modificar la variable contact_matrix
+    # browser(expr = {t==308})
     if (customMatrix & t>tHoy+3 & is.na(customBeta[1,1]) == F) {
+      print(paste("GET CUSTOM MATRIX",tHoy))
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
       beta <- get_custom_matrix(scenario = customBeta$beta[as.numeric(rn)],
@@ -109,7 +109,6 @@ seir_ages <- function(dias,
                                 ages= as.numeric(ageGroupsV), muertes = sum(d[[t-1]])) * trans_prob_param
     } else {
       beta = contact_matrix * transmission_probability
-      # print(beta)
     }
     
     I_edad = colSums(I[[t-1]])
