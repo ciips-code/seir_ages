@@ -3253,6 +3253,7 @@ server <- function (input, output, session) {
               input$diciembre
       )
       nombreEscenario <<- "ALTERNATIVO 1"
+      actualizaParametros(input,output,session)
       actualizaProy(input,output,session,T)
       ECORunning <<- F
     })

@@ -364,7 +364,6 @@ actualizaParametros <- function(input,output,session) {
     # shinyjs::hide("immunityDuration")
   }
   diasVacunacion <<- as.numeric(as.Date(input$vacDateGoal) - as.Date('2021-01-01'))
-  
   # Set parameters from sliders
   if ("uptakeSlider" %in% names(reactiveValuesToList(input))) {
     # customMatrix <<- T

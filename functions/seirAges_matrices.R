@@ -243,11 +243,11 @@ seir_ages <- function(dias,
       haySparaVacunar = vectorVacunacion - S[[t-1]][1,]
       haySparaVacunar[haySparaVacunar<1] = 0
       haySparaVacunar[haySparaVacunar>0] = 1
-      # limitesPorGrupoDeEdad = N[1,] * selectedUptake
-      # haySparaVacunar = (Reduce("+",vA)[vacuna,] < limitesPorGrupoDeEdad)
-      # haySparaVacunar[haySparaVacunar == TRUE] = 1
-      # haySparaVacunar[is.na(haySparaVacunar)] = 0
-      # haySparaVacunar = haySparaVacunar * prioridadesHoy
+      limitesPorGrupoDeEdad = N[1,] * selectedUptake
+      haySparaVacunar = (Reduce("+",vA)[vacuna,] < limitesPorGrupoDeEdad)
+      haySparaVacunar[haySparaVacunar == TRUE] = 1
+      haySparaVacunar[is.na(haySparaVacunar)] = 0
+      haySparaVacunar = haySparaVacunar * prioridadesHoy
 
       if (sum(haySparaVacunar) > 0) {
         vectorVacunacion = vectorVacunacion * haySparaVacunar
