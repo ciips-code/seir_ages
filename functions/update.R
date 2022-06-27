@@ -119,10 +119,12 @@ update <-  function(pais,diasDeProyeccion) {
       
       # download.file('https://sisa.msal.gov.ar/datos/descargas/covid-19/files/datos_nomivac_covid19.zip', 'datos_nomivac_covid19.zip')
       # unzip('datos_nomivac_covid19.zip','datos_nomivac_covid19.csv')
-      dataVacunas = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
-      # file.remove('datos_nomivac_covid19.csv')
-      # file.remove('datos_nomivac_covid19.zip')
       
+
+      dataVacunas = read.csv2('datos_nomivac_covid19.csv', sep=',', encoding = 'UTF-8')
+      file.remove('datos_nomivac_covid19.csv')
+      file.remove('datos_nomivac_covid19.zip')
+
       Vacunas = dataVacunas
       Vacunas = Vacunas %>% dplyr::filter(orden_dosis==1 &
                                           fecha_aplicacion!="S.I.") %>%
@@ -136,13 +138,13 @@ update <-  function(pais,diasDeProyeccion) {
                             dplyr::select(fecha_aplicacion,`00-17`,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`) %>%
                             dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
 
-      
+
       Vacunas <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas$fecha)),
                                                  as.Date(max(Vacunas$fecha)),
-                                                 by=1)) %>% left_join(Vacunas) 
-      
+                                                 by=1)) %>% left_join(Vacunas)
+
       Vacunas[is.na(Vacunas)] <- 0
-      
+
       Vacunas2 = dataVacunas
       Vacunas2 = Vacunas2 %>% dplyr::filter(orden_dosis==2 &
                                             fecha_aplicacion!="S.I.") %>%
@@ -155,16 +157,15 @@ update <-  function(pais,diasDeProyeccion) {
         dplyr::mutate(`00-17`= 0) %>%
         dplyr::select(fecha_aplicacion,`00-17`,`18-29`,`30-39`,`40-49`,`50-59`,`60-69`,`70-79`,`80-89`,`90-99`) %>%
         dplyr::mutate(fecha_aplicacion=as.Date(fecha_aplicacion))
-      
-      
+
+
       Vacunas2 <- data.frame(fecha_aplicacion=seq(as.Date(min(Vacunas2$fecha)),
                                                   as.Date(max(Vacunas2$fecha)),
-                                                  by=1)) %>% left_join(Vacunas2) 
-      
+                                                  by=1)) %>% left_join(Vacunas2)
+
       Vacunas2[is.na(Vacunas2)] <- 0
-      
-      
-      
+
+
       
       
 
@@ -1751,7 +1752,7 @@ updateDataOWD <- function (countries) {
 # actualiza OWD
 #updateDataOWD(c("ARG","BRA","CHL","COL","MEX","PER","URY","CRI", "PRY", "BHS", "BRB","BLZ","BOL","DOM","ECU","GTM","GUY","HND","HTI","JAM","NIC","PAN","SLV","SUR","TTO", "VEN"))
 
-#update(pais = "ARG", diasDeProyeccion = 1100)
+# update(pais = "ARG", diasDeProyeccion = 1100)
 
 # actualiza argentina y guarda RData
  #update(pais = "BHS", diasDeProyeccion = 1100)
