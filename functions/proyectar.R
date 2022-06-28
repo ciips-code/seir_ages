@@ -816,7 +816,7 @@ actualizaTablas <- function(input,output,session) {
          poblacion_vac[1],
          poblacion_vac2[1],
          years_lost[1],
-         0)
+         mean(costo_economico_principal[1:(length(costo_economico_principal)/2)])*100)
   
   C2 = c(def_ac[2],
          casos_ac[2],
@@ -824,7 +824,7 @@ actualizaTablas <- function(input,output,session) {
          poblacion_vac[2],
          poblacion_vac2[2],
          years_lost[2],
-         0)
+         mean(costo_economico_principal[1:length(costo_economico_principal)])*100)
   
   C3 = c(def_ac[3],
          casos_ac[3],
