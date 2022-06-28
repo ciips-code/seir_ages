@@ -520,25 +520,25 @@ actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
                     country=input$country
   )
   
-  if (trade_off) {
-    agregados <- nrow(costo_economico)-rows_costo_economico
-    costo_economico$escenario[(nrow(costo_economico)-agregados+1):nrow(costo_economico)] <<- nombreEscenario
-    costo_1 <- mean(costo_economico$costo[costo_economico$fecha<="2021-06-30" &
-                                          costo_economico$escenario==nombreEscenario])
-    costo_2 <- mean(costo_economico$costo[costo_economico$fecha<="2021-12-31" &
-                                          costo_economico$escenario==nombreEscenario])
-    
-    muertes_1 <- mean(costo_economico$muertes[costo_economico$fecha<="2021-06-30" &
-                                              costo_economico$escenario==nombreEscenario])
-    muertes_2 <- mean(costo_economico$muertes[costo_economico$fecha<="2021-12-31" &
-                                              costo_economico$escenario==nombreEscenario])
-    
-    trade_off_summary[[nombreEscenario]] <<- list(costo_1,
-                                                  costo_2,
-                                                  muertes_1,
-                                                  muertes_2)
-    
-  }
+  # if (trade_off) {
+  #   agregados <- nrow(costo_economico)-rows_costo_economico
+  #   costo_economico$escenario[(nrow(costo_economico)-agregados+1):nrow(costo_economico)] <<- nombreEscenario
+  #   costo_1 <- mean(costo_economico$costo[costo_economico$fecha<="2021-06-30" &
+  #                                         costo_economico$escenario==nombreEscenario])
+  #   costo_2 <- mean(costo_economico$costo[costo_economico$fecha<="2021-12-31" &
+  #                                         costo_economico$escenario==nombreEscenario])
+  #   
+  #   muertes_1 <- mean(costo_economico$muertes[costo_economico$fecha<="2021-06-30" &
+  #                                             costo_economico$escenario==nombreEscenario])
+  #   muertes_2 <- mean(costo_economico$muertes[costo_economico$fecha<="2021-12-31" &
+  #                                             costo_economico$escenario==nombreEscenario])
+  #   
+  #   trade_off_summary[[nombreEscenario]] <<- list(costo_1,
+  #                                                 costo_2,
+  #                                                 muertes_1,
+  #                                                 muertes_2)
+  #   
+  # }
 }
 
 
@@ -798,10 +798,10 @@ actualizaTablas <- function(input,output,session) {
                   sum(sapply(proy[["yl: Years lost"]][1:tFechas[2]],simplify = T,sum)),
                   sum(sapply(proy[["yl: Years lost"]][1:tFechas[3]],simplify = T,sum)))
   
-  costo_ec_1 <- mean(costo_economico[costo_economico$escenario=="DEFAULT" &
-                                     costo_economico$fecha<"2021-06-30","costo"])*100
-  costo_ec_2 <- mean(costo_economico[costo_economico$escenario=="DEFAULT" &
-                                     costo_economico$fecha<"2021-12-31","costo"])*100
+  # costo_ec_1 <- mean(costo_economico[costo_economico$escenario=="DEFAULT" &
+  #                                    costo_economico$fecha<"2021-06-30","costo"])*100
+  # costo_ec_2 <- mean(costo_economico[costo_economico$escenario=="DEFAULT" &
+  #                                   costo_economico$fecha<"2021-12-31","costo"])*100
   
   var=c("Defunciones acumuladas",
         "Infecciones acumuladas",
@@ -816,7 +816,7 @@ actualizaTablas <- function(input,output,session) {
          poblacion_vac[1],
          poblacion_vac2[1],
          years_lost[1],
-         costo_ec_1)
+         0)
   
   C2 = c(def_ac[2],
          casos_ac[2],
@@ -824,7 +824,7 @@ actualizaTablas <- function(input,output,session) {
          poblacion_vac[2],
          poblacion_vac2[2],
          years_lost[2],
-         costo_ec_2)
+         0)
   
   C3 = c(def_ac[3],
          casos_ac[3],

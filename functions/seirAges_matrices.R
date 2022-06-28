@@ -95,7 +95,6 @@ seir_ages <- function(dias,
     # TODO: Llamar a la funcion ECO, para modificar la variable contact_matrix
     # browser(expr = {t==308})
     if (customMatrix & t>tHoy+3 & is.na(customBeta[1,1]) == F) {
-      print(paste("GET CUSTOM MATRIX",tHoy))
       rn <- as.numeric(rownames(customBeta[as.numeric(customBeta$start)<=t & as.numeric(customBeta$end)>=t,]))
       beta = eval(parse(text=paste0('`',customBeta$beta[as.numeric(rn)],'`')))
       beta <- get_custom_matrix(scenario = customBeta$beta[as.numeric(rn)],

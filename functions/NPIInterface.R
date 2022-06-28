@@ -158,34 +158,43 @@ get_custom_matrix <- function(scenario,
     }
   } else { # Usa modelo eco
     # scenarios
-    if (exists("costo_economico")==F) {
-      costo_economico <<- data.frame(fecha=NA,
-                                     costo=NA,
-                                     muertes=NA,
-                                     escenario=NA)[-1,]
-      costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[(dia_loop)])
-      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))
-      costo_economico[nrow(costo_economico),3] <<- muertes
-      if (ECORunning==F) {
-        costo_economico[nrow(costo_economico),4] <<- "DEFAULT"  
-      } else {
-        costo_economico[nrow(costo_economico),4] <<- nombreEscenario  
-      }
-      
-      
-      
+    # if (exists("costo_economico")==F) {
+    #   costo_economico <<- data.frame(fecha=NA,
+    #                                  costo=NA,
+    #                                  muertes=NA,
+    #                                  escenario=NA)[-1,]
+    #   costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[(dia_loop)])
+    #   costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))
+    #   costo_economico[nrow(costo_economico),3] <<- muertes
+    #   if (ECORunning==F) {
+    #     costo_economico[nrow(costo_economico),4] <<- "DEFAULT"  
+    #   } else {
+    #     costo_economico[nrow(costo_economico),4] <<- nombreEscenario  
+    #   }
+    #   
+    #   
+    #   
+    # } else {
+    #   costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[dia_loop])
+    #   costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))
+    #   costo_economico[nrow(costo_economico),3] <<- muertes
+    #   if (ECORunning==F) {
+    #     costo_economico[nrow(costo_economico),4] <<- "DEFAULT"  
+    #   } else {
+    #     costo_economico[nrow(costo_economico),4] <<- nombreEscenario  
+    #   }
+    # }
+    
+    if (ECORunning==F) {
+      print("costo principal")
+      costo_economico_principal <<- c(costo_economico_principal,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes)))
+      costo_economico_principal_fecha <<- c(costo_economico_principal_fecha,as.character(fechas_master[dia_loop]))
     } else {
-      costo_economico[nrow(costo_economico)+1,1] <<- as.character(fechas_master[dia_loop])
-      costo_economico[nrow(costo_economico),2] <<- loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))
-      costo_economico[nrow(costo_economico),3] <<- muertes
-      if (ECORunning==F) {
-        costo_economico[nrow(costo_economico),4] <<- "DEFAULT"  
-      } else {
-        costo_economico[nrow(costo_economico),4] <<- nombreEscenario  
-      }
+      print("costo alternativo")
+      costo_economico_alternativo <<- c(costo_economico_alternativo,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes)))
+      costo_economico_alternativo_fecha <<- c(costo_economico_alternativo_fecha,as.character(fechas_master[dia_loop]))
+      costo_economico_alternativo_muertes <<- c(costo_economico_alternativo_muertes,muertes)
     }
-    
-    
     
     # print(dia_loop)
     # print('eco')
@@ -370,23 +379,23 @@ altScenario <- function (country,stringency) {
 }
 
 
-tradeOffScenario <- function (country, scenario) {
-  rows_costo_economico <<- nrow(costo_economico)
-  customBeta <<- data.frame(start=NA,
-                            end=NA,
-                            beta=NA)
-  tHoy <<- tVacunasCero+4
-  
-  for (i in 1:length(trade_off_scenarios()[[scenario]])) {
-    addBoxTable(trade_off_scenarios()[[scenario]],input$country)
-  }
-
-  dateIndex <<- 1
-  nombreEscenario <<- paste("Trade-off:",
-                            scenario)
-  
-}
-  
+# tradeOffScenario <- function (country, scenario) {
+#   rows_costo_economico <<- nrow(costo_economico)
+#   customBeta <<- data.frame(start=NA,
+#                             end=NA,
+#                             beta=NA)
+#   tHoy <<- tVacunasCero+4
+#   
+#   for (i in 1:length(trade_off_scenarios()[[scenario]])) {
+#     addBoxTable(trade_off_scenarios()[[scenario]],input$country)
+#   }
+# 
+#   dateIndex <<- 1
+#   nombreEscenario <<- paste("Trade-off:",
+#                             scenario)
+#   
+# }
+#   
 
 
 

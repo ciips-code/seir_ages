@@ -115,7 +115,11 @@ sensEE <<- F
 trade_off_running <<- F
 trade_off_summary <<- list()
 trade_off_plot_show <<- F
-
+costo_economico_principal <<- c()
+costo_economico_alternativo <<- c()
+costo_economico_principal_fecha <<- c()
+costo_economico_alternativo_fecha <<- c()
+costo_economico_alternativo_muertes <<- c()
 
 server <- function (input, output, session) {
   hide("downloadEE")
@@ -3236,8 +3240,13 @@ server <- function (input, output, session) {
     })
     
     observeEvent(input$ECO_go, {
+      costo_economico_alternativo <<- c()
+      costo_economico_alternativo_fecha <<- c()
+      costo_economico_alternativo_muertes <<- c()
+      
       shinyjs::show('grafEcoGasto')
       shinyjs::show('grafEcoMuertes')
+      
       ECORunning <<- T
       st <<- c(input$enero,
               input$febrero,
@@ -3252,7 +3261,6 @@ server <- function (input, output, session) {
               input$noviembre,
               input$diciembre
       )
-      nombreEscenario <<- "ALTERNATIVO 1"
       actualizaParametros(input,output,session)
       actualizaProy(input,output,session,T)
       ECORunning <<- F
@@ -3260,10 +3268,22 @@ server <- function (input, output, session) {
     
     output$grafEcoGasto <- renderPlotly({
       paste(input$ECO_go)
-      costo_economico <<- tail(costo_economico, n = 720)
-      costo_economico$escenario[1:360] <<- "DEFAULT"
-      if(length(unique(costo_economico$escenario))>1) {
-        data <- costo_economico
+      
+      # costo_economico <<- tail(costo_economico, n = 720)
+      # costo_economico$escenario[1:360] <<- "DEFAULT"
+      if(length(costo_economico_alternativo)>0) {
+        
+        data_alt <- data.frame(fecha=unique(costo_economico_alternativo_fecha),
+                               costo=tail(costo_economico_alternativo,360),
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=unique(costo_economico_principal_fecha),
+                               costo=tail(costo_economico_principal,360),
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
         data$mes_nro <- month(data$fecha)
         data$mes <- month.name[month(data$fecha)]
         data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
@@ -3286,14 +3306,15 @@ server <- function (input, output, session) {
     output$grafEcoMuertes <- renderPlotly({
       paste(input$ECO_go)
       muertes <- data_graf[data_graf$Compart=="d" &
-                           data_graf$fecha>=310 &
-                           data_graf$fecha<=(310+359),]
+                           data_graf$fecha>=311 &
+                           data_graf$fecha<=(311+359),]
       
       muertes$fecha <- NULL
       
-      if(length(unique(costo_economico$escenario))>1) {
-        data <- cbind(muertes,
-                      costo_economico[costo_economico$escenario=="ALTERNATIVO 1",])
+      if(length(costo_economico_alternativo)>0) {
+        data <- data.frame(fecha=unique(costo_economico_alternativo_fecha),
+                           total=muertes$total,
+                           muertes=tail(costo_economico_alternativo_muertes,360))
         data$fecha <- as.Date(data$fecha)
         
         fig <- plot_ly(data, x = ~fecha, y = ~total, name = 'Escenario principal', type = 'scatter', mode = 'lines'
