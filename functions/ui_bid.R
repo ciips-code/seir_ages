@@ -1023,7 +1023,7 @@ getUI <- function () {
                                                                            "Vacunados"="V")))),
                                  fluidRow(column(12,
                                                  plotlyOutput("graficoVac")))),
-                        tabPanel("Calibracion",
+                        tabPanel(title = "Calibracion", 
                                  fluidRow(
                                    column(2,
                                           br(),

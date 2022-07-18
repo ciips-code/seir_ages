@@ -255,7 +255,6 @@ defaultScenario <- function (country) {
     rep("Physical distancing + Shielding of older people",3),
     rep("Physical distancing",3)
   )
-  
   if (country=="ARG" & 
       identical(customBeta$beta,default_ARG) |
       country=="ARG" & 

@@ -122,6 +122,16 @@ costo_economico_alternativo_fecha <<- c()
 costo_economico_alternativo_muertes <<- c()
 
 server <- function (input, output, session) {
+  hideTab(inputId = "TSP", target = "Calibracion")
+  observeEvent(input$country, {
+    if (input$country!="Argentina") {
+      hideTab(inputId = "TSP", target = "ECO Model")
+      hideTab(inputId = "TSP", target = "Trade-off")
+    }
+  })
+  
+  
+  
   hide("downloadEE")
   counter_obs <<- 0
   
@@ -280,9 +290,11 @@ server <- function (input, output, session) {
     ejecutarProyeccionConParametrosUI(input, output, session)
   })
   
-  observeEvent(input$reset, {
+  observeEvent(list(input$reset,
+                    input$country), {
+    # shinyjs::hide('grafEcoGasto')
+    # shinyjs::hide('grafEcoMuertes')
     disable("go")
-    
     dateIndex <<- 1
     customBeta <<- data.frame(start=NA,
                               end=NA,
@@ -2959,8 +2971,9 @@ server <- function (input, output, session) {
   observeEvent(input$country, {
     # actualizar semaforo
     # actualizar inputs de calibracion
-    
+    primeraVez <<- T
     ejecutarProyeccionConParametrosUI(input, output, session)
+    
   })
     
   observeEvent(list(input$uptakeSlider,
@@ -3244,6 +3257,7 @@ server <- function (input, output, session) {
       costo_economico_alternativo_fecha <<- c()
       costo_economico_alternativo_muertes <<- c()
       
+      
       shinyjs::show('grafEcoGasto')
       shinyjs::show('grafEcoMuertes')
       
@@ -3268,16 +3282,12 @@ server <- function (input, output, session) {
     
     output$grafEcoGasto <- renderPlotly({
       paste(input$ECO_go)
-      
-      # costo_economico <<- tail(costo_economico, n = 720)
-      # costo_economico$escenario[1:360] <<- "DEFAULT"
       if(length(costo_economico_alternativo)>0) {
-        
-        data_alt <- data.frame(fecha=unique(costo_economico_alternativo_fecha),
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
                                costo=tail(costo_economico_alternativo,360),
                                escenario="ALTERNATIVO 1")
         
-        data_pri <- data.frame(fecha=unique(costo_economico_principal_fecha),
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
                                costo=tail(costo_economico_principal,360),
                                escenario="DEFAULT")
         
@@ -3295,7 +3305,7 @@ server <- function (input, output, session) {
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Escenario principal', type = 'scatter', mode = 'lines+markers'
                        ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario alternativo') %>% layout(title = 'Pérdida del PIB (%)',xaxis = list(title='Mes'),
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario Alternativo') %>% layout(title = 'Pérdida del PIB (%)',xaxis = list(title='Mes'),
                                                                                     yaxis = list(title='Pérdida del PIB (%)'))
         
       }
@@ -3312,16 +3322,16 @@ server <- function (input, output, session) {
       muertes$fecha <- NULL
       
       if(length(costo_economico_alternativo)>0) {
-        data <- data.frame(fecha=unique(costo_economico_alternativo_fecha),
-                           total=muertes$total,
+        data <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                           total=tail(muertes$total,360),
                            muertes=tail(costo_economico_alternativo_muertes,360))
         data$fecha <- as.Date(data$fecha)
         
         fig <- plot_ly(data, x = ~fecha, y = ~total, name = 'Escenario principal', type = 'scatter', mode = 'lines'
                        ) 
-        fig %>% add_trace(y = ~muertes, name = 'Escenario alternativo') %>% layout(title = 'Defunciones diarias',
+        fig %>% add_trace(y = ~muertes, name = 'Escenario Alternativo') %>% layout(title = 'Muertes diarias',
                                                                                      xaxis = list(title='Fecha'), 
-                                                                                     yaxis = list(title='Defunciones diarias'))
+                                                                                     yaxis = list(title='Muertes diarias'))
       }
       
     })
@@ -3432,14 +3442,16 @@ server <- function (input, output, session) {
       # m2 <- lm(trade_off_summary$muertes_segundo_semestre ~ trade_off_summary$costo_segundo_semestre, data = trade_off_summary)
 
       load("data/trade_off_summary.RData")
+      trade_off_summary$costo_primer_semestre <- trade_off_summary$costo_primer_semestre * -1
+      trade_off_summary$costo_segundo_semestre <- trade_off_summary$costo_segundo_semestre * -1
       plot_ly(trade_off_summary, x = ~costo_primer_semestre, y = ~muertes_primer_semestre, name = "Ene-Jun", type = 'scatter',
               mode = "markers", 
               text = trade_off_summary$nombres_scn,
               hoverinfo = 'text',
               marker = list(color = "red")) %>% layout(
-                title = "Primer semestre",
-                xaxis = list(title = "Costo económico"),
-                yaxis = list(title = "Defunciones"),
+                title = "Ene-Jun",
+                xaxis = list(title = "Promedio de pérdida del PIB"),
+                yaxis = list(title = "Promedio de muertes diarias"),
                 margin = list(l = 100),
                 showlegend = T
               ) %>% add_trace(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = "Año completo", type = 'scatter',
@@ -3448,7 +3460,7 @@ server <- function (input, output, session) {
                               hoverinfo = 'text', 
                               marker = list(color = "blue")) %>% layout(
                                 title = "Trade-off económico y epidemiológico",
-                                xaxis = list(title = "Pérdida del PIB"),
+                                xaxis = list(title = "Promedio de pérdida del PIB"),
                                 yaxis = list(title = "Promedio de muertes diarias"),
                                 margin = list(l = 100),
                                 showlegend = T

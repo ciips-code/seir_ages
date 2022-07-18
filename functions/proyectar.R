@@ -472,8 +472,7 @@ actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
   shinyjs::hide("EESummaryTable")
   shinyjs::hide("EESummaryTable2")
   shinyjs::hide("EESummaryTable3")
-  
-  if (is.na(altScenario) & sliders == F) {defaultScenario(iso_country)} 
+  if (is.na(altScenario) & sliders == F & primeraVez==T) {defaultScenario(iso_country)} 
   if (ECORunning == T) {altScenario(iso_country,stringency())} 
   
   
