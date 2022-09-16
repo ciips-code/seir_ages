@@ -40,7 +40,6 @@ calibra <- function (input, output, session) {
   # Calibración
   ####################################
   
-  
   if (input$TSP=="Calibracion") {
     porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
     porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
@@ -54,7 +53,7 @@ calibra <- function (input, output, session) {
   porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   ifr <<- ifr_base * ifrCalibrador
   transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
-  
+  print(transmission_probabilityCalibrador)
 }
 
 actualizaMapa <- function(input, output, session) {
@@ -484,7 +483,7 @@ actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
   # porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
   # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   # 
-  
+  browser()
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,

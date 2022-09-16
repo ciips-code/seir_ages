@@ -38,8 +38,6 @@ modificadores <<- c('transmision',
                   'modVacCritico',
                   'modVacMuerte',
                   'duracionDiasInternacion')
-iso_country="CHL"
-
 variantes <<- list(
   'alpha' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),

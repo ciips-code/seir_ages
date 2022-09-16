@@ -32,7 +32,7 @@ library(data.table)
 
 options(dplyr.summarise.inform = FALSE)
 
-
+iso_country<<-"ARG"
 comp_table <<- list()
 output_list <<- c()
 countries <<- sort(c("Argentina", "Brazil", "Chile", "Colombia", "Costa Rica", "Mexico", "Peru", "Uruguay", 
@@ -122,7 +122,7 @@ costo_economico_alternativo_fecha <<- c()
 costo_economico_alternativo_muertes <<- c()
 
 server <- function (input, output, session) {
-  hideTab(inputId = "TSP", target = "Calibracion")
+  #hideTab(inputId = "TSP", target = "Calibracion")
   observeEvent(input$country, {
     if (input$country!="Argentina") {
       hideTab(inputId = "TSP", target = "ECO Model")

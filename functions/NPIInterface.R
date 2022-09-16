@@ -186,11 +186,11 @@ get_custom_matrix <- function(scenario,
     # }
     
     if (ECORunning==F) {
-      print("costo principal")
+      #print("costo principal")
       costo_economico_principal <<- c(costo_economico_principal,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes)))
       costo_economico_principal_fecha <<- c(costo_economico_principal_fecha,as.character(fechas_master[dia_loop]))
     } else {
-      print("costo alternativo")
+      # print("costo alternativo")
       costo_economico_alternativo <<- c(costo_economico_alternativo,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes)))
       costo_economico_alternativo_fecha <<- c(costo_economico_alternativo_fecha,as.character(fechas_master[dia_loop]))
       costo_economico_alternativo_muertes <<- c(costo_economico_alternativo_muertes,muertes)
@@ -239,7 +239,6 @@ get_custom_matrix <- function(scenario,
 
 
 defaultScenario <- function (country) {
-  
   default_ARG <- c(
     rep("Physical distancing + Shielding of older people + Self isolation + School closures", 2),
     rep("Physical distancing + Shielding of older people + Self isolation", 2),
@@ -255,6 +254,33 @@ defaultScenario <- function (country) {
     rep("Physical distancing + Shielding of older people",3),
     rep("Physical distancing",3)
   )
+  
+  default_BRA <- c(
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",12)
+    
+  )
+  
+  default_CHL <- c(
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",2),
+    rep("Physical distancing + Shielding of older people + Lockdown + School closures",3),
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",1),
+    rep("Physical distancing + Shielding of older people + Lockdown + School closures",3),
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",3)
+  )
+  
+  default_PER <- c(
+    rep("Physical distancing + Shielding of older people + Lockdown + School closures",1),
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",2),
+    rep("Physical distancing + Shielding of older people + Lockdown + School closures",1),
+    rep("Physical distancing + Shielding of older people + Self isolation + School closures",8)
+  )
+  
+  default_MEX <- c(
+    rep("Physical distancing + Shielding of older people + Self isolation", 12)
+  )
+  
+  
+  
   if (country=="ARG" & 
       identical(customBeta$beta,default_ARG) |
       country=="ARG" & 
@@ -292,6 +318,7 @@ defaultScenario <- function (country) {
     dateIndex <<- 1
     
   }
+  
   if (country=="COL" & 
       identical(customBeta$beta,default_COL)==F |
       country=="COL" & 
@@ -336,6 +363,194 @@ defaultScenario <- function (country) {
     addBoxTable("Physical distancing",input$country)
     addBoxTable("Physical distancing",input$country)
     
+    dateIndex <<- 1
+    
+  }
+  
+  
+  if (country=="BRA" & 
+      identical(customBeta$beta,default_COL)==F |
+      country=="BRA" & 
+      primeraVez==T){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    
+    removeUI(selector = "#npis-output")
+    insertUI(selector = "#npis-col",
+             where = "beforeEnd",
+             fluidRow(id = "npis-output",
+                      div(id = "tail", tags$span("Seleccionar medidas..."), style = 'float:left;')
+             )
+    )
+    
+    
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    tHoy <<- tVacunasCero+4
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    dateIndex <<- 1
+    
+  }
+  
+  if (country=="CHL" & 
+      identical(customBeta$beta,default_COL)==F |
+      country=="CHL" & 
+      primeraVez==T){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    
+    removeUI(selector = "#npis-output")
+    insertUI(selector = "#npis-col",
+             where = "beforeEnd",
+             fluidRow(id = "npis-output",
+                      div(id = "tail", tags$span("Seleccionar medidas..."), style = 'float:left;')
+             )
+    )
+    
+    
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    
+    
+
+    tHoy <<- tVacunasCero+4
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    
+    dateIndex <<- 1
+    
+  }
+  
+  if (country=="PER" & 
+      identical(customBeta$beta,default_COL)==F |
+      country=="PER" & 
+      primeraVez==T){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    
+    removeUI(selector = "#npis-output")
+    insertUI(selector = "#npis-col",
+             where = "beforeEnd",
+             fluidRow(id = "npis-output",
+                      div(id = "tail", tags$span("Seleccionar medidas..."), style = 'float:left;')
+             )
+    )
+    
+    
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    
+    
+    tHoy <<- tVacunasCero+4
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
+    
+    
+    dateIndex <<- 1
+    
+  }
+  
+  if (country=="MEX" & 
+      identical(customBeta$beta,default_ARG) |
+      country=="MEX" & 
+      primeraVez==T){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    
+    tHoy <<- tVacunasCero+4
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
+    addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
     dateIndex <<- 1
     
   }
