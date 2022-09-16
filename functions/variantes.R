@@ -57,6 +57,8 @@ variantes <<- list(
                        modificadores)
 )
 
+variantes_base <<- variantes
+
 fechaTransicionOmicron <<- getCalibracion(iso_country)[["fechaTransicionOmicron"]]
 periodoTransicionOmicron <<- getCalibracion(iso_country)[["periodoTransicionOmicron"]]
 
@@ -65,10 +67,6 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
   fechas_curva <<- seq(fechaTransicionOmicron,
                        fechaTransicionOmicron+periodoTransicionOmicron,by=1)
-  
-  fechaTransicionOmicron <<- getCalibracion(iso_country)[["fechaTransicionOmicron"]]
-  periodoTransicionOmicron <<- getCalibracion(iso_country)[["periodoTransicionOmicron"]]
-  
   # Transiciones epidemiologicas de cada variante c(fecha predominante, % cada variante)
   transicionesEpidemiologicasArg =  list(
     '2020-03-01' = c(1),

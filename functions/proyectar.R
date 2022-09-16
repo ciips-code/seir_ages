@@ -48,12 +48,12 @@ calibra <- function (input, output, session) {
     fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
     periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
   }
-  
   porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
   porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   ifr <<- ifr_base * ifrCalibrador
   transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
-  print(transmission_probabilityCalibrador)
+  fechaTransicionOmicron <<- getCalibracion(iso_country)[["fechaTransicionOmicron"]]
+  periodoTransicionOmicron <<- getCalibracion(iso_country)[["periodoTransicionOmicron"]]
 }
 
 actualizaMapa <- function(input, output, session) {
@@ -483,7 +483,6 @@ actualizaProy <- function (input,output,session, altScenario=NA, trade_off=F) {
   # porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
   # porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   # 
-  browser()
   proy <<- seir_ages(dias=diasDeProyeccion,
                     duracionE = periodoPreinfPromedio,
                     duracionIi = duracionMediaInf,
