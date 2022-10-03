@@ -3526,10 +3526,6 @@ server <- function (input, output, session) {
             )
     as.numeric(st)
   })
- 
-      
-    
-
 }
 
 
