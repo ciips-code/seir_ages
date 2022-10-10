@@ -42,6 +42,10 @@ variantes <<- list(
   'alpha' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'gamma' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+  # AGREGAR TRANSICION DELTA: 
+  # - Crear las variables en getCalibración
+  # - Agregar esas variables aca en 'delta'
+  # - en transicionesEpidemiologicasArg crear la progresion de la transición para delta
   'delta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
   'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['transmision']]),
                             getMatrizModificadoresVariantesSingle(getCalibracion(iso_country)[['hospitalizacion']]),
@@ -59,14 +63,21 @@ variantes <<- list(
 
 variantes_base <<- variantes
 
-fechaTransicionOmicron <<- getCalibracion(iso_country)[["fechaTransicionOmicron"]]
-periodoTransicionOmicron <<- getCalibracion(iso_country)[["periodoTransicionOmicron"]]
-
-
 obtenerModificadorDeVariante <<- function(t,iso_country) {
+  
+  
+  # AGREGAR TRANSICION DELTA: 
+  # - Tomas las variables fechaTransicionOmicron y periodoTransicionOmicron del pais iso_country 
+  #    - reemplazar getCalibracion(iso_country)[["fechaTransicionOmicron"]] abajo para buscarlo aca en la funcion
+  # - Generar la para esos valores transición diferente
+  
+  fechaTransicionOmicron <<- getCalibracion(iso_country)[["fechaTransicionOmicron"]]
+  periodoTransicionOmicron <<- getCalibracion(iso_country)[["periodoTransicionOmicron"]]
+  
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
   fechas_curva <<- seq(fechaTransicionOmicron,
                        fechaTransicionOmicron+periodoTransicionOmicron,by=1)
+  
   # Transiciones epidemiologicas de cada variante c(fecha predominante, % cada variante)
   transicionesEpidemiologicasArg =  list(
     '2020-03-01' = c(1),
@@ -91,6 +102,7 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
     "MEX" = transicionesEpidemiologicasArg,
     "CRI" = transicionesEpidemiologicasArg
   )
+  browser()
   modificador = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores)
   
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {

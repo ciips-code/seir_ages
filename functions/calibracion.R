@@ -1,18 +1,18 @@
 getCalibracion <- function(country) {
   calibradores <- list(
     ARG = list(
-      transmision=4,
-      hospitalizacion=.44,
-      critico=.33,
-      muerte=.3,
-      duracionInmumidad=.8,
-      modVacTransmision=1.45,
-      modVacGrave=2.277,
-      modVacCritico=2.652,
-      modVacMuerte=3.174,
-      duracionDiasInternacion=.31,
-      fechaTransicionOmicron=as.Date("2021-11-01"),
-      periodoTransicionOmicron=30,
+      transmision=4, # Omicron
+      hospitalizacion=.44,  # Omicron
+      critico=.33,  # Omicron
+      muerte=.3,  # Omicron
+      duracionInmumidad=.8,  # Omicron
+      modVacTransmision=1.45,  # Omicron
+      modVacGrave=2.277,  # Omicron
+      modVacCritico=2.652,  # Omicron
+      modVacMuerte=3.174,  # Omicron
+      duracionDiasInternacion=.31,  # Omicron
+      fechaTransicionOmicron=as.Date("2021-11-01"),  # Omicron
+      periodoTransicionOmicron=30,  # Omicron
       porcentajeCasosCriticosCalibrador=1,
       porcentajeCasosGravesCalibrador=1,
       ifrCalibrador=1.3,
