@@ -170,18 +170,16 @@ server <- function (input, output, session) {
     }
   })
   
-  
   for (i in 1:length(variantes$omicron)) {
     insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]))
   }
-  
   insertUI("#omicron", ui = dateInput(inputId = "input-fechaTransicionOmicron",
                                          label = "fechaTransicionOmicron",
-                                         value = fechaTransicionOmicron))
+                                         value = fechaTransicion))
   
-  insertUI("#omicron", ui = numericInput(inputId =  "input-periodoTransicionOmicron",
+  insertUI("#omicron", ui = numericInput(inputId =  "input-periodoTransicion",
                                          label = "periodoTransicionOmicron",
-                                         value = periodoTransicionOmicron))
+                                         value = periodoTransicion))
   
   output$paramVac_editada <- renderDT({
     DT::datatable(data = paramVac %>% as.data.frame(), 

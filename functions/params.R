@@ -30,10 +30,10 @@ setParameters <- function () {
   
   # CALIBRAcION
   if (exists("iso_country")) {
-    porcentajeCasosCriticosCalibrador<<-getCalibracion(iso_country)[['porcentajeCasosCriticosCalibrador']]
-    porcentajeCasosGravesCalibrador<<-getCalibracion(iso_country)[['porcentajeCasosGravesCalibrador']]
-    ifrCalibrador<<-getCalibracion(iso_country)[['ifrCalibrador']]
-    transmission_probabilityCalibrador<<-getCalibracion(iso_country)[['transmission_probabilityCalibrador']]
+    porcentajeCasosCriticosCalibrador<<-getCalibracion(iso_country,"omicron")[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibrador<<-getCalibracion(iso_country,"omicron")[['porcentajeCasosGravesCalibrador']]
+    ifrCalibrador<<-getCalibracion(iso_country,"omicron")[['ifrCalibrador']]
+    transmission_probabilityCalibrador<<-getCalibracion(iso_country,"omicron")[['transmission_probabilityCalibrador']]
   } else {
     porcentajeCasosCriticosCalibrador<<-getCalibracion("ARG")[['porcentajeCasosCriticosCalibrador']]
     porcentajeCasosGravesCalibrador<<-getCalibracion("ARG")[['porcentajeCasosGravesCalibrador']]
