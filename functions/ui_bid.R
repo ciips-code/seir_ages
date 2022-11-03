@@ -1027,6 +1027,10 @@ getUI <- function () {
                                  fluidRow(
                                    column(2,
                                           br(),
+                                          tags$div(p("Calibradores")),
+                                          tags$div(id="calibradores"),
+                                          tags$div(p("Modificadores Delta")),
+                                          tags$div(id="delta"),
                                           tags$div(p("Modificadores Omicron")),
                                           tags$div(id="omicron")
                                           ),
@@ -1034,7 +1038,7 @@ getUI <- function () {
                                    column(4,
                                           br(),
                                           br(),
-                                          tags$div(id="omicron2"))
+                                          tags$div(id="base-virus"))
                                  )
                         ),
                         tabPanel("ECO Model",

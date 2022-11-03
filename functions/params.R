@@ -30,15 +30,23 @@ setParameters <- function () {
   
   # CALIBRAcION
   if (exists("iso_country")) {
-    porcentajeCasosCriticosCalibrador<<-getCalibracion(iso_country,"omicron")[['porcentajeCasosCriticosCalibrador']]
-    porcentajeCasosGravesCalibrador<<-getCalibracion(iso_country,"omicron")[['porcentajeCasosGravesCalibrador']]
-    ifrCalibrador<<-getCalibracion(iso_country,"omicron")[['ifrCalibrador']]
-    transmission_probabilityCalibrador<<-getCalibracion(iso_country,"omicron")[['transmission_probabilityCalibrador']]
+    porcentajeCasosCriticosCalibradorOmicron<<-getCalibracion(iso_country,"omicron")[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibradorOmicron<<-getCalibracion(iso_country,"omicron")[['porcentajeCasosGravesCalibrador']]
+    ifrCalibradorOmicron<<-getCalibracion(iso_country,"omicron")[['ifrCalibrador']]
+    transmission_probabilityCalibradorOmicron<<-getCalibracion(iso_country,"omicron")[['transmission_probabilityCalibrador']]
+    porcentajeCasosCriticosCalibradorDelta<<-getCalibracion(iso_country,"delta")[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibradorDelta<<-getCalibracion(iso_country,"delta")[['porcentajeCasosGravesCalibrador']]
+    ifrCalibradorDelta<<-getCalibracion(iso_country,"delta")[['ifrCalibrador']]
+    transmission_probabilityCalibradorDelta<<-getCalibracion(iso_country,"delta")[['transmission_probabilityCalibrador']]
   } else {
-    porcentajeCasosCriticosCalibrador<<-getCalibracion("ARG")[['porcentajeCasosCriticosCalibrador']]
-    porcentajeCasosGravesCalibrador<<-getCalibracion("ARG")[['porcentajeCasosGravesCalibrador']]
-    ifrCalibrador<<-getCalibracion("ARG")[['ifrCalibrador']]
-    transmission_probabilityCalibrador<<-getCalibracion("ARG")[['transmission_probabilityCalibrador']]
+    porcentajeCasosCriticosCalibradorOmicron<<-getCalibracion("ARG","omicron")[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibradorOmicron<<-getCalibracion("ARG","omicron")[['porcentajeCasosGravesCalibrador']]
+    ifrCalibradorOmicron<<-getCalibracion("ARG","omicron")[['ifrCalibrador']]
+    transmission_probabilityCalibradorOmicron<<-getCalibracion("ARG","omicron")[['transmission_probabilityCalibrador']]
+    porcentajeCasosCriticosCalibradorDelta<<-getCalibracion("ARG","delta")[['porcentajeCasosCriticosCalibrador']]
+    porcentajeCasosGravesCalibradorDelta<<-getCalibracion("ARG","delta")[['porcentajeCasosGravesCalibrador']]
+    ifrCalibradorDelta<<-getCalibracion("ARG","delta")[['ifrCalibrador']]
+    transmission_probabilityCalibradorDelta<<-getCalibracion("ARG","delta")[['transmission_probabilityCalibrador']]
   }
   
   # Genera matrices de riesgo en base a una columna como c(No inmune, Recuperado, 1 dosis, 2 dosis)

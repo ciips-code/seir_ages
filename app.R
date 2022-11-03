@@ -146,7 +146,9 @@ server <- function (input, output, session) {
                   "porcentajeCasosGravesCalibrador",
                   "ifrCalibrador",
                   "transmission_probabilityCalibrador")) {
-        insertUI("#omicron", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
+        
+        insertUI("#calibradores", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
+        
         lista <- list(porcentajeCasosGraves_base=porcentajeCasosGraves_base,
                       porcentajeCasosCriticos_base=porcentajeCasosCriticos_base,
                       ifr_base=ifr_base,
@@ -163,7 +165,7 @@ server <- function (input, output, session) {
                                caption = paste("Parametros base del virus",names(lista[i])),
                                options = list(ordering=F, searching=F, paging=F, info=F))
                })
-               insertUI("#omicron2", ui = dataTableOutput(names(lista[i])))
+               insertUI("#base-virus", ui = dataTableOutput(names(lista[i])))
                
              })
       
@@ -171,15 +173,26 @@ server <- function (input, output, session) {
   })
   
   for (i in 1:length(variantes$omicron)) {
-    insertUI("#omicron", ui = numericInput(paste0("input-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]))
+    insertUI("#omicron", ui = numericInput(paste0("input-omicron-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]))
   }
-  insertUI("#omicron", ui = dateInput(inputId = "input-fechaTransicionOmicron",
+  for (i in 1:length(variantes$delta)) {
+    insertUI("#delta", ui = numericInput(paste0("input-delta-",names(variantes$delta)[i]), names(variantes$delta)[i], variantes$delta[[i]][4,1]))
+  }
+  insertUI("#delta", ui = dateInput(inputId = "input-delta-fechaTransicionOmicron",
                                          label = "fechaTransicionOmicron",
-                                         value = fechaTransicion))
-  
-  insertUI("#omicron", ui = numericInput(inputId =  "input-periodoTransicion",
+                                         value = getCalibracion(iso_country, "delta")[["fechaTransicion"]]))
+
+  insertUI("#delta", ui = numericInput(inputId =  "input-delta-periodoTransicion",
                                          label = "periodoTransicionOmicron",
-                                         value = periodoTransicion))
+                                         value = getCalibracion(iso_country, "delta")[["periodoTransicion"]]))
+
+  insertUI("#omicron", ui = dateInput(inputId = "input-omicron-fechaTransicionOmicron",
+                                      label = "fechaTransicionOmicron",
+                                      value = getCalibracion(iso_country, "omicron")[["fechaTransicion"]]))
+
+  insertUI("#omicron", ui = numericInput(inputId =  "input-omicron-periodoTransicion",
+                                         label = "periodoTransicionOmicron",
+                                         value = getCalibracion(iso_country, "omicron")[["periodoTransicion"]]))
   
   output$paramVac_editada <- renderDT({
     DT::datatable(data = paramVac %>% as.data.frame(), 
@@ -188,7 +201,7 @@ server <- function (input, output, session) {
                   options = list(ordering=F, searching=F, paging=F, info=F))
   })
   
-  insertUI("#omicron2", ui = DTOutput("paramVac_editada"))
+  insertUI("#calibracion-col2", ui = DTOutput("paramVac_editada"))
   
   lapply(seq_along(defaultEfficacy), function (i) {
     outputName <- names(defaultEfficacy[i])
@@ -202,7 +215,7 @@ server <- function (input, output, session) {
   
   lapply(seq_along(defaultEfficacy), function (i) {
     outputName <- names(defaultEfficacy[i])
-    insertUI("#omicron2", ui = DTOutput(names(defaultEfficacy[outputName])))
+    insertUI("#calibracion-col2", ui = DTOutput(names(defaultEfficacy[outputName])))
   })
   
   observe({

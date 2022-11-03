@@ -46,7 +46,18 @@ variantes <<- list(
   # - Crear las variables en getCalibración
   # - Agregar esas variables aca en 'delta'
   # - en transicionesEpidemiologicasCountry crear la progresion de la transición para delta
-  'delta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+  'delta' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['transmision']]),
+                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['hospitalizacion']]),
+                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['critico']]),
+                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['muerte']]),
+                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['duracionInmumidad']]),
+                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacTransmision']]),
+                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacGrave']]),
+                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacCritico']]),
+                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacMuerte']]),
+                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['duracionDiasInternacion']])
+                          )
+                          ,modificadores),
   'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['transmision']]),
                             getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['hospitalizacion']]),
                             getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['critico']]),
@@ -73,14 +84,24 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   # - Tomas las variables fechaTransicionOmicron y periodoTransicionOmicron del pais iso_country 
   #    - reemplazar getCalibracion(iso_country,"omicron")[["fechaTransicionOmicron"]] abajo para buscarlo aca en la funcion
   # - Generar la para esos valores transición diferente
-  browser()
-  fechaTransicion <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
-  periodoTransicion <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+  # browser()
   
-  tTransicion <- which(fechas_master==fechaTransicion)
+  fechaTransicionDelta <<- getCalibracion(iso_country,"delta")[["fechaTransicion"]]
+  periodoTransicionDelta <<- getCalibracion(iso_country,"delta")[["periodoTransicion"]]
   
-  fechas_curva <<- seq(fechaTransicion,
-                       fechaTransicion+periodoTransicion,by=1)
+  tTransicionDelta <- which(fechas_master==fechaTransicionDelta)
+  
+  fechas_curva_delta <<- seq(fechaTransicionDelta,
+                             fechaTransicionDelta+periodoTransicionDelta,by=1)
+  
+  fechaTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
+  periodoTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+  
+  tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
+  
+  fechas_curva_omicron <<- seq(fechaTransicionOmicron,
+                       fechaTransicionOmicron+periodoTransicionOmicron,by=1)
+  
   
   # Transiciones epidemiologicas de cada variante c(fecha predominante, % cada variante)
   
@@ -89,24 +110,29 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
       list(
         '2020-03-01' = c(1),
         '2020-06-10' = c(0,1),
-        '2021-01-01' = c(0,0,1),
-        '2021-06-01' = c(0,0,0,1)
+        '2021-01-01' = c(0,0,1)
       )
     } else {
       list(
         '2020-03-01' = c(1),
         '2020-06-10' = c(0,1),
-        '2021-01-01' = c(0,0,1),
-        '2021-06-01' = c(0,0,0,1)
+        '2021-01-01' = c(0,0,1)
       )
     }
   
   #browser()
-  valoresCurva = seq(from = 0, to = 1, by = (1/periodoTransicion))
+  valoresCurvaDelta = seq(from = 0, to = 1, by = (1/periodoTransicionDelta))
   row = 0
-  for (dia in as.character(fechas_curva)) {
+  for (dia in as.character(fechas_curva_delta)) {
     row = row + 1
-    transicionesEpidemiologicasCountry[[dia]] = c(0,0,0,1-valoresCurva[row],valoresCurva[row])
+    transicionesEpidemiologicasCountry[[dia]] = c(0,0,1-valoresCurvaDelta[row],valoresCurvaDelta[row])
+  }
+  
+  valoresCurvaOmicron = seq(from = 0, to = 1, by = (1/periodoTransicionOmicron))
+  row = 0
+  for (dia in as.character(fechas_curva_omicron)) {
+    row = row + 1
+    transicionesEpidemiologicasCountry[[dia]] = c(0,0,0,1-valoresCurvaOmicron[row],valoresCurvaOmicron[row])
   }
   
   transicionesEpidemiologicas <<- list(
@@ -114,30 +140,20 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   
   names(transicionesEpidemiologicas) <- iso_country
   
-  # transicionesEpidemiologicas <<- list(
-  #   'ARG' = transicionesEpidemiologicasCountry,
-  #   "BRA" = transicionesEpidemiologicasCountry,
-  #   "CHL" = transicionesEpidemiologicasCountry,
-  #   "COL" = transicionesEpidemiologicasCountry,
-  #   "PER" = transicionesEpidemiologicasCountry,
-  #   "MEX" = transicionesEpidemiologicasCountry,
-  #   "CRI" = transicionesEpidemiologicasCountry
-  # )
   modificador = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores)
-  
   if (is.null(transicionesEpidemiologicas[[iso_country]]) == F) {
-    for (fechaTransicion in names(transicionesEpidemiologicas[[iso_country]])) {
+    for (fechaTransicionVariante in names(transicionesEpidemiologicas[[iso_country]])) {
 
-      if (length(which(fechas_master == as.Date(fechaTransicion)))==0) {
+      if (length(which(fechas_master == as.Date(fechaTransicionVariante)))==0) {
         tFecha <- fechas_master[1]
       } else {
-        tFecha <- which(fechas_master == as.Date(fechaTransicion))
+        tFecha <- which(fechas_master == as.Date(fechaTransicionVariante))
       }
       
       if (t>=tFecha) {
         col = 0
         modificador = setNames(lapply(seq_len(10), function(X) modificadorCero),modificadores)
-        for (proporcion in  transicionesEpidemiologicas[[iso_country]][[fechaTransicion]]) {
+        for (proporcion in  transicionesEpidemiologicas[[iso_country]][[fechaTransicionVariante]]) {
           col = col + 1
           # print(paste(t,col))
           # browser( expr = { t == 303 })
@@ -148,6 +164,7 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
       }
     }
   }
+  # browser(expr = {t == 400})
   return(modificador)
 }
 

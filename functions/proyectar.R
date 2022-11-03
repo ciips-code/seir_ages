@@ -39,21 +39,17 @@ calibra <- function (input, output, session) {
   ####################################
   # Calibración
   ####################################
-  browser()
+  # browser()
   if (input$TSP=="Calibracion") {
     porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
     porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
     ifrCalibrador <<- input$`input-ifrCalibrador`
     transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
-    fechaTransicion <<- input$`input-fechaTransicion`
-    periodoTransicion <<- input$`input-periodoTransicion`
   }
   porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibrador
   porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibrador
   ifr <<- ifr_base * ifrCalibrador
   transmission_probability <<- transmission_probability_base * transmission_probabilityCalibrador # 0.68
-  fechaTransicion <<- getCalibracion(iso_country)[["fechaTransicion"]]
-  periodoTransicion <<- getCalibracion(iso_country)[["periodoTransicion"]]
 }
 
 actualizaMapa <- function(input, output, session) {
