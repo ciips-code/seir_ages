@@ -1,4 +1,4 @@
-calibradores <- list(
+calibradores <<- list(
   omicron = list(
     ARG = list(
       transmision=4, # Omicron
@@ -18,7 +18,43 @@ calibradores <- list(
       ifrCalibrador=1.3,
       transmission_probabilityCalibrador=0.52
     ),
-    COL = list(
+    BRA = list(
+      transmision=1,
+      hospitalizacion=.44,
+      critico=.33,
+      muerte=.3,
+      duracionInmumidad=.8,
+      modVacTransmision=1.45,
+      modVacGrave=2.277,
+      modVacCritico=2.652,
+      modVacMuerte=3.174,
+      duracionDiasInternacion=.31,
+      fechaTransicion=as.Date("2021-09-01"),
+      periodoTransicion=30,
+      porcentajeCasosCriticosCalibrador=1,
+      porcentajeCasosGravesCalibrador=1,
+      ifrCalibrador=1.3,
+      transmission_probabilityCalibrador=0.52
+    ),
+    JAM = list(
+      transmision=1,
+      hospitalizacion=.44,
+      critico=.33,
+      muerte=.3,
+      duracionInmumidad=.8,
+      modVacTransmision=1.45,
+      modVacGrave=2.277,
+      modVacCritico=2.652,
+      modVacMuerte=3.174,
+      duracionDiasInternacion=.31,
+      fechaTransicion=as.Date("2021-09-01"),
+      periodoTransicion=30,
+      porcentajeCasosCriticosCalibrador=1,
+      porcentajeCasosGravesCalibrador=1,
+      ifrCalibrador=1.3,
+      transmission_probabilityCalibrador=0.52
+    ),
+    MEX = list(
       transmision=1,
       hospitalizacion=.44,
       critico=.33,
@@ -56,7 +92,43 @@ calibradores <- list(
       ifrCalibrador=1.3,
       transmission_probabilityCalibrador=0.52
     ),
-    COL = list(
+    BRA = list(
+      transmision=1,
+      hospitalizacion=.44,
+      critico=.33,
+      muerte=.3,
+      duracionInmumidad=.8,
+      modVacTransmision=1.45,
+      modVacGrave=2.277,
+      modVacCritico=2.652,
+      modVacMuerte=3.174,
+      duracionDiasInternacion=.31,
+      fechaTransicion=as.Date("2021-09-01"),
+      periodoTransicion=30,
+      porcentajeCasosCriticosCalibrador=1,
+      porcentajeCasosGravesCalibrador=1,
+      ifrCalibrador=1.3,
+      transmission_probabilityCalibrador=0.52
+    ),
+    JAM = list(
+      transmision=1,
+      hospitalizacion=.44,
+      critico=.33,
+      muerte=.3,
+      duracionInmumidad=.8,
+      modVacTransmision=1.45,
+      modVacGrave=2.277,
+      modVacCritico=2.652,
+      modVacMuerte=3.174,
+      duracionDiasInternacion=.31,
+      fechaTransicion=as.Date("2021-09-01"),
+      periodoTransicion=30,
+      porcentajeCasosCriticosCalibrador=1,
+      porcentajeCasosGravesCalibrador=1,
+      ifrCalibrador=1.3,
+      transmission_probabilityCalibrador=0.52
+    ),
+    MEX = list(
       transmision=1,
       hospitalizacion=.44,
       critico=.33,

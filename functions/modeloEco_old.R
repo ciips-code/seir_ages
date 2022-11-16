@@ -54,7 +54,7 @@ setEcoParametersCountry <- function (pais) {
         output_pw <- c(0.09,0.09,3.14,0.35,0.31,0.31,0.33,0.11,0.62,1.11,1.11,0.32,0.32,0.16,0.16,0.08)
       )
     )
-  lapply(seq_along(ecoParams), function (i) {
+  lapply(seq_along(params), function (i) {
     names(ecoParams[[i]]) <<- c("coef_mob","w_s","w_star","hours_mod","output_pw")
   })
   

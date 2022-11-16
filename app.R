@@ -98,6 +98,7 @@ source("functions/params.R", encoding = "UTF-8")
 setParameters()
 source("functions/modeloEco.R", encoding = "UTF-8")
 setEcoParameters()
+setEcoParametersCountry()
 source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
 source("functions/vacunas.R", encoding = "UTF-8")
@@ -124,7 +125,9 @@ costo_economico_alternativo_muertes <<- c()
 server <- function (input, output, session) {
   #hideTab(inputId = "TSP", target = "Calibracion")
   observeEvent(input$country, {
-    if (input$country!="Argentina") {
+    if (input$country!="Argentina" & 
+        input$country!="Brazil" &
+        input$country!="Mexico") {
       hideTab(inputId = "TSP", target = "ECO Model")
       hideTab(inputId = "TSP", target = "Trade-off")
     }
@@ -142,10 +145,10 @@ server <- function (input, output, session) {
   disable("go")
   observeEvent(input$TSP, {
     if (input$TSP=="Calibracion") {
-      for (i in c("porcentajeCasosCriticosCalibrador",
-                  "porcentajeCasosGravesCalibrador",
-                  "ifrCalibrador",
-                  "transmission_probabilityCalibrador")) {
+      for (i in c("porcentajeCasosCriticosCalibradorOmicron",
+                  "porcentajeCasosGravesCalibradorOmicron",
+                  "ifrCalibradorOmicron",
+                  "transmission_probabilityCalibradorOmicron")) {
         
         insertUI("#calibradores", ui = numericInput(paste0("input-",i), i, eval(parse(text=i))))
         
@@ -271,20 +274,35 @@ server <- function (input, output, session) {
     # for (i in 1:length(variantes$omicron)) {
     #   variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
     # }
-    # browser()
+    browser()
     variantes$omicron <<- setNames(list(
-                  getMatrizModificadoresVariantesSingle(input[['input-transmision']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-hospitalizacion']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-critico']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-muerte']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-duracionInmumidad']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacTransmision']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacGrave']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacCritico']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-modVacMuerte']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-duracionDiasInternacion']])
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-transmision']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-hospitalizacion']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-critico']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-muerte']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-duracionInmumidad']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacTransmision']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacGrave']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacCritico']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacMuerte']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-duracionDiasInternacion']])
     ),
     modificadores)
+    
+    variantes$delta <<- setNames(list(
+      getMatrizModificadoresVariantesSingle(input[['input-delta-transmision']]),
+      getMatrizModificadoresVariantesSingle(input[['input-delta-hospitalizacion']]),
+      getMatrizModificadoresVariantesSingle(input[['input-delta-critico']]),
+      getMatrizModificadoresVariantesSingle(input[['input-delta-muerte']]),
+      getMatrizModificadoresVariantesSingle(input[['input-delta-duracionInmumidad']]),
+      getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacTransmision']]),
+      getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacGrave']]),
+      getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacCritico']]),
+      getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacMuerte']]),
+      getMatrizModificadoresVariantesSingle(input[['input-delta-duracionDiasInternacion']])
+    ),
+    modificadores)
+    
     # fechaTransicionOmicron <<- input$`input-fechaTransicionOmicron`
     # periodoTransicionOmicron <<- input$`input-periodoTransicionOmicron`
     # porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
