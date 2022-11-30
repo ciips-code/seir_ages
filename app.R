@@ -97,7 +97,6 @@ source("functions/calibracion.R", encoding = "UTF-8")
 source("functions/params.R", encoding = "UTF-8")
 setParameters()
 source("functions/modeloEco.R", encoding = "UTF-8")
-setEcoParameters()
 setEcoParametersCountry()
 source("functions/update.R", encoding = "UTF-8")
 source("functions/seirAges_matrices.R", encoding = "UTF-8")
@@ -130,7 +129,16 @@ server <- function (input, output, session) {
         input$country!="Mexico") {
       hideTab(inputId = "TSP", target = "ECO Model")
       hideTab(inputId = "TSP", target = "Trade-off")
+      
     }
+    updateTabsetPanel(session, inputId="TSP", selected="Tabla de resultados")
+    shinyjs::hide("grafEcoMuertes")
+    shinyjs::hide("grafEcoGasto")
+    costo_economico_principal <<- c()
+    costo_economico_alternativo <<- c()
+    costo_economico_principal_fecha <<- c()
+    costo_economico_alternativo_fecha <<- c()
+    costo_economico_alternativo_muertes <<- c()
   })
   
   
@@ -266,15 +274,12 @@ server <- function (input, output, session) {
   
   })
   
-  
-  
   observeEvent(input$go, {
     shinyjs::hide('grafEcoGasto')
     shinyjs::hide('grafEcoMuertes')
     # for (i in 1:length(variantes$omicron)) {
     #   variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
     # }
-    browser()
     variantes$omicron <<- setNames(list(
                   getMatrizModificadoresVariantesSingle(input[['input-omicron-transmision']]),
                   getMatrizModificadoresVariantesSingle(input[['input-omicron-hospitalizacion']]),
@@ -3330,7 +3335,6 @@ server <- function (input, output, session) {
                           data[data$escenario=="ALTERNATIVO 1",],
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
-        
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Escenario principal', type = 'scatter', mode = 'lines+markers'
                        ) 

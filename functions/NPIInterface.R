@@ -186,11 +186,11 @@ get_custom_matrix <- function(scenario,
     # }
     
     if (ECORunning==F) {
-      #print("costo principal")
+      print(paste0("costo principal", " - dia: ", length(costo_economico_principal), " - pais: ", iso_country))
       costo_economico_principal <<- c(costo_economico_principal,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes)))
       costo_economico_principal_fecha <<- c(costo_economico_principal_fecha,as.character(fechas_master[dia_loop]))
     } else {
-      # print("costo alternativo")
+      print(paste0("costo alternativo", " - dia: ", length(costo_economico_alternativo), " - pais: ", iso_country))
       costo_economico_alternativo <<- c(costo_economico_alternativo,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes)))
       costo_economico_alternativo_fecha <<- c(costo_economico_alternativo_fecha,as.character(fechas_master[dia_loop]))
       costo_economico_alternativo_muertes <<- c(costo_economico_alternativo_muertes,muertes)
@@ -616,8 +616,40 @@ altScenario <- function (country,stringency) {
     st[i] <<- scenarios[which(label==st[i])]
   }
   alt_ARG <- st
+  alt_BRA <- st
+  alt_MEX <- st
   
-    if (country=="ARG"){
+  
+  if (country=="MEX"){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    tHoy <<- tVacunasCero+4
+    
+    for (i in 1:length(alt_MEX)) {
+      addBoxTable(alt_MEX[i],input$country)
+    }
+    
+    dateIndex <<- 1
+    
+  }
+  
+  if (country=="BRA"){
+    
+    customBeta <<- data.frame(start=NA,
+                              end=NA,
+                              beta=NA)
+    tHoy <<- tVacunasCero+4
+    
+    for (i in 1:length(alt_BRA)) {
+      addBoxTable(alt_BRA[i],input$country)
+    }
+    
+    dateIndex <<- 1
+    
+  }
+  if (country=="ARG"){
     
     customBeta <<- data.frame(start=NA,
                               end=NA,
