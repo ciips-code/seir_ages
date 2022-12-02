@@ -132,18 +132,20 @@ loss_t <- function(work_mob_t) {
   ## Economic loss per period
   
   gender_star <- 1-sum(ecoParams[[iso_country]]$gender_sector * ecoParams[[iso_country]]$w_star )
+  
   gender_t <- 1-sum(ecoParams[[iso_country]]$gender_sector * w_t )
   
   change_gender <- gender_t - gender_star
-  
   GDP_change <- y_t/y_star -1
-  
-  poverty_change <- output_poverty * c(1,GDP_change)
+  poverty_change <- sum(ecoParams[[iso_country]]$output_poverty * c(1,GDP_change))
   
   
   ## change return
-  return(y_t/y_star -1)
+  # return(y_t/y_star -1)
   
+  return(
+    list(change_gender,GDP_change,poverty_change)
+  )
 }
 
 matchDavies <- function(NPIs) {

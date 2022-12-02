@@ -35,20 +35,31 @@ ejecutarProyeccionConParametrosUI = function(input, output, session) {
   
 }
 
+modoCalibracion <<- F 
+
 calibra <- function (input, output, session) {
   ####################################
   # Calibración
   ####################################
   if (input$TSP=="Calibracion") {
+    modoCalibracion <<- T 
     porcentajeCasosCriticosCalibrador <<- input$`input-porcentajeCasosCriticosCalibrador`
     porcentajeCasosGravesCalibrador <<- input$`input-porcentajeCasosGravesCalibrador`
     ifrCalibrador <<- input$`input-ifrCalibrador`
     transmission_probabilityCalibrador <<- input$`input-transmission_probabilityCalibrador`
+    fechaTransicionDelta <<- input$`input-delta-fechaTransicion`
+    periodoTransicionDelta <<- input$`input-delta-periodoTransicion`
+    fechaTransicionOmicron <<- input$`input-omicron-fechaTransicion`
+    periodoTransicionOmicron <<- input$`input-omicron-periodoTransicion`
+  } else {
+    modoCalibracion <<- F   
   }
+  
   porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibradorOmicron
   porcentajeCasosCriticos <<- porcentajeCasosCriticos_base * porcentajeCasosCriticosCalibradorOmicron
   ifr <<- ifr_base * ifrCalibradorOmicron
   transmission_probability <<- transmission_probability_base * transmission_probabilityCalibradorOmicron # 0.68
+  
 }
 
 actualizaMapa <- function(input, output, session) {

@@ -73,6 +73,7 @@ variantes <<- list(
 )
 
 variantes_base <<- variantes
+
 fechaTransicion <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
 periodoTransicion <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
 
@@ -86,21 +87,29 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   # - Generar la para esos valores transición diferente
   # browser()
   
-  fechaTransicionDelta <<- getCalibracion(iso_country,"delta")[["fechaTransicion"]]
-  periodoTransicionDelta <<- getCalibracion(iso_country,"delta")[["periodoTransicion"]]
+  
+  if (modoCalibracion==F) {
+    fechaTransicionDelta <<- getCalibracion(iso_country,"delta")[["fechaTransicion"]]
+    periodoTransicionDelta <<- getCalibracion(iso_country,"delta")[["periodoTransicion"]]
+  }
+  
   
   tTransicionDelta <- which(fechas_master==fechaTransicionDelta)
   
   fechas_curva_delta <<- seq(fechaTransicionDelta,
                              fechaTransicionDelta+periodoTransicionDelta,by=1)
-  
-  fechaTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
-  periodoTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+  if (modoCalibracion==F) {
+    fechaTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
+    periodoTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+  } else {
+    #browser()
+    
+  }
   
   tTransicionOmicron <- which(fechas_master==fechaTransicionOmicron)
   
   fechas_curva_omicron <<- seq(fechaTransicionOmicron,
-                       fechaTransicionOmicron+periodoTransicionOmicron,by=1)
+                               fechaTransicionOmicron+periodoTransicionOmicron,by=1)
   
   
   # Transiciones epidemiologicas de cada variante c(fecha predominante, % cada variante)
@@ -137,7 +146,6 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   
   transicionesEpidemiologicas <<- list(
     transicionesEpidemiologicasCountry)
-  
   names(transicionesEpidemiologicas) <- iso_country
   
   modificador = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores)
@@ -165,6 +173,7 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
     }
   }
   # browser(expr = {t == 400})
+  print(paste("t=",fechas_master[t],"trans promedio=",mean(modificador$transmision)))
   return(modificador)
 }
 

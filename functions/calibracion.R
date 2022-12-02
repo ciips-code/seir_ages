@@ -1,7 +1,7 @@
 calibradores <<- list(
   omicron = list(
     ARG = list(
-      transmision=4, # Omicron
+      transmision=4.5, # Omicron
       hospitalizacion=.44,  # Omicron
       critico=.33,  # Omicron
       muerte=.3,  # Omicron
@@ -85,7 +85,7 @@ calibradores <<- list(
       modVacCritico=2.652,  # delta
       modVacMuerte=3.174,  # delta
       duracionDiasInternacion=.31,  # delta
-      fechaTransicion=as.Date("2021-03-20"),  # delta
+      fechaTransicion=as.Date("2021-04-20"),  # delta
       periodoTransicion=30,  # delta
       porcentajeCasosCriticosCalibrador=1,
       porcentajeCasosGravesCalibrador=1,

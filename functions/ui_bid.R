@@ -1056,6 +1056,8 @@ getUI <- function () {
                                  br(),
                                  fluidRow(column(6,withSpinner(plotlyOutput("grafEcoGasto"),type = 8, size = .5, color = "#bdbdbd")),
                                           column(6,withSpinner(plotlyOutput("grafEcoMuertes"),type = 8, size = .5, color = "#bdbdbd"))
+                                          ),
+                                 fluidRow(column(6,withSpinner(plotlyOutput("grafEcoPobreza"),type = 8, size = .5, color = "#bdbdbd"))
                                           )
                                  ),
                         tabPanel("Trade-off",
@@ -1065,7 +1067,9 @@ getUI <- function () {
                                                               "Correr simulación"))),
                                  br(),
                                  fluidRow(column(6,
-                                                 plotlyOutput("grafico_trade_off"))
+                                                 plotlyOutput("grafico_trade_off")),
+                                          column(6,
+                                                 plotlyOutput("grafico_trade_off_pobreza"))
                                           # ,
                                           # column(6,
                                           #        plotlyOutput("grafico_trade_off2"))
