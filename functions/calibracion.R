@@ -1,7 +1,7 @@
 calibradores <<- list(
   omicron = list(
     ARG = list(
-      transmision=4.5, # Omicron
+      transmision=4, # Omicron
       hospitalizacion=.44,  # Omicron
       critico=.33,  # Omicron
       muerte=.3,  # Omicron
@@ -75,22 +75,22 @@ calibradores <<- list(
   ),
   delta = list(
     ARG = list(
-      transmision=4, # delta
-      hospitalizacion=.44,  # delta
-      critico=.33,  # delta
-      muerte=.3,  # delta
-      duracionInmumidad=.8,  # delta
-      modVacTransmision=1.45,  # delta
-      modVacGrave=2.277,  # delta
-      modVacCritico=2.652,  # delta
-      modVacMuerte=3.174,  # delta
-      duracionDiasInternacion=.31,  # delta
+      transmision=1, # delta
+      hospitalizacion=1,  # delta
+      critico=1,  # delta
+      muerte=1,  # delta
+      duracionInmumidad=1,  # delta
+      modVacTransmision=1,  # delta
+      modVacGrave=1,  # delta
+      modVacCritico=1,  # delta
+      modVacMuerte=1,  # delta
+      duracionDiasInternacion=1,  # delta
       fechaTransicion=as.Date("2021-04-20"),  # delta
       periodoTransicion=30,  # delta
       porcentajeCasosCriticosCalibrador=1,
       porcentajeCasosGravesCalibrador=1,
-      ifrCalibrador=1.3,
-      transmission_probabilityCalibrador=0.52
+      ifrCalibrador=1,
+      transmission_probabilityCalibrador=1
     ),
     BRA = list(
       transmision=1,
@@ -150,7 +150,7 @@ calibradores <<- list(
 )
 
 
-calibradorDefault <- list (
+calibradorDefault <<- list (
   omicron = list(
     transmision=4,
     hospitalizacion=.44,
@@ -189,6 +189,16 @@ calibradorDefault <- list (
   )
   
 )
+
+
+lapply(seq_along(calibradores$omicron), function (x) {
+  parametros <- names(calibradorDefault$omicron)[!names(calibradorDefault$omicron) %in% c("periodoTransicion","fechaTransicion")]
+  for (i in parametros) {
+    calibradores$omicron[[x]][[i]] <<- calibradores$omicron[[x]][[i]] * calibradores$delta[[x]][[i]]
+  }
+  
+})
+
 
 getCalibracion <- function(country,variante) {
   if (is.null(calibradores[[variante]][[country]])) {

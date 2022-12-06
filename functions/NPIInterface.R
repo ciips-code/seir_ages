@@ -186,25 +186,44 @@ get_custom_matrix <- function(scenario,
     # }
     
     if (ECORunning==F) {
-      # print(paste0("costo principal", " - dia: ", length(costo_economico_principal), " - pais: ", iso_country))
-      costo_economico_principal <<- c(costo_economico_principal,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[2]])
+      costo_economico_principal <<- c(costo_economico_principal,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["GDP_change"]])
       costo_economico_principal_fecha <<- c(costo_economico_principal_fecha,as.character(fechas_master[dia_loop]))
+      costo_economico_principal_genero <<- c(costo_economico_principal_genero,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_gender"]])
+      costo_economico_principal_pobreza <<- c(costo_economico_principal_pobreza,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["poverty_change"]])
+      costo_economico_principal_change_labor_men <<- c(costo_economico_principal_change_labor_men,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_men"]])
+      costo_economico_principal_change_labor_women <<- c(costo_economico_principal_change_labor_women,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_women"]])
+      costo_economico_principal_change_labor_rich <<- c(costo_economico_principal_change_labor_rich,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_rich"]])
+      costo_economico_principal_change_labor_poor <<- c(costo_economico_principal_change_labor_poor,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_poor"]])
       
-      #print(paste0("costo principal genero", " - dia: ", length(costo_economico_principal_genero), " - pais: ", iso_country))
-      costo_economico_principal_genero <<- c(costo_economico_principal_genero,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[1]])
       
-      #print(paste0("costo principal pobreza", " - dia: ", length(costo_economico_principal_pobreza), " - pais: ", iso_country))
-      costo_economico_principal_pobreza <<- c(costo_economico_principal_pobreza,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[3]])
-      
+      modelo_eco_resultados <<- union_all(
+        modelo_eco_resultados,
+        data.frame(
+          work_mob_t=work_mob(dia_loop,matchDavies(customBeta$beta),muertes),
+          res_1=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[1]],
+          res_2=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[2]],
+          res_3=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[3]],
+          res_4=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[4]],
+          res_5=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[5]],
+          res_6=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[6]],
+          res_7=loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[7]]
+        )
+        
+      )
       
     } else {
       #print(paste0("costo alternativo", " - dia: ", length(costo_economico_alternativo), " - pais: ", iso_country))
-      costo_economico_alternativo <<- c(costo_economico_alternativo,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[2]])
+      costo_economico_alternativo <<- c(costo_economico_alternativo,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["GDP_change"]])
       costo_economico_alternativo_fecha <<- c(costo_economico_alternativo_fecha,as.character(fechas_master[dia_loop]))
       costo_economico_alternativo_muertes <<- c(costo_economico_alternativo_muertes,muertes)
       print(paste0("costo alternativo genero", " - dia: ", length(costo_economico_alternativo_genero), " - pais: ", iso_country))
-      costo_economico_alternativo_genero <<- c(costo_economico_alternativo_genero,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[1]])
-      costo_economico_alternativo_pobreza <<- c(costo_economico_alternativo_pobreza,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[[3]])
+      costo_economico_alternativo_genero <<- c(costo_economico_alternativo_genero,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_gender"]])
+      costo_economico_alternativo_pobreza <<- c(costo_economico_alternativo_pobreza,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["poverty_change"]])
+      costo_economico_alternativo_change_labor_men <<- c(costo_economico_alternativo_change_labor_men,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_men"]])
+      costo_economico_alternativo_change_labor_women <<- c(costo_economico_alternativo_change_labor_women,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_women"]])
+      costo_economico_alternativo_change_labor_rich <<- c(costo_economico_alternativo_change_labor_rich,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_rich"]])
+      costo_economico_alternativo_change_labor_poor <<- c(costo_economico_alternativo_change_labor_poor,loss_t(work_mob(dia_loop,matchDavies(customBeta$beta),muertes))[["change_labor_poor"]])
+      
     }
     
     # print(dia_loop)

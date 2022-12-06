@@ -31,7 +31,7 @@ library(sf)
 library(data.table)
 
 options(dplyr.summarise.inform = FALSE)
-
+modelo_eco_resultados <<- data.frame()
 iso_country<<-"ARG"
 comp_table <<- list()
 output_list <<- c()
@@ -132,6 +132,15 @@ costo_economico_alternativo_pobreza <<- c()
 costo_economico_principal_fecha <<- c()
 costo_economico_alternativo_fecha <<- c()
 costo_economico_alternativo_muertes <<- c()
+costo_economico_principal_change_labor_men <<- c()
+costo_economico_principal_change_labor_women <<- c()
+costo_economico_principal_change_labor_rich <<- c()
+costo_economico_principal_change_labor_poor <<- c()
+costo_economico_alternativo_change_labor_men <<- c()
+costo_economico_alternativo_change_labor_women <<- c()
+costo_economico_alternativo_change_labor_rich <<- c()
+costo_economico_alternativo_change_labor_poor <<- c()
+
 
 server <- function (input, output, session) {
   #hideTab(inputId = "TSP", target = "Calibracion")
@@ -147,6 +156,12 @@ server <- function (input, output, session) {
     shinyjs::hide("grafEcoMuertes")
     shinyjs::hide("grafEcoGasto")
     shinyjs::hide("grafEcoPobreza")
+    shinyjs::hide("grafEcoGenero")
+    shinyjs::hide("grafEcoLaborGender")
+    shinyjs::hide("grafEcoLaborPoverty")
+    shinyjs::hide("grafEcoLaborGenderAlt")
+    shinyjs::hide("grafEcoLaborPovertyAlt")
+    
     costo_economico_principal <<- c()
     costo_economico_principal_genero <<- c()
     costo_economico_principal_pobreza <<- c()
@@ -295,20 +310,26 @@ server <- function (input, output, session) {
     shinyjs::hide('grafEcoGasto')
     shinyjs::hide('grafEcoMuertes')
     shinyjs::hide('grafEcoPobreza')
+    shinyjs::hide('grafEcoGenero')
+    shinyjs::hide('grafEcoLaborGender')
+    shinyjs::hide('grafEcoLaborPoverty')
+    shinyjs::hide('grafEcoLaborGenderAlt')
+    shinyjs::hide('grafEcoLaborPovertyAlt')
+    
     # for (i in 1:length(variantes$omicron)) {
     #   variantes$omicron[i]  <<- variantes$omicron[[i]] / variantes$omicron[[i]] * input[[paste0('input-',names(variantes$omicron[i]))]]
     # }
     variantes$omicron <<- setNames(list(
-                  getMatrizModificadoresVariantesSingle(input[['input-omicron-transmision']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-omicron-hospitalizacion']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-omicron-critico']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-omicron-muerte']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-omicron-duracionInmumidad']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacTransmision']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacGrave']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacCritico']]),
-                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacMuerte']]),
-                  getMatrizModificadoresVariantesSingle(input[['input-omicron-duracionDiasInternacion']])
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-transmision']])*getMatrizModificadoresVariantesSingle(input[['input-delta-transmision']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-hospitalizacion']])*getMatrizModificadoresVariantesSingle(input[['input-delta-hospitalizacion']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-critico']])*getMatrizModificadoresVariantesSingle(input[['input-delta-critico']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-muerte']])*getMatrizModificadoresVariantesSingle(input[['input-delta-muerte']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-duracionInmumidad']])*getMatrizModificadoresVariantesSingle(input[['input-delta-duracionInmumidad']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacTransmision']])*getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacTransmision']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacGrave']])*getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacGrave']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacCritico']])*getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacCritico']]),
+                  getMatrizModificadoresVariantesSingleVac(input[['input-omicron-modVacMuerte']])*getMatrizModificadoresVariantesSingleVac(input[['input-delta-modVacMuerte']]),
+                  getMatrizModificadoresVariantesSingle(input[['input-omicron-duracionDiasInternacion']])*getMatrizModificadoresVariantesSingle(input[['input-delta-duracionDiasInternacion']])
     ),
     modificadores)
     
@@ -3310,11 +3331,22 @@ server <- function (input, output, session) {
       costo_economico_alternativo_pobreza <<- c()
       costo_economico_alternativo_fecha <<- c()
       costo_economico_alternativo_muertes <<- c()
+      costo_economico_alternativo_change_labor_men <<- c()
+      costo_economico_alternativo_change_labor_women <<- c()
+      costo_economico_alternativo_change_labor_rich <<- c()
+      costo_economico_alternativo_change_labor_poor <<- c()
+      
+      
       
       
       shinyjs::show('grafEcoGasto')
       shinyjs::show('grafEcoMuertes')
       shinyjs::show('grafEcoPobreza')
+      shinyjs::show('grafEcoGenero')
+      shinyjs::show('grafEcoLaborGender')
+      shinyjs::show('grafEcoLaborPoverty')
+      shinyjs::show('grafEcoLaborGenderAlt')
+      shinyjs::show('grafEcoLaborPovertyAlt')
       
       
       ECORunning <<- T
@@ -3396,12 +3428,150 @@ server <- function (input, output, session) {
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Escenario principal', type = 'scatter', mode = 'lines+markers'
         ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario Alternativo') %>% layout(title = 'Pérdida del PIB (%)',xaxis = list(title='Mes'),
-                                                                                      yaxis = list(title='Pérdida del PIB (%)'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario Alternativo') %>% layout(title = 'poverty_change',xaxis = list(title='Mes'),
+                                                                                      yaxis = list(title='poverty_change'))
         
       }
       
     })
+    
+    
+    output$grafEcoLaborGender <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(costo_economico_alternativo)>0) {
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_principal_change_labor_men,360),
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_principal_change_labor_women,360),
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        writeClipboard(as.character(data$costo.y))
+        data
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers'
+        ) 
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Woman') %>% layout(title = 'change_labor (escenario principal)',xaxis = list(title='Mes'),
+                                                                                      yaxis = list(title='change_labor'))
+        
+      }
+      
+    })
+    
+    output$grafEcoLaborGenderAlt <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(costo_economico_alternativo)>0) {
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_alternativo_change_labor_men,360),
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_alternativo_change_labor_women,360),
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        writeClipboard(as.character(data$costo.y))
+        data
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers'
+        ) 
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Woman') %>% layout(title = 'change_labor gender (escenario alternativo)',xaxis = list(title='Mes'),
+                                                                      yaxis = list(title='change_labor gender'))
+        
+      }
+      
+    })
+    
+    output$grafEcoLaborPoverty <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(costo_economico_alternativo)>0) {
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_principal_change_labor_rich,360),
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_principal_change_labor_poor,360),
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        writeClipboard(as.character(data$costo.y))
+        data
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Rich', type = 'scatter', mode = 'lines+markers'
+        ) 
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Poor') %>% layout(title = 'change_labor rich/poor (escenario principal)',xaxis = list(title='Mes'),
+                                                                      yaxis = list(title='change_labor rich/poor'))
+        
+      }
+      
+    })
+    
+    output$grafEcoLaborPovertyAlt <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(costo_economico_alternativo)>0) {
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_alternativo_change_labor_rich,360),
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_alternativo_change_labor_poor,360),
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        writeClipboard(as.character(data$costo.y))
+        data
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Rich', type = 'scatter', mode = 'lines+markers'
+        ) 
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Poor') %>% layout(title = 'change_labor rich/poor (escenario alternativo)',xaxis = list(title='Mes'),
+                                                                      yaxis = list(title='change_labor rich/poor'))
+        
+      }
+      
+    })
+
     
     output$grafEcoMuertes <- renderPlotly({
       paste(input$ECO_go)

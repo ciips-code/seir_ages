@@ -1057,7 +1057,11 @@ getUI <- function () {
                                  fluidRow(column(6,withSpinner(plotlyOutput("grafEcoGasto"),type = 8, size = .5, color = "#bdbdbd")),
                                           column(6,withSpinner(plotlyOutput("grafEcoMuertes"),type = 8, size = .5, color = "#bdbdbd"))
                                           ),
-                                 fluidRow(column(6,withSpinner(plotlyOutput("grafEcoPobreza"),type = 8, size = .5, color = "#bdbdbd"))
+                                 fluidRow(column(6,withSpinner(plotlyOutput("grafEcoPobreza"),type = 8, size = .5, color = "#bdbdbd")),
+                                          column(6,withSpinner(plotlyOutput("grafEcoLaborGender"),type = 8, size = .5, color = "#bdbdbd"))),
+                                 fluidRow(column(6,withSpinner(plotlyOutput("grafEcoLaborGenderAlt"),type = 8, size = .5, color = "#bdbdbd")),
+                                          column(6,withSpinner(plotlyOutput("grafEcoLaborPoverty"),type = 8, size = .5, color = "#bdbdbd"))),
+                                 fluidRow(column(6,withSpinner(plotlyOutput("grafEcoLaborPovertyAlt"),type = 8, size = .5, color = "#bdbdbd")),
                                           )
                                  ),
                         tabPanel("Trade-off",

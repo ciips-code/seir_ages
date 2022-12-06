@@ -9,7 +9,12 @@ setEcoParametersCountry <- function () {
         output_pw <- c(0.49,1.17,3.75,0.76,1.99,0.29,0.48,0.38,0.50,1.33,0.90,0.56,0.63,0.52,0.35,0.08),
         gender_sector <<- c(0.866,1,0.916,0.698,0.87,0.97,0.596,0.515,0.725,0.498,0.633,0.563,0.26,0.333,0.551,0.041),
         labor_income <<- c(14725,46230,49716,17611,26998,13426,14414,11961,20463,31476,15427,26284,23116,25516,13150,6991),
-        output_poverty <<- c(-0.48,27)
+        labor_income_women <<- c(11318,0,40035,11880,28011,19563,11533,10270,17855,30079,11353,24386,22593,23108,10424,7048),
+        labor_income_men <<- c(15254,46230,50602,20085,26846,13236,16364,13553,21451,32887,17792,27755,24605,30345,15374,5665),
+        labor_income_poor <<- c(751,1761,3352,4202,2816,2975,2771,3416,3756,1997,4931,3585,4184,4538,3843,4994),
+        labor_income_rich <<- c(58336,39153,28977,33012,27870,33508,66815,30647,27870,28319,21809,25521,27468,21317,25502,16037),
+        rich_share <<- c(0.45273,0.6785,0.8502,0.5745,0.7399,0.50334,0.4936,0.4423,0.00108,0.794,0.510204082,0.766477083,0.771248179,0.738245614,0.429699842,0.180845372),
+        output_poverty <<- c(-0.48,27)        
       ),
       BRA=list(
         coef_mob <- c(-15.86268,0.0033494,-1.57e-07,-4.327578,0.1852589,2.546838*2,0.000391*2),
@@ -18,8 +23,13 @@ setEcoParametersCountry <- function () {
         hours_mod <- c(0,0,0.5,0.75,0.25,0.75,1,1,0.75,0.5,0.5,1,1,0,0,0.5),
         output_pw <- c(0.09,004,1.2,0.14,1.26,0.1,0.12,0.16,0.16,0.93,0.27,0.29,0.29,0.27,0.25,0.14),
         gender_sector <<- c(0.767,1,0.86,0.62,0.81,0.95,0.53,0.49,0.68,0.48,0.61,0.52,0.27,0.30,0.51,0.02),
-        labor_income <<- c(4908,15409,16572,5870,8999,4475,4804,3986,6820,10492,5142,8761,7705,8505,4383,2330),
-        output_poverty <<- c(-0.48,30)
+        labor_income <<- c(4908,15409,16572,5870,8999,4475,4804,3986,6820,10492,5142,8761,7705,8505,4383,2330),        
+        labor_income_women <<- c(4698,1,14743,4418,9417,6844,4816,3765,6586,10721,4214,9624,8931,9739,3852,2671),
+        labor_income_men <<- c(6332,18477,18634,7470,9026,4630,6834,4968,7912,11722,6604,10953,9727,12789,5681,2147),
+        labor_income_poor <<- c(312,704,1234,1563,947,1041,1157,1252,1385,712,1830,1415,1654,1913,1420,1892),
+        labor_income_rich <<- c(24214,15648,10671,12278,9370,11722,27902,11235,10280,10094,8095,10072,10858,8984,9423,6077),
+        rich_share <<- c(0.54,0.74,0.91,0.64,0.78,0.60,0.57,0.52,0.09,0.84,0.60,0.77,0.79,0.80,0.51,0.21),
+        output_poverty <<- c(-0.48,30)    
       ),
       JAM=list(
         coef_mob <- c(-18.83097,-0.0040916,2.21e-07,0.3649423,-0.0045154,3.292909*2,0.0004495*2),
@@ -28,7 +38,12 @@ setEcoParametersCountry <- function () {
         hours_mod <- c(0,0,0.5,0.75,0.25,0.75,1,1,0.75,0.5,0.5,1,1,0,0,0.5),
         output_pw <- NA,
         gender_sector <<- NA,
-        labor_income <<- NA,
+        labor_income <<- NA,        
+        labor_income_women <<- NA,
+        labor_income_men <<- NA,
+        labor_income_poor <<- NA,
+        labor_income_rich <<- NA,
+        rich_share <<- NA,
         output_poverty <<- NA
       ),
       MEX=list(
@@ -38,15 +53,33 @@ setEcoParametersCountry <- function () {
         hours_mod <- c(0,0,0.5,0.75,0.25,0.75,1,1,0.75,0.5,0.5,1,1,0,0,0.5),
         output_pw <- c(0.09,0.09,3.14,0.35,0.31,0.31,0.33,0.11,0.62,1.11,1.11,0.32,0.32,0.16,0.16,0.08),
         gender_sector <<- NA,
-        labor_income <<- NA,
+        labor_income <<- NA,        
+        labor_income_women <<- NA,
+        labor_income_men <<- NA,
+        labor_income_poor <<- NA,
+        labor_income_rich <<- NA,
+        rich_share <<- NA,
         output_poverty <<- NA
       )
     )
   lapply(seq_along(ecoParams), function (i) {
-    names(ecoParams[[i]]) <<- c("coef_mob","w_s","w_star","hours_mod","output_pw","gender_sector","labor_income","output_poverty")
+    names(ecoParams[[i]]) <<- c("coef_mob",
+                                "w_s",
+                                "w_star",
+                                "hours_mod",
+                                "output_pw",
+                                "gender_sector",
+                                "labor_income",
+                                "labor_income_women",
+                                "labor_income_men",
+                                "labor_income_poor",
+                                "labor_income_rich",
+                                "rich_share",
+                                "output_poverty")
   })
   return(print("Setting eco parameters: done"))
 }
+
 
 ## Effective working hours
 work_mob <- function(t, w_closure,deaths) {
@@ -123,6 +156,7 @@ workplace_mob <- function(t, w_closure,deaths) {
 # }
 
 loss_t <- function(work_mob_t) {
+  
   w_t <- ecoParams[[iso_country]]$w_star * ( 1 - ecoParams[[iso_country]]$hours_mod * (1 - work_mob_t)) 
   ## Output
   # y* is the pre-pandemic (calibrated for 2019)
@@ -132,21 +166,97 @@ loss_t <- function(work_mob_t) {
   ## Economic loss per period
   
   gender_star <- 1-sum(ecoParams[[iso_country]]$gender_sector * ecoParams[[iso_country]]$w_star )
-  
   gender_t <- 1-sum(ecoParams[[iso_country]]$gender_sector * w_t )
-  
   change_gender <- gender_t - gender_star
   GDP_change <- y_t/y_star -1
   poverty_change <- sum(ecoParams[[iso_country]]$output_poverty * c(1,GDP_change))
+  labor_income_men_star <- sum(ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$output_pw  * ecoParams[[iso_country]]$labor_income_men * ecoParams[[iso_country]]$gender_sector / sum(ecoParams[[iso_country]]$gender_sector))
+  labor_income_men_t <- sum(w_t* ecoParams[[iso_country]]$output_pw * ecoParams[[iso_country]]$labor_income_men * ecoParams[[iso_country]]$gender_sector / sum(ecoParams[[iso_country]]$gender_sector))
+  change_labor_men <-  labor_income_men_t/labor_income_men_star-1
+  labor_income_women_star <- sum(ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$output_pw  * ecoParams[[iso_country]]$labor_income_women * (1-ecoParams[[iso_country]]$gender_sector) / sum((1-ecoParams[[iso_country]]$gender_sector)))
+  labor_income_women_t <- sum(w_t* ecoParams[[iso_country]]$output_pw * ecoParams[[iso_country]]$labor_income_women * (1-ecoParams[[iso_country]]$gender_sector) / sum((1-ecoParams[[iso_country]]$gender_sector)))
   
+  # este es un fix que hice porque al haber un cero daba NA y se romp?a en la divisi?n
+  clm <- log(labor_income_women_t)-log(labor_income_women_star)
+  clm[is.na(clm)] <- 0
   
-  ## change return
-  # return(y_t/y_star -1)
+  change_labor_women <-  clm
+  labor_income_rich_star <- sum(ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$output_pw * ecoParams[[iso_country]]$labor_income_rich * ecoParams[[iso_country]]$rich_share)
+  labor_income_rich_t <- sum(w_t* ecoParams[[iso_country]]$output_pw * ecoParams[[iso_country]]$labor_income_rich * ecoParams[[iso_country]]$rich_share)
+  change_labor_rich <-  log(labor_income_rich_t)-log(labor_income_rich_star)
+  labor_income_poor_star <- sum(ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$output_pw * ecoParams[[iso_country]]$labor_income_poor * (1-ecoParams[[iso_country]]$rich_share))
+  labor_income_poor_t <- sum(w_t* ecoParams[[iso_country]]$output_pw * ecoParams[[iso_country]]$labor_income_poor * (1-ecoParams[[iso_country]]$rich_share))
+  change_labor_poor <-  log(labor_income_poor_t)-log(labor_income_poor_star)
   
-  return(
-    list(change_gender,GDP_change,poverty_change)
+  list(change_labor_men=change_labor_men, 
+       change_labor_women=change_labor_women,
+       change_labor_rich=change_labor_rich,
+       change_labor_poor=change_labor_poor,
+       change_gender=change_gender,
+       GDP_change=GDP_change,
+       poverty_change=poverty_change,
+       ecoParams[[iso_country]]$w_star,
+       w_t,
+       y_t,
+       y_star
   )
+  
 }
+
+# loss_t <- function(work_mob_t) {
+#   # work_mob_t <- 0.5086785
+#   # iso_country = "ARG"
+#   w_t <- ecoParams[[iso_country]]$w_star * ( 1 - ecoParams[[iso_country]]$hours_mod * (1 - work_mob_t)) 
+#   ## Output
+#   # y* is the pre-pandemic (calibrated for 2019)
+#   y_star <-  sum(ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$output_pw)
+#   ## Effective output (direct impact)
+#   y_t <- sum(w_t * ecoParams[[iso_country]]$output_pw)
+#   ## Economic loss per period
+#   
+#   gender_star <- 1-sum(ecoParams[[iso_country]]$gender_sector * ecoParams[[iso_country]]$w_star )
+#   
+#   gender_t <- 1-sum(ecoParams[[iso_country]]$gender_sector * w_t )
+#   
+#   change_gender <- gender_t - gender_star
+#   GDP_change <- y_t/y_star -1
+#   poverty_change <- sum(ecoParams[[iso_country]]$output_poverty * c(1,GDP_change))
+#   
+#   
+#   labor_income_men_star <- ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$labor_income_men * ecoParams[[iso_country]]$gender_sector
+#   labor_income_men_t <- w_t * ecoParams[[iso_country]]$labor_income_men * ecoParams[[iso_country]]$gender_sector
+#   
+#   change_labor_men <-  mean( labor_income_men_t/labor_income_men_star-1)
+#   
+#   labor_income_women_star <- ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$labor_income_women * (1-ecoParams[[iso_country]]$gender_sector)
+#   labor_income_women_t <- w_t * ecoParams[[iso_country]]$labor_income_women * (1-ecoParams[[iso_country]]$gender_sector)
+#   
+#   clm <- labor_income_women_t/labor_income_women_star-1
+#   clm[is.na(clm)] <- 0
+#   change_labor_women <-  mean(clm)
+#   
+#   
+#   labor_income_rich_star <- ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$labor_income_rich * ecoParams[[iso_country]]$rich_share
+#   labor_income_rich_t <- w_t * ecoParams[[iso_country]]$labor_income_rich * ecoParams[[iso_country]]$rich_share
+#   
+#   change_labor_rich <-  mean(labor_income_rich_t/labor_income_rich_star-1)
+#   
+#   labor_income_poor_star <- ecoParams[[iso_country]]$w_star * ecoParams[[iso_country]]$labor_income_poor * (1-ecoParams[[iso_country]]$rich_share)
+#   labor_income_poor_t <- w_t * ecoParams[[iso_country]]$labor_income_poor * (1-ecoParams[[iso_country]]$rich_share)
+#   
+#   change_labor_poor <-  mean(labor_income_poor_t/labor_income_poor_star-1)
+#   
+#   list(change_labor_men, 
+#        change_labor_women,
+#        change_labor_rich,
+#        change_labor_poor,
+#        change_gender,
+#        GDP_change,
+#        poverty_change
+#   )
+#   
+# }
+
 
 matchDavies <- function(NPIs) {
   val <- NPIs
