@@ -38,6 +38,7 @@ setParameters <- function () {
     porcentajeCasosGravesCalibradorDelta<<-getCalibracion(iso_country,"delta")[['porcentajeCasosGravesCalibrador']]
     ifrCalibradorDelta<<-getCalibracion(iso_country,"delta")[['ifrCalibrador']]
     transmission_probabilityCalibradorDelta<<-getCalibracion(iso_country,"delta")[['transmission_probabilityCalibrador']]
+    print(paste(iso_country, transmission_probabilityCalibradorOmicron))
   } else {
     porcentajeCasosCriticosCalibradorOmicron<<-getCalibracion("ARG","omicron")[['porcentajeCasosCriticosCalibrador']]
     porcentajeCasosGravesCalibradorOmicron<<-getCalibracion("ARG","omicron")[['porcentajeCasosGravesCalibrador']]

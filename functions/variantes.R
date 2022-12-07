@@ -25,74 +25,72 @@ getMatrizModificadoresVariantesSingleVac <<- function(v) {
   ), nrow=length(immunityStates), ncol=length(ageGroups), byrow=T, dimnames = matrixNames))
 }
 
+
 sinModificacion = getMatrizModificadoresVariantesSingle(1)
 modificadorCero = getMatrizModificadoresVariantesSingle(0)
 
-modificadores <<- c('transmision',
-                  'hospitalizacion',
-                  'critico',
-                  'muerte',
-                  'duracionInmumidad',
-                  'modVacTransmision',
-                  'modVacGrave',
-                  'modVacCritico',
-                  'modVacMuerte',
-                  'duracionDiasInternacion')
-variantes <<- list(
-  'alpha' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
-  'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
-  'gamma' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
-  # AGREGAR TRANSICION DELTA: 
-  # - Crear las variables en getCalibración
-  # - Agregar esas variables aca en 'delta'
-  # - en transicionesEpidemiologicasCountry crear la progresion de la transición para delta
-  'delta' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['transmision']]),
-                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['hospitalizacion']]),
-                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['critico']]),
-                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['muerte']]),
-                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['duracionInmumidad']]),
-                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacTransmision']]),
-                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacGrave']]),
-                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacCritico']]),
-                          getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacMuerte']]),
-                          getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['duracionDiasInternacion']])
-                          )
-                          ,modificadores),
-  'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['transmision']]),
-                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['hospitalizacion']]),
-                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['critico']]),
-                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['muerte']]),
-                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['duracionInmumidad']]),
-                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacTransmision']]),
-                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacGrave']]),
-                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacCritico']]),
-                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacMuerte']]),
-                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['duracionDiasInternacion']])
-                            ),
-                       modificadores)
-)
+inicializaVariantes <- function () {
+  modificadores <<- c('transmision',
+                      'hospitalizacion',
+                      'critico',
+                      'muerte',
+                      'duracionInmumidad',
+                      'modVacTransmision',
+                      'modVacGrave',
+                      'modVacCritico',
+                      'modVacMuerte',
+                      'duracionDiasInternacion')
+  
+  variantes <<- list(
+    'alpha' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+    'beta' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+    'gamma' = setNames(lapply(seq_len(10), function(X) sinModificacion),modificadores),
+    # AGREGAR TRANSICION DELTA: 
+    # - Crear las variables en getCalibración
+    # - Agregar esas variables aca en 'delta'
+    # - en transicionesEpidemiologicasCountry crear la progresion de la transición para delta
+    'delta' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['transmision']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['hospitalizacion']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['critico']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['muerte']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['duracionInmumidad']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacTransmision']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacGrave']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacCritico']]),
+                            getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"delta")[['modVacMuerte']]),
+                            getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"delta")[['duracionDiasInternacion']])
+    )
+    ,modificadores),
+    'omicron' = setNames(list(getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['transmision']]),
+                              getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['hospitalizacion']]),
+                              getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['critico']]),
+                              getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['muerte']]),
+                              getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['duracionInmumidad']]),
+                              getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacTransmision']]),
+                              getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacGrave']]),
+                              getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacCritico']]),
+                              getMatrizModificadoresVariantesSingleVac(getCalibracion(iso_country,"omicron")[['modVacMuerte']]),
+                              getMatrizModificadoresVariantesSingle(getCalibracion(iso_country,"omicron")[['duracionDiasInternacion']])
+    ),
+    modificadores)
+  )
+  
+  variantes_base <<- variantes
+  
+  fechaTransicion <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
+  periodoTransicion <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+  
+}
 
-variantes_base <<- variantes
-
-fechaTransicion <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
-periodoTransicion <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+inicializaVariantes()
 
 
 obtenerModificadorDeVariante <<- function(t,iso_country) {
-  
-  
-  # AGREGAR TRANSICION DELTA: 
-  # - Tomas las variables fechaTransicionOmicron y periodoTransicionOmicron del pais iso_country 
-  #    - reemplazar getCalibracion(iso_country,"omicron")[["fechaTransicionOmicron"]] abajo para buscarlo aca en la funcion
-  # - Generar la para esos valores transición diferente
-  # browser()
-  
-  
+
   if (modoCalibracion==F) {
     fechaTransicionDelta <<- getCalibracion(iso_country,"delta")[["fechaTransicion"]]
     periodoTransicionDelta <<- getCalibracion(iso_country,"delta")[["periodoTransicion"]]
   }
-  
   
   tTransicionDelta <- which(fechas_master==fechaTransicionDelta)
   
@@ -101,6 +99,7 @@ obtenerModificadorDeVariante <<- function(t,iso_country) {
   if (modoCalibracion==F) {
     fechaTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["fechaTransicion"]]
     periodoTransicionOmicron <<- getCalibracion(iso_country,"omicron")[["periodoTransicion"]]
+    #print(paste("modo calibracion", iso_country, fechaTransicionOmicron))
   } else {
     #browser()
     

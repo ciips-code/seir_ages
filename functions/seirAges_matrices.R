@@ -327,7 +327,6 @@ seir_ages <- function(dias,
     # Diferencias: print(paste0(t, ", ", sum(tot[[t]])-sum(N)))
   }
   
-
   salida <- list("S: Susceptible"=S,
                  "V: Vaccinated"=V,
                  "vA: Daily vaccinations"=vA,
@@ -349,9 +348,10 @@ seir_ages <- function(dias,
                  "ylqd: Years lost Qualy Disc"=ylqd)
   infectious <- sapply(salida$`i: Daily infectious`,sum)
   infectious[infectious<0] <- 0
-  Rt <- estimate_R(infectious, 
-                   method = "parametric_si",
-                   config = make_config(list(mean_si = 3, std_si = 4)))$R
+  Rt <- 1
+  # Rt <- estimate_R(infectious, 
+  #                  method = "parametric_si",
+  #                  config = make_config(list(mean_si = 3, std_si = 4)))$R
   salida$'Rt: Effective reproduction number' <- c(rep(0,7),Rt)
   return(salida) 
 }

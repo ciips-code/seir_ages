@@ -52,7 +52,7 @@ calibra <- function (input, output, session) {
     fechaTransicionOmicron <<- input$`input-omicron-fechaTransicion`
     periodoTransicionOmicron <<- input$`input-omicron-periodoTransicion`
   } else {
-    modoCalibracion <<- F   
+    modoCalibracion <<- F  
   }
   
   porcentajeCasosGraves <<- porcentajeCasosGraves_base * porcentajeCasosGravesCalibradorOmicron
@@ -64,34 +64,6 @@ calibra <- function (input, output, session) {
 
 actualizaMapa <- function(input, output, session) {
   # Set params
-  iso_country <<- if (input$country=="Argentina") {"ARG"} else
-    if (input$country=="Peru") {"PER"}
-  else if (input$country=="Brazil") {"BRA"} else
-    if (input$country=="Colombia") {"COL"} else
-      if (input$country=="Mexico") {"MEX"} else
-        if (input$country=="Costa Rica") {"CRI"} else
-          if (input$country=="Uruguay") {"URY"} else
-            if (input$country=="Chile") {"CHL"} else
-              if (input$country=="Paraguay") {"PRY"} else
-                if (input$country=="Bahamas") {"BHS"} else
-                  if (input$country=="Barbados") {"BRB"} else
-                    if (input$country=="Belice") {"BLZ"} else
-                      if (input$country=="Bolivia") {"BOL"} else
-                        if (input$country=="Ecuador") {"ECU"} else
-                          if (input$country=="Guatemala") {"GTM"} else
-                            if (input$country=="Guyana") {"GUY"} else
-                              if (input$country=="Honduras") {"HND"} else
-                                if (input$country=="Haiti") {"HTI"} else
-                                  if (input$country=="Jamaica") {"JAM"} else
-                                    if (input$country=="El Salvador") {"SLV"} else
-                                      if (input$country=="Nicaragua") {"NIC"} else
-                                        if (input$country=="Panama") {"PAN"} else
-                                          if (input$country=="Venezuela") {"VEN"} else
-                                            if (input$country=="Suriname") {"SUR"} else
-                                              if (input$country=="Trinidad & Tobago") {"TTO"} else
-                                                if (input$country=="Republica Dominicana") {"DOM"} 
-  
-  
   # print(iso_country)
   map_tiles <- subset(OWDSummaryData,metric==if (input$select_map=="Casos") {"totalCasesPerMillon"} else {"totalDeathsPerMillon"}) %>% dplyr::arrange(value)
   map_tiles$tile <- as.numeric(rownames(map_tiles))

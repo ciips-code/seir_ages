@@ -145,6 +145,36 @@ costo_economico_alternativo_change_labor_poor <<- c()
 server <- function (input, output, session) {
   #hideTab(inputId = "TSP", target = "Calibracion")
   observeEvent(input$country, {
+    iso_country <<- if (input$country=="Argentina") {"ARG"} else
+      if (input$country=="Peru") {"PER"}
+    else if (input$country=="Brazil") {"BRA"} else
+      if (input$country=="Colombia") {"COL"} else
+        if (input$country=="Mexico") {"MEX"} else
+          if (input$country=="Costa Rica") {"CRI"} else
+            if (input$country=="Uruguay") {"URY"} else
+              if (input$country=="Chile") {"CHL"} else
+                if (input$country=="Paraguay") {"PRY"} else
+                  if (input$country=="Bahamas") {"BHS"} else
+                    if (input$country=="Barbados") {"BRB"} else
+                      if (input$country=="Belice") {"BLZ"} else
+                        if (input$country=="Bolivia") {"BOL"} else
+                          if (input$country=="Ecuador") {"ECU"} else
+                            if (input$country=="Guatemala") {"GTM"} else
+                              if (input$country=="Guyana") {"GUY"} else
+                                if (input$country=="Honduras") {"HND"} else
+                                  if (input$country=="Haiti") {"HTI"} else
+                                    if (input$country=="Jamaica") {"JAM"} else
+                                      if (input$country=="El Salvador") {"SLV"} else
+                                        if (input$country=="Nicaragua") {"NIC"} else
+                                          if (input$country=="Panama") {"PAN"} else
+                                            if (input$country=="Venezuela") {"VEN"} else
+                                              if (input$country=="Suriname") {"SUR"} else
+                                                if (input$country=="Trinidad & Tobago") {"TTO"} else
+                                                  if (input$country=="Republica Dominicana") {"DOM"} 
+    
+    
+    inicializaVariantes()
+    setParameters()
     if (input$country!="Argentina" & 
         input$country!="Brazil" &
         input$country!="Mexico") {
@@ -185,6 +215,8 @@ server <- function (input, output, session) {
   disable("go")
   observeEvent(input$TSP, {
     if (input$TSP=="Calibracion") {
+      print("generando ui calibracion")
+      removeUI("#calibradores > div", multiple = T)
       for (i in c("porcentajeCasosCriticosCalibradorOmicron",
                   "porcentajeCasosGravesCalibradorOmicron",
                   "ifrCalibradorOmicron",
@@ -213,29 +245,33 @@ server <- function (input, output, session) {
              })
       
     }
-  })
-  
-  for (i in 1:length(variantes$omicron)) {
-    insertUI("#omicron", ui = numericInput(paste0("input-omicron-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]))
-  }
-  for (i in 1:length(variantes$delta)) {
-    insertUI("#delta", ui = numericInput(paste0("input-delta-",names(variantes$delta)[i]), names(variantes$delta)[i], variantes$delta[[i]][4,1]))
-  }
-  insertUI("#delta", ui = dateInput(inputId = "input-delta-fechaTransicion",
-                                         label = "fechaTransicionDelta",
-                                         value = getCalibracion(iso_country, "delta")[["fechaTransicion"]]))
-
-  insertUI("#delta", ui = numericInput(inputId =  "input-delta-periodoTransicion",
+    removeUI("#omicron > div", multiple = T)
+    removeUI("#delta > div", multiple = T)
+    
+    for (i in 1:length(variantes$omicron)) {
+      insertUI("#omicron", ui = numericInput(paste0("input-omicron-",names(variantes$omicron)[i]), names(variantes$omicron)[i], variantes$omicron[[i]][4,1]/variantes$delta[[i]][4,1]))
+      print(variantes$omicron[[i]][4,1]/variantes$delta[[i]][4,1])
+    }
+    for (i in 1:length(variantes$delta)) {
+      insertUI("#delta", ui = numericInput(paste0("input-delta-",names(variantes$delta)[i]), names(variantes$delta)[i], variantes$delta[[i]][4,1]))
+    }
+    insertUI("#delta", ui = dateInput(inputId = "input-delta-fechaTransicion",
+                                      label = "fechaTransicionDelta",
+                                      value = getCalibracion(iso_country, "delta")[["fechaTransicion"]]))
+    
+    insertUI("#delta", ui = numericInput(inputId =  "input-delta-periodoTransicion",
                                          label = "periodoTransicionDelta",
                                          value = getCalibracion(iso_country, "delta")[["periodoTransicion"]]))
-
-  insertUI("#omicron", ui = dateInput(inputId = "input-omicron-fechaTransicion",
-                                      label = "fechaTransicionOmicron",
-                                      value = getCalibracion(iso_country, "omicron")[["fechaTransicion"]]))
-
-  insertUI("#omicron", ui = numericInput(inputId =  "input-omicron-periodoTransicion",
-                                         label = "periodoTransicionOmicron",
-                                         value = getCalibracion(iso_country, "omicron")[["periodoTransicion"]]))
+    
+    insertUI("#omicron", ui = dateInput(inputId = "input-omicron-fechaTransicion",
+                                        label = "fechaTransicionOmicron",
+                                        value = getCalibracion(iso_country, "omicron")[["fechaTransicion"]]))
+    
+    insertUI("#omicron", ui = numericInput(inputId =  "input-omicron-periodoTransicion",
+                                           label = "periodoTransicionOmicron",
+                                           value = getCalibracion(iso_country, "omicron")[["periodoTransicion"]]))
+    
+  })
   
   output$paramVac_editada <- renderDT({
     DT::datatable(data = paramVac %>% as.data.frame(), 
@@ -3372,11 +3408,11 @@ server <- function (input, output, session) {
       paste(input$ECO_go)
       if(length(costo_economico_alternativo)>0) {
         data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
-                               costo=tail(costo_economico_alternativo,360),
+                               costo=tail(costo_economico_alternativo,360)*100,
                                escenario="ALTERNATIVO 1")
         
         data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
-                               costo=tail(costo_economico_principal,360),
+                               costo=tail(costo_economico_principal,360)*100,
                                escenario="DEFAULT")
         
         data <- union_all(data_alt,
@@ -3390,10 +3426,44 @@ server <- function (input, output, session) {
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
-        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Escenario principal', type = 'scatter', mode = 'lines+markers'
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Base case', type = 'scatter', mode = 'lines+markers'
                        ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario Alternativo') %>% layout(title = 'Pérdida del PIB (%)',xaxis = list(title='Mes'),
-                                                                                    yaxis = list(title='Pérdida del PIB (%)'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Contrafactual') %>% layout(title = 'GDP loss (%)',xaxis = list(title='Month'),
+                                                                                    yaxis = list(title='GDP loss (%)'))
+        
+      }
+      
+      
+    })
+    
+    output$grafEcoGastoCumulative <- renderPlotly({
+      paste(input$ECO_go)
+      if(length(costo_economico_alternativo)>0) {
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_alternativo,360)*100,
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_principal,360)*100,
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$costo.x <- cumsum(data$costo.x)
+        data$costo.y <- cumsum(data$costo.y)
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Base case', type = 'scatter', mode = 'lines+markers'
+        ) 
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Contrafactual') %>% layout(title = 'Cumulative GDP loss (%)',xaxis = list(title='Month'),
+                                                                              yaxis = list(title='GDP loss (%)'))
         
       }
       
@@ -3423,13 +3493,12 @@ server <- function (input, output, session) {
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
-        writeClipboard(as.character(data$costo.y))
-        data
         
-        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Escenario principal', type = 'scatter', mode = 'lines+markers'
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Base case', type = 'scatter', mode = 'lines+markers'
         ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Escenario Alternativo') %>% layout(title = 'poverty_change',xaxis = list(title='Mes'),
-                                                                                      yaxis = list(title='poverty_change'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Contrafactual', color="#5ab4ac") %>% layout(title = 'Change in the poverty rate (in percentage points)',xaxis = list(title='Month'),
+                                                                                      yaxis = list(title='percentage points'))
         
       }
       
@@ -3438,7 +3507,7 @@ server <- function (input, output, session) {
     
     output$grafEcoLaborGender <- renderPlotly({
       paste(input$ECO_go)
-      if(length(costo_economico_alternativo)>0) {
+            if(length(costo_economico_alternativo)>0) {
         data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
                                costo=tail(costo_economico_principal_change_labor_men,360),
                                escenario="ALTERNATIVO 1")
@@ -3460,11 +3529,10 @@ server <- function (input, output, session) {
         
         writeClipboard(as.character(data$costo.y))
         data
-        
-        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers'
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(216,179,101)', line = list(color = 'rgb(216,179,101)',width = 2)), line = list(color = 'rgb(216,179,101)')
         ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Woman') %>% layout(title = 'change_labor (escenario principal)',xaxis = list(title='Mes'),
-                                                                                      yaxis = list(title='change_labor'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Women', marker = list(color = 'rgb(90,180,172)', line = list(color = 'rgb(90,180,172)',width = 2)), line = list(color = 'rgb(90,180,172)')) %>% layout(title = 'Labor income loss by gender in percentage points (base case)',xaxis = list(title='Month'),
+                                                                                      yaxis = list(title='Percentage points'))
         
       }
       
@@ -3492,15 +3560,81 @@ server <- function (input, output, session) {
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
-        writeClipboard(as.character(data$costo.y))
-        data
+       
         
-        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers'
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(216,179,101)', line = list(color = 'rgb(216,179,101)',width = 2)), line = list(color = 'rgb(216,179,101)')
         ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Woman') %>% layout(title = 'change_labor gender (escenario alternativo)',xaxis = list(title='Mes'),
-                                                                      yaxis = list(title='change_labor gender'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Women', marker = list(color = 'rgb(90,180,172)', line = list(color = 'rgb(90,180,172)',width = 2)), line = list(color = 'rgb(90,180,172)')) %>% layout(title = 'Labor income loss by gender in percentage points (contrafactual)',xaxis = list(title='Mes'),
+                                                                                                                                                                                                          yaxis = list(title='Percentage points'))
+        
         
       }
+      
+    })
+    
+    output$grafEcoLaborGenderFull <- renderPlotly({
+      paste(input$ECO_go)
+      
+      if(length(costo_economico_alternativo)>0) {
+        alt_data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_alternativo_change_labor_men,360),
+                               escenario="ALTERNATIVO 1")
+        
+        alt_data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_alternativo_change_labor_women,360),
+                               escenario="DEFAULT")
+        
+        alt_data <- union_all(alt_data_alt,
+                              alt_data_pri)
+        
+        alt_data$mes_nro <- month(alt_data$fecha)
+        alt_data$mes <- month.name[month(alt_data$fecha)]
+        alt_data <- alt_data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        alt_data <- left_join(alt_data[alt_data$escenario=="DEFAULT",],
+                          alt_data[alt_data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        alt_data$mes <- factor(alt_data$mes, levels = alt_data[["mes"]])
+        ##
+        
+        data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                               costo=tail(costo_economico_principal_change_labor_men,360),
+                               escenario="ALTERNATIVO 1")
+        
+        data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
+                               costo=tail(costo_economico_principal_change_labor_women,360),
+                               escenario="DEFAULT")
+        
+        data <- union_all(data_alt,
+                          data_pri)
+        
+        data$mes_nro <- month(data$fecha)
+        data$mes <- month.name[month(data$fecha)]
+        data <- data %>% group_by(mes_nro,mes,escenario) %>% dplyr::summarise(costo=mean(costo))
+        data <- left_join(data[data$escenario=="DEFAULT",],
+                          data[data$escenario=="ALTERNATIVO 1",],
+                          by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        data$mes <- factor(data$mes, levels = data[["mes"]])
+        
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(216,179,101)', line = list(color = 'rgb(216,179,101)',width = 2)), line = list(color = 'rgb(216,179,101)')
+        ) 
+        fig <- fig %>% add_trace(y = ~costo.y*-1, name = 'Women', marker = list(color = 'rgb(90,180,172)', line = list(color = 'rgb(90,180,172)',width = 2)), line = list(color = 'rgb(90,180,172)')) %>% layout(title = 'Labor income loss by gender in percentage points (base case)',xaxis = list(title='Month'),
+                                                                                                                                                                                                          yaxis = list(title='Percentage points'))
+        fig %>% add_trace(y = ~alt_data$costo.x*-1, 
+                          name = 'Men (contrafactual)', 
+                          marker = list(color = 'rgb(216,179,101)', 
+                                        line = list(color = 'rgb(216,179,101)',
+                                                    width = 0)), 
+                          line = list(color = 'rgb(216,179,101)',
+                          dash = 'dot')) %>% layout(title = 'Change in the labor income by gender in percentage points (base case)',xaxis = list(title='Month'),yaxis = list(title='Percentage points')) %>%
+          add_trace(y = ~alt_data$costo.y*-1, 
+                    name = 'Women (contrafactual)', 
+                    marker = list(color = 'rgb(90,180,172)', 
+                                  line = list(color = 'rgb(90,180,172)',
+                                              width = 0)), 
+                    line = list(color = 'rgb(90,180,172)',
+                                dash = 'dot')) %>% layout(title = 'Change in the labor income by gender in percentage points (base case)',xaxis = list(title='Month'),yaxis = list(title='Percentage points'))
+        
+      } 
       
     })
     
@@ -3529,10 +3663,11 @@ server <- function (input, output, session) {
         writeClipboard(as.character(data$costo.y))
         data
         
-        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Rich', type = 'scatter', mode = 'lines+markers'
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Upper income workers', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(175,141,195)', line = list(color = 'rgb(175,141,195)',width = 2)), line = list(color = 'rgb(175,141,195)')
         ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Poor') %>% layout(title = 'change_labor rich/poor (escenario principal)',xaxis = list(title='Mes'),
-                                                                      yaxis = list(title='change_labor rich/poor'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Lower income workers', marker = list(color = 'rgb(127,191,123)', line = list(color = 'rgb(127,191,123)',width = 2)), line = list(color = 'rgb(127,191,123)')) %>% layout(title = 'Labor income loss by income category in percentage points (base case)',xaxis = list(title='Month'),
+                                                                                                                                                                                                          yaxis = list(title='Percentage points'))
+        
         
       }
       
@@ -3563,10 +3698,11 @@ server <- function (input, output, session) {
         writeClipboard(as.character(data$costo.y))
         data
         
-        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Rich', type = 'scatter', mode = 'lines+markers'
+        fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Upper income workers', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(175,141,195)', line = list(color = 'rgb(175,141,195)',width = 2)), line = list(color = 'rgb(175,141,195)')
         ) 
-        fig %>% add_trace(y = ~costo.y*-1, name = 'Poor') %>% layout(title = 'change_labor rich/poor (escenario alternativo)',xaxis = list(title='Mes'),
-                                                                      yaxis = list(title='change_labor rich/poor'))
+        fig %>% add_trace(y = ~costo.y*-1, name = 'Lower income workers', marker = list(color = 'rgb(127,191,123)', line = list(color = 'rgb(127,191,123)',width = 2)), line = list(color = 'rgb(127,191,123)')) %>% layout(title = 'Labor income loss by income category in percentage points (contrafactual)',xaxis = list(title='Month'),
+                                                                                                                                                                                                                            yaxis = list(title='Percentage points'))
+        
         
       }
       
@@ -3587,11 +3723,34 @@ server <- function (input, output, session) {
                            muertes=tail(costo_economico_alternativo_muertes,360))
         data$fecha <- as.Date(data$fecha)
         
-        fig <- plot_ly(data, x = ~fecha, y = ~total, name = 'Escenario principal', type = 'scatter', mode = 'lines'
+        fig <- plot_ly(data, x = ~fecha, y = ~total, name = 'Base case', type = 'scatter', mode = 'lines'
                        ) 
-        fig %>% add_trace(y = ~muertes, name = 'Escenario Alternativo') %>% layout(title = 'Muertes diarias',
-                                                                                     xaxis = list(title='Fecha'), 
-                                                                                     yaxis = list(title='Muertes diarias'))
+        fig %>% add_trace(y = ~muertes, name = 'Contrafactual') %>% layout(title = 'Daily deaths',
+                                                                                     xaxis = list(title='Date'), 
+                                                                                     yaxis = list(title='Daily deaths'))
+      }
+      
+    })
+    
+    output$grafEcoMuertesCumulative <- renderPlotly({
+      paste(input$ECO_go)
+      muertes <- data_graf[data_graf$Compart=="d" &
+                             data_graf$fecha>=311 &
+                             data_graf$fecha<=(311+359),]
+      
+      muertes$fecha <- NULL
+      
+      if(length(costo_economico_alternativo)>0) {
+        data <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
+                           total=cumsum(tail(muertes$total,360)),
+                           muertes=cumsum(tail(costo_economico_alternativo_muertes,360)))
+        data$fecha <- as.Date(data$fecha)
+        
+        fig <- plot_ly(data, x = ~fecha, y = ~total, name = 'Base case', type = 'scatter', mode = 'lines'
+        ) 
+        fig %>% add_trace(y = ~muertes, name = 'Contrafactual') %>% layout(title = 'Cumulative daily deaths',
+                                                                           xaxis = list(title='Date'), 
+                                                                           yaxis = list(title='Daily deaths'))
       }
       
     })
@@ -3709,19 +3868,19 @@ server <- function (input, output, session) {
               text = trade_off_summary$nombres_scn,
               hoverinfo = 'text',
               marker = list(color = "red")) %>% layout(
-                title = "Ene-Jun",
-                xaxis = list(title = "Promedio de pérdida del PIB"),
-                yaxis = list(title = "Promedio de muertes diarias"),
+                title = "Jan-Jun",
+                xaxis = list(title = "GDP loss (average)"),
+                yaxis = list(title = "Daily deaths (average)"),
                 margin = list(l = 100),
                 showlegend = T
-              ) %>% add_trace(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = "Año completo", type = 'scatter',
+              ) %>% add_trace(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = "Whole year", type = 'scatter',
                               mode = "markers", 
                               text = trade_off_summary$nombres_scn,
                               hoverinfo = 'text', 
                               marker = list(color = "blue")) %>% layout(
-                                title = "Trade-off económico y epidemiológico",
-                                xaxis = list(title = "Promedio de pérdida del PIB"),
-                                yaxis = list(title = "Promedio de muertes diarias"),
+                                title = "Economic and epidemiological trade-off",
+                                xaxis = list(title = "GDP loss (average)"),
+                                yaxis = list(title = "Daily deaths (average)"),
                                 margin = list(l = 100),
                                 showlegend = T
                               ) %>% add_trace(x=~costo_primer_semestre, 
