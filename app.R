@@ -177,7 +177,8 @@ server <- function (input, output, session) {
     setParameters()
     if (input$country!="Argentina" & 
         input$country!="Brazil" &
-        input$country!="Mexico") {
+        input$country!="Mexico" &
+        input$country!="Jamaica") {
       hideTab(inputId = "TSP", target = "ECO Model")
       hideTab(inputId = "TSP", target = "Trade-off")
       
@@ -186,7 +187,7 @@ server <- function (input, output, session) {
     shinyjs::hide("grafEcoMuertes")
     shinyjs::hide("grafEcoGasto")
     shinyjs::hide("grafEcoPobreza")
-    shinyjs::hide("grafEcoGenero")
+    #shinyjs::hide("grafEcoGenero")
     shinyjs::hide("grafEcoLaborGender")
     shinyjs::hide("grafEcoLaborPoverty")
     shinyjs::hide("grafEcoLaborGenderAlt")
@@ -346,7 +347,7 @@ server <- function (input, output, session) {
     shinyjs::hide('grafEcoGasto')
     shinyjs::hide('grafEcoMuertes')
     shinyjs::hide('grafEcoPobreza')
-    shinyjs::hide('grafEcoGenero')
+    #shinyjs::hide('grafEcoGenero')
     shinyjs::hide('grafEcoLaborGender')
     shinyjs::hide('grafEcoLaborPoverty')
     shinyjs::hide('grafEcoLaborGenderAlt')
@@ -433,27 +434,27 @@ server <- function (input, output, session) {
   }
   
   observeEvent(input$npi1, {
-    addBox(1,"<br>Distanciamiento social,<br>uso de mascarillas faciales<br><br>")
+    addBox(1,"<br>Physical distancing,<br>use of face masks<br><br>")
     addBoxTable("Physical distancing",input$country)
     # print(customBeta)  
   })
   observeEvent(input$npi2, {
-    addBox(2,"Distanciamiento social,<br>uso de mascarillas faciales<br>y aislamiento de ancianos<br><br>")
+    addBox(2,"Physical distancing,<br>use of face masks<br>and shielding of older people<br><br>")
     addBoxTable("Physical distancing + Shielding of older people",input$country)
     # print(customBeta)  
   })
   observeEvent(input$npi3, {
-    addBox(3,"Distanciamiento social,<br>mascarillas faciales,<br>aislamiento de ancianos y<br>aislamiento personal")
+    addBox(3,"Physical distancing,<br>use of face masks,<br>Shielding of older people and<br>Self isolation")
     addBoxTable("Physical distancing + Shielding of older people + Self isolation",input$country)
     # print(customBeta)
   })
   observeEvent(input$npi4, {
-    addBox(4,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas")
+    addBox(4,"Physical distancing, use of face masks<br>, Shielding of older people<br>and self isolation,<br>with school closures")
     addBoxTable("Physical distancing + Shielding of older people + Self isolation + School closures",input$country)
     # print(customBeta)
   })
   observeEvent(input$npi5, {
-    addBox(5,"Distanciamiento social, mascarillas<br>faciales, aislamiento de ancianos<br>y aislamiento personal,<br>con cierre de escuelas y confinamiento")
+    addBox(5,"Physical distancing, use of face masks<br>, Shielding of older people<br>and self isolation,<br>with school closures")
     addBoxTable("Physical distancing + Shielding of older people + Lockdown + School closures",input$country)
     # print(customBeta)
   })
@@ -3378,7 +3379,7 @@ server <- function (input, output, session) {
       shinyjs::show('grafEcoGasto')
       shinyjs::show('grafEcoMuertes')
       shinyjs::show('grafEcoPobreza')
-      shinyjs::show('grafEcoGenero')
+      #shinyjs::show('grafEcoGenero')
       shinyjs::show('grafEcoLaborGender')
       shinyjs::show('grafEcoLaborPoverty')
       shinyjs::show('grafEcoLaborGenderAlt')
@@ -3425,6 +3426,16 @@ server <- function (input, output, session) {
                           data[data$escenario=="ALTERNATIVO 1",],
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
+        clipboard <- data.frame(
+          mean(data$costo.y[1:6]),
+          mean(data$costo.y[7:12]),
+          mean(costo_economico_alternativo_muertes[1:180]),
+          mean(costo_economico_alternativo_muertes[1:360])
+        )
+        
+        clipr::write_clip(clipboard)
+        
+        
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Base case', type = 'scatter', mode = 'lines+markers'
                        ) 
@@ -3456,8 +3467,12 @@ server <- function (input, output, session) {
         data <- left_join(data[data$escenario=="DEFAULT",],
                           data[data$escenario=="ALTERNATIVO 1",],
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
+        
         data$costo.x <- cumsum(data$costo.x)
         data$costo.y <- cumsum(data$costo.y)
+        data$costo.x <- data$costo.x / c(1:12)
+        data$costo.y <- data$costo.y / c(1:12)
+        
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Base case', type = 'scatter', mode = 'lines+markers'
@@ -3473,7 +3488,7 @@ server <- function (input, output, session) {
     
     output$grafEcoPobreza <- renderPlotly({
       paste(input$ECO_go)
-      if(length(costo_economico_alternativo)>0) {
+      if(length(costo_economico_alternativo)>0 & iso_country!="JAM") {
         data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
                                costo=tail(costo_economico_alternativo_pobreza,360),
                                escenario="ALTERNATIVO 1")
@@ -3500,7 +3515,7 @@ server <- function (input, output, session) {
         fig %>% add_trace(y = ~costo.y*-1, name = 'Contrafactual', color="#5ab4ac") %>% layout(title = 'Change in the poverty rate (in percentage points)',xaxis = list(title='Month'),
                                                                                       yaxis = list(title='percentage points'))
         
-      }
+      } else {NULL}
       
     })
     
@@ -3527,7 +3542,6 @@ server <- function (input, output, session) {
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
-        writeClipboard(as.character(data$costo.y))
         data
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Men', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(216,179,101)', line = list(color = 'rgb(216,179,101)',width = 2)), line = list(color = 'rgb(216,179,101)')
         ) 
@@ -3577,11 +3591,11 @@ server <- function (input, output, session) {
       
       if(length(costo_economico_alternativo)>0) {
         alt_data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
-                               costo=tail(costo_economico_alternativo_change_labor_men,360),
+                               costo=tail(costo_economico_alternativo_change_labor_women,360),
                                escenario="ALTERNATIVO 1")
         
         alt_data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
-                               costo=tail(costo_economico_alternativo_change_labor_women,360),
+                               costo=tail(costo_economico_alternativo_change_labor_men,360),
                                escenario="DEFAULT")
         
         alt_data <- union_all(alt_data_alt,
@@ -3597,11 +3611,11 @@ server <- function (input, output, session) {
         ##
         
         data_alt <- data.frame(fecha=tail(unique(costo_economico_alternativo_fecha),360),
-                               costo=tail(costo_economico_principal_change_labor_men,360),
+                               costo=tail(costo_economico_principal_change_labor_women,360),
                                escenario="ALTERNATIVO 1")
         
         data_pri <- data.frame(fecha=tail(unique(costo_economico_principal_fecha),360),
-                               costo=tail(costo_economico_principal_change_labor_women,360),
+                               costo=tail(costo_economico_principal_change_labor_men,360),
                                escenario="DEFAULT")
         
         data <- union_all(data_alt,
@@ -3660,8 +3674,6 @@ server <- function (input, output, session) {
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
-        writeClipboard(as.character(data$costo.y))
-        data
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Upper income workers', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(175,141,195)', line = list(color = 'rgb(175,141,195)',width = 2)), line = list(color = 'rgb(175,141,195)')
         ) 
@@ -3695,8 +3707,6 @@ server <- function (input, output, session) {
                           by="mes") %>% arrange(mes_nro.y) %>% as.data.frame()
         data$mes <- factor(data$mes, levels = data[["mes"]])
         
-        writeClipboard(as.character(data$costo.y))
-        data
         
         fig <- plot_ly(data, x = ~mes, y = ~costo.x*-1, name = 'Upper income workers', type = 'scatter', mode = 'lines+markers', marker = list(color = 'rgb(175,141,195)', line = list(color = 'rgb(175,141,195)',width = 2)), line = list(color = 'rgb(175,141,195)')
         ) 
@@ -3859,8 +3869,12 @@ server <- function (input, output, session) {
       # colnames(trade_off_summary)[-1] <<- nombres_col
       # m1 <- lm(trade_off_summary$muertes_primer_semestre ~ trade_off_summary$costo_primer_semestre, data = trade_off_summary)
       # m2 <- lm(trade_off_summary$muertes_segundo_semestre ~ trade_off_summary$costo_segundo_semestre, data = trade_off_summary)
-
-      load("data/trade_off_summary.RData")
+      
+      trade_off_summary <- readxl::read_xlsx("data/tradeOff.xlsx", sheet = iso_country)
+      m1 <- lm(trade_off_summary$muertes_primer_semestre ~ trade_off_summary$costo_primer_semestre, data = trade_off_summary)
+      m2 <- lm(trade_off_summary$muertes_segundo_semestre ~ trade_off_summary$costo_segundo_semestre, data = trade_off_summary)
+      
+      #load("data/trade_off_summary.RData")
       trade_off_summary$costo_primer_semestre <- trade_off_summary$costo_primer_semestre * -1
       trade_off_summary$costo_segundo_semestre <- trade_off_summary$costo_segundo_semestre * -1
       plot_ly(trade_off_summary, x = ~costo_primer_semestre, y = ~muertes_primer_semestre, name = "Ene-Jun", type = 'scatter',
@@ -3908,54 +3922,54 @@ server <- function (input, output, session) {
       })
       
       
-      output$grafico_trade_off_pobreza <- renderPlotly({
-        
-        load("data/trade_off_summary.RData")
-        trade_off_summary$pobreza_primer_semestre <- trade_off_summary$pobreza_primer_semestre * -1
-        trade_off_summary$pobreza_segundo_semestre <- trade_off_summary$pobreza_segundo_semestre * -1
-        plot_ly(trade_off_summary, x = ~pobreza_primer_semestre, y = ~muertes_primer_semestre, name = "Ene-Jun", type = 'scatter',
-                mode = "markers", 
-                text = trade_off_summary$nombres_scn,
-                hoverinfo = 'text',
-                marker = list(color = "red")) %>% layout(
-                  title = "Ene-Jun",
-                  xaxis = list(title = "Promedio de aumento de la pobreza"),
-                  yaxis = list(title = "Promedio de muertes diarias"),
-                  margin = list(l = 100),
-                  showlegend = T
-                ) %>% add_trace(trade_off_summary, x = ~pobreza_segundo_semestre, y = ~muertes_segundo_semestre, name = "Año completo", type = 'scatter',
-                                mode = "markers", 
-                                text = trade_off_summary$nombres_scn,
-                                hoverinfo = 'text', 
-                                marker = list(color = "blue")) %>% layout(
-                                  title = "Trade-off económico (pobreza) y epidemiológico",
-                                  xaxis = list(title = "Promedio aumento de la pobreza"),
-                                  yaxis = list(title = "Promedio de muertes diarias"),
-                                  margin = list(l = 100),
-                                  showlegend = T
-                                ) %>% add_trace(x=~pobreza_primer_semestre, 
-                                                y=~predict(m3),
-                                                name = 'Trend line',
-                                                type = "scatter",
-                                                mode = "lines",
-                                                showlegend = F,
-                                                marker=list(symbol = 0,
-                                                            opacity = 0),
-                                                line = list(shape = 'spline', 
-                                                            color = 'Grey', 
-                                                            width = 1)) %>% add_trace(x=~pobreza_segundo_semestre, 
-                                                                                      y=~predict(m4),
-                                                                                      name = 'Trend line',
-                                                                                      type = "scatter",
-                                                                                      mode = "lines",
-                                                                                      showlegend = F,
-                                                                                      marker=list(symbol = 0,
-                                                                                                  opacity = 0),
-                                                                                      line = list(shape = 'spline', 
-                                                                                                  color = 'Grey', 
-                                                                                                  width = 1))
-        
-      })
+      # output$grafico_trade_off_pobreza <- renderPlotly({
+      #   
+      #   load("data/trade_off_summary.RData")
+      #   trade_off_summary$pobreza_primer_semestre <- trade_off_summary$pobreza_primer_semestre * -1
+      #   trade_off_summary$pobreza_segundo_semestre <- trade_off_summary$pobreza_segundo_semestre * -1
+      #   plot_ly(trade_off_summary, x = ~pobreza_primer_semestre, y = ~muertes_primer_semestre, name = "Ene-Jun", type = 'scatter',
+      #           mode = "markers", 
+      #           text = trade_off_summary$nombres_scn,
+      #           hoverinfo = 'text',
+      #           marker = list(color = "red")) %>% layout(
+      #             title = "Ene-Jun",
+      #             xaxis = list(title = "Promedio de aumento de la pobreza"),
+      #             yaxis = list(title = "Promedio de muertes diarias"),
+      #             margin = list(l = 100),
+      #             showlegend = T
+      #           ) %>% add_trace(trade_off_summary, x = ~pobreza_segundo_semestre, y = ~muertes_segundo_semestre, name = "Año completo", type = 'scatter',
+      #                           mode = "markers", 
+      #                           text = trade_off_summary$nombres_scn,
+      #                           hoverinfo = 'text', 
+      #                           marker = list(color = "blue")) %>% layout(
+      #                             title = "Trade-off económico (pobreza) y epidemiológico",
+      #                             xaxis = list(title = "Promedio aumento de la pobreza"),
+      #                             yaxis = list(title = "Promedio de muertes diarias"),
+      #                             margin = list(l = 100),
+      #                             showlegend = T
+      #                           ) %>% add_trace(x=~pobreza_primer_semestre, 
+      #                                           y=~predict(m3),
+      #                                           name = 'Trend line',
+      #                                           type = "scatter",
+      #                                           mode = "lines",
+      #                                           showlegend = F,
+      #                                           marker=list(symbol = 0,
+      #                                                       opacity = 0),
+      #                                           line = list(shape = 'spline', 
+      #                                                       color = 'Grey', 
+      #                                                       width = 1)) %>% add_trace(x=~pobreza_segundo_semestre, 
+      #                                                                                 y=~predict(m4),
+      #                                                                                 name = 'Trend line',
+      #                                                                                 type = "scatter",
+      #                                                                                 mode = "lines",
+      #                                                                                 showlegend = F,
+      #                                                                                 marker=list(symbol = 0,
+      #                                                                                             opacity = 0),
+      #                                                                                 line = list(shape = 'spline', 
+      #                                                                                             color = 'Grey', 
+      #                                                                                             width = 1))
+      #   
+      # })
       
       # output$grafico_trade_off2 <- renderPlotly({
       #   plot_ly(trade_off_summary, x = ~costo_segundo_semestre, y = ~muertes_segundo_semestre, name = ~nombres_scn, type = 'scatter',

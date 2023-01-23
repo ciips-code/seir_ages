@@ -1083,9 +1083,7 @@ getUI <- function () {
                                                               "Correr simulación"))),
                                  br(),
                                  fluidRow(column(6,
-                                                 plotlyOutput("grafico_trade_off")),
-                                          column(6,
-                                                 plotlyOutput("grafico_trade_off_pobreza"))
+                                                 plotlyOutput("grafico_trade_off"))
                                           # ,
                                           # column(6,
                                           #        plotlyOutput("grafico_trade_off2"))
